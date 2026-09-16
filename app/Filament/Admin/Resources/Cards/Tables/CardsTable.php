@@ -9,7 +9,6 @@ use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -83,8 +82,7 @@ class CardsTable
                     }),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()->iconButton(),
 
                 Action::make('freeze')
                     ->label('Заморозить')
@@ -130,27 +128,28 @@ class CardsTable
                         Notification::make()->title('Запрос на перевыпуск карты отправлен провайдеру')->success()->send();
                     }),
 
-                Action::make('adjustBalance')
-                    ->label('Поправить баланс')
-                    ->icon('heroicon-o-banknotes')
-                    ->color('gray')
-                    ->schema([
-                        TextInput::make('new_balance')
-                            ->label('Новый баланс')
-                            ->numeric()
-                            ->required(),
-                        Textarea::make('comment')
-                            ->label('Комментарий (обязательно)')
-                            ->required(),
-                    ])
-                    ->action(function (Card $record, array $data) {
-                        $record->update(['balance' => $data['new_balance']]);
-                        Notification::make()
-                            ->title('Баланс карты обновлён вручную')
-                            ->body($data['comment'])
-                            ->warning()
-                            ->send();
-                    }),
+                // TODO: временно отключено по просьбе — ручная правка баланса карты.
+                // Action::make('adjustBalance')
+                //     ->label('Поправить баланс')
+                //     ->icon('heroicon-o-banknotes')
+                //     ->color('gray')
+                //     ->schema([
+                //         TextInput::make('new_balance')
+                //             ->label('Новый баланс')
+                //             ->numeric()
+                //             ->required(),
+                //         Textarea::make('comment')
+                //             ->label('Комментарий (обязательно)')
+                //             ->required(),
+                //     ])
+                //     ->action(function (Card $record, array $data) {
+                //         $record->update(['balance' => $data['new_balance']]);
+                //         Notification::make()
+                //             ->title('Баланс карты обновлён вручную')
+                //             ->body($data['comment'])
+                //             ->warning()
+                //             ->send();
+                //     }),
 
                 Action::make('requestProviderSync')
                     ->label('Запросить обновление у провайдера')

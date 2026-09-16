@@ -14,7 +14,8 @@ class CardInfolist
         return $schema
             ->components([
                 Section::make('Основное')
-                    ->columns(3)
+                    ->columnSpanFull()
+                    ->columns(6)
                     ->schema([
                         TextEntry::make('user.email')->label('Владелец'),
                         TextEntry::make('provider.name')->label('Провайдер'),
@@ -29,14 +30,16 @@ class CardInfolist
                         TextEntry::make('closed_at')->label('Дата закрытия')->dateTime('d.m.Y H:i')->placeholder('—'),
                     ]),
 
+                // TODO: временно реквизиты показываются в открытом виде без ограничения правами доступа —
+                // кнопка «Показать реквизиты» в ViewCard закомментирована, вернуть проверку
+                // права view_card_sensitive_data вместе с ней.
                 Section::make('Реквизиты')
-                    ->description('Полный номер, срок действия и код видны только по отдельному праву доступа. Используйте кнопку «Показать реквизиты» вверху страницы — она потребует указать причину просмотра.')
-                    ->visible(fn () => ! auth()->user()?->can('view_card_sensitive_data'))
+                    ->columnSpanFull()
+                    ->columns(3)
                     ->schema([
-                        TextEntry::make('placeholder')
-                            ->label('')
-                            ->state('Скрыто')
-                            ->color('gray'),
+                        TextEntry::make('card_number')->label('Номер карты')->placeholder('—'),
+                        TextEntry::make('expiry')->label('Срок действия')->placeholder('—'),
+                        TextEntry::make('cvv')->label('CVV')->placeholder('—'),
                     ]),
             ]);
     }

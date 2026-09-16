@@ -16,33 +16,34 @@ class ViewCard extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('revealSensitiveData')
-                ->label('Показать реквизиты')
-                ->icon('heroicon-o-eye')
-                ->color('gray')
-                ->visible(fn () => auth()->user()?->can('view_card_sensitive_data'))
-                ->schema([
-                    Textarea::make('reason')
-                        ->label('Причина просмотра реквизитов')
-                        ->required(),
-                ])
-                ->action(function (array $data) {
-                    $record = $this->getRecord();
-
-                    // TODO: когда будет подключён плагин журнала действий, здесь также нужно
-                    // зафиксировать факт просмотра реквизитов (кто, когда, по какой причине).
-                    Notification::make()
-                        ->title('Реквизиты карты')
-                        ->body(
-                            "Номер: {$record->card_number}\n".
-                            "Срок действия: {$record->expiry}\n".
-                            "CVV: {$record->cvv}\n\n".
-                            "Причина просмотра: {$data['reason']}"
-                        )
-                        ->persistent()
-                        ->warning()
-                        ->send();
-                }),
+            // TODO: временно отключено — реквизиты теперь показываются в открытом виде прямо на странице (см. CardInfolist).
+            // Action::make('revealSensitiveData')
+            //     ->label('Показать реквизиты')
+            //     ->icon('heroicon-o-eye')
+            //     ->color('gray')
+            //     ->visible(fn () => auth()->user()?->can('view_card_sensitive_data'))
+            //     ->schema([
+            //         Textarea::make('reason')
+            //             ->label('Причина просмотра реквизитов')
+            //             ->required(),
+            //     ])
+            //     ->action(function (array $data) {
+            //         $record = $this->getRecord();
+            //
+            //         // TODO: когда будет подключён плагин журнала действий, здесь также нужно
+            //         // зафиксировать факт просмотра реквизитов (кто, когда, по какой причине).
+            //         Notification::make()
+            //             ->title('Реквизиты карты')
+            //             ->body(
+            //                 "Номер: {$record->card_number}\n".
+            //                 "Срок действия: {$record->expiry}\n".
+            //                 "CVV: {$record->cvv}\n\n".
+            //                 "Причина просмотра: {$data['reason']}"
+            //             )
+            //             ->persistent()
+            //             ->warning()
+            //             ->send();
+            //     }),
             EditAction::make(),
         ];
     }
