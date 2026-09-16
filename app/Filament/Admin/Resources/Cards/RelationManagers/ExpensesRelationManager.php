@@ -33,10 +33,12 @@ class ExpensesRelationManager extends RelationManager
                     ->badge(),
                 TextColumn::make('amount')
                     ->label('Сумма')
-                    ->money(fn ($record) => $record->currency),
+                    ->numeric(2)
+                    ->prefix('₽'),
                 TextColumn::make('amount_usd')
                     ->label('Сумма в $')
-                    ->money('USD')
+                    ->numeric(2)
+                    ->prefix('$')
                     ->placeholder('—'),
                 TextColumn::make('date')
                     ->label('Дата')

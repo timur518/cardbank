@@ -26,7 +26,7 @@ class FinancialHealthWidget extends StatsOverviewWidget
 
     protected function getColumns(): int|array|null
     {
-        return 5;
+        return 3;
     }
 
     protected function getStats(): array
@@ -36,20 +36,20 @@ class FinancialHealthWidget extends StatsOverviewWidget
         $diff = $available - $owed;
 
         return [
-            Stat::make('Компания должна клиентам', number_format($owed, 2, ',', ' '))
-                ->description('Сумма остатков на всех активных и замороженных картах')
+            Stat::make('Должны клиентам', number_format($owed, 2, ',', ' '))
+                ->description('Остатки на картах клиентов')
                 ->descriptionIcon(Heroicon::OutlinedScale)
                 ->icon(Heroicon::OutlinedScale)
                 ->color('warning'),
 
-            Stat::make('У компании реально есть', $this->formatMoney($available, 'USD'))
-                ->description('Остаток резерва у всех провайдеров карт')
+            Stat::make('Есть у компании', $this->formatMoney($available, 'USD'))
+                ->description('Резерв у провайдеров')
                 ->descriptionIcon(Heroicon::OutlinedBuildingLibrary)
                 ->icon(Heroicon::OutlinedBuildingLibrary)
                 ->color('info'),
 
             Stat::make('Финансовое здоровье', number_format($diff, 2, ',', ' '))
-                ->description($diff < 0 ? 'Реальных денег меньше, чем компания должна клиентам' : 'Реальных денег хватает на все обязательства')
+                ->description($diff < 0 ? 'Не хватает денег на выплаты' : 'Обязательства покрыты')
                 ->descriptionIcon($diff < 0 ? Heroicon::OutlinedExclamationTriangle : Heroicon::OutlinedCheckCircle)
                 ->icon($diff < 0 ? Heroicon::OutlinedExclamationTriangle : Heroicon::OutlinedCheckCircle)
                 ->color($diff < 0 ? 'danger' : 'success'),

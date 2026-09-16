@@ -15,7 +15,6 @@ class Expense extends Model
         'date',
         'category',
         'amount',
-        'currency',
         'amount_usd',
         'card_id',
         'provider_id',

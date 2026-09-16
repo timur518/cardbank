@@ -69,7 +69,6 @@ class RefundsTable
                                 'date' => now(),
                                 'category' => ExpenseCategory::PaidRefund,
                                 'amount' => $record->amount,
-                                'currency' => $record->currency,
                                 'card_id' => $record->card_id,
                                 'comment' => "Платный возврат по заявке #{$record->id}",
                                 'created_by' => auth()->id(),

@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Resources\Expenses\Tables;
 
 use App\Enums\ExpenseCategory;
-use App\Models\Expense;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -28,11 +27,13 @@ class ExpensesTable
                     ->badge(),
                 TextColumn::make('amount')
                     ->label('Сумма')
-                    ->money(fn (Expense $record) => $record->currency)
+                    ->numeric(2)
+                    ->prefix('₽')
                     ->sortable(),
                 TextColumn::make('amount_usd')
                     ->label('Сумма в $')
-                    ->money('USD')
+                    ->numeric(2)
+                    ->prefix('$')
                     ->placeholder('—')
                     ->sortable(),
                 TextColumn::make('comment')

@@ -25,7 +25,7 @@ class ProfitStatsWidget extends StatsOverviewWidget
 
     protected function getColumns(): int|array|null
     {
-        return 5;
+        return 4;
     }
 
     protected function getStats(): array
@@ -59,7 +59,7 @@ class ProfitStatsWidget extends StatsOverviewWidget
         $profit = $income - $expense;
 
         return Stat::make('Валовая прибыль', $this->formatMoney($profit, 'USD'))
-            ->description('Всего, выпуск + пополнения')
+            ->description('Выпуск и пополнения')
             ->icon(Heroicon::OutlinedCurrencyDollar)
             ->color($profit >= 0 ? 'success' : 'danger');
     }
@@ -74,7 +74,7 @@ class ProfitStatsWidget extends StatsOverviewWidget
         $total = (float) Expense::sum('amount_usd');
 
         return Stat::make('Расходы', $this->formatMoney($total, 'USD'))
-            ->description('Всего')
+            ->description('За всё время')
             ->icon(Heroicon::OutlinedReceiptPercent)
             ->color('danger');
     }
@@ -103,8 +103,8 @@ class ProfitStatsWidget extends StatsOverviewWidget
 
         $accrued = $issueIncome * $issueRate + $topupIncome * $topupRate;
 
-        return Stat::make('Реферальные начисления', $this->formatMoney($accrued, 'USD'))
-            ->description('Всего')
+        return Stat::make('Начислено партнёрам', $this->formatMoney($accrued, 'USD'))
+            ->description('Оценка по ставкам')
             ->icon(Heroicon::OutlinedGift)
             ->color('warning');
     }
@@ -113,8 +113,8 @@ class ProfitStatsWidget extends StatsOverviewWidget
     {
         $reserve = (float) CardProvider::sum('reserve_balance_usd');
 
-        return Stat::make('Баланс на мастер-счетах', $this->formatMoney($reserve, 'USD'))
-            ->description('Всего')
+        return Stat::make('Резерв у провайдеров', $this->formatMoney($reserve, 'USD'))
+            ->description('По всем провайдерам')
             ->icon(Heroicon::OutlinedBuildingLibrary)
             ->color('success');
     }

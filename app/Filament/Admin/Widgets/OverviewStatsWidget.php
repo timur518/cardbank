@@ -23,7 +23,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
 
     protected function getColumns(): int|array|null
     {
-        return 5;
+        return 4;
     }
 
     protected function getStats(): array
@@ -31,7 +31,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
         return [
             $this->usersStat(),
             $this->activeCardsStat(),
-            $this->issuedCardsStat(),
+            // $this->issuedCardsStat(),
             $this->cardBalancesStat(),
             $this->paymentsStat(),
         ];
@@ -42,7 +42,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
         $total = User::query()->count();
 
         return Stat::make('Пользователи', number_format($total, 0, ',', ' '))
-            ->description('Всего')
+            ->description('Зарегистрировано')
             ->icon(Heroicon::OutlinedUsers)
             ->color('primary');
     }
@@ -52,7 +52,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
         $total = Card::where('status', CardStatus::Active)->count();
 
         return Stat::make('Активные карты', number_format($total, 0, ',', ' '))
-            ->description('Всего')
+            ->description('Сейчас активны')
             ->icon(Heroicon::OutlinedCreditCard)
             ->color('success');
     }
@@ -77,7 +77,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
             ->toArray();
 
         return Stat::make('Баланс на картах', $this->formatMoneyByCurrency($balancesByCurrency))
-            ->description('Всего')
+            ->description('На балансах клиентов')
             ->icon(Heroicon::OutlinedWallet)
             ->color('warning');
     }
@@ -93,8 +93,8 @@ class OverviewStatsWidget extends StatsOverviewWidget
             ->map(fn ($value) => (float) $value)
             ->toArray();
 
-        return Stat::make('Сумма платежей по картам', $this->formatMoneyByCurrency($totalByCurrency))
-            ->description('Всего всех платежей по картам')
+        return Stat::make('Оборот по картам', $this->formatMoneyByCurrency($totalByCurrency))
+            ->description('Выпуски и пополнения')
             ->icon(Heroicon::OutlinedBanknotes)
             ->color('primary');
     }

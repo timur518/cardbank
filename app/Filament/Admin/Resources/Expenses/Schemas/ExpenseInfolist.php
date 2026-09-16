@@ -2,7 +2,6 @@
 
 namespace App\Filament\Admin\Resources\Expenses\Schemas;
 
-use App\Models\Expense;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -21,8 +20,8 @@ class ExpenseInfolist
                         TextEntry::make('category')
                             ->label('Статья расходов')
                             ->badge(),
-                        TextEntry::make('amount')->label('Сумма')->money(fn (Expense $record) => $record->currency),
-                        TextEntry::make('amount_usd')->label('Сумма в $')->money('USD')->placeholder('—'),
+                        TextEntry::make('amount')->label('Сумма')->numeric(2)->prefix('₽'),
+                        TextEntry::make('amount_usd')->label('Сумма в $')->numeric(2)->prefix('$')->placeholder('—'),
                         TextEntry::make('card.masked_number')->label('Карта')->placeholder('—'),
                         TextEntry::make('provider.name')->label('Провайдер')->placeholder('—'),
                         TextEntry::make('comment')->label('Комментарий')->placeholder('—')->columnSpanFull(),
