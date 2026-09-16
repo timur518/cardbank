@@ -31,11 +31,36 @@ class ProfitStatsWidget extends StatsOverviewWidget
     protected function getStats(): array
     {
         return [
-            $this->grossProfitStat(),
+            $this->receiptsStat(),
             $this->expensesStat(),
-            $this->referralStat(),
+            $this->grossProfitStat(),
             $this->masterAccountsStat(),
+            // $this->referralStat(),
         ];
+    }
+
+    /**
+     * Сколько клиенты заплатили за выпуск и пополнения карт за всё время. Основное
+     * число — в долларах (amount_usd), так как именно в них считается прибыль; в описании —
+     * та же сумма в рублях, как её фактически заплатил клиент через СБП.
+     */
+    protected function receiptsStat(): Stat
+    {
+        $usdTotal = (float) Income::query()
+            ->whereIn('type', [IncomeType::CardIssue, IncomeType::CardTopup])
+            ->where('payment_status', IncomePaymentStatus::Paid)
+            ->sum('amount_usd');
+
+        $rubTotal = (float) Income::query()
+            ->whereIn('type', [IncomeType::CardIssue, IncomeType::CardTopup])
+            ->where('payment_status', IncomePaymentStatus::Paid)
+            ->where('currency', 'RUB')
+            ->sum('amount');
+
+        return Stat::make('Поступления', $this->formatMoney($usdTotal, 'USD'))
+            ->description($this->formatMoney($rubTotal, 'RUB'))
+            ->icon(Heroicon::OutlinedInboxArrowDown)
+            ->color('success');
     }
 
     /**
