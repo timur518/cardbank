@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'cardspro' => [
+        // Тайм-аут HTTP-запросов к API CardsPro, секунды. Учётные данные (api_base_url,
+        // api_key, api_secret, webhook_secret) хранятся не здесь, а в записи провайдера
+        // в разделе «Карты» → «Провайдеры карт», т.к. провайдеров может быть несколько.
+        'timeout' => (int) env('CARDSPRO_TIMEOUT', 20),
+    ],
+
 ];

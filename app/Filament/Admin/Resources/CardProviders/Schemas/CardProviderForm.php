@@ -43,16 +43,22 @@ class CardProviderForm
                     ->schema([
                         TextInput::make('api_base_url')
                             ->label('Адрес технического подключения')
+                            ->helperText('Только хост, например https://api.cardspro.com — путь /cards/v1 интеграция добавит сама.')
                             ->url()
                             ->columnSpanFull(),
                         TextInput::make('api_key')
-                            ->label('Технический ключ доступа')
+                            ->label('API Key (CAP-TOKEN)')
+                            ->password()
+                            ->revealable(),
+                        TextInput::make('api_secret')
+                            ->label('Secret Key (для подписи CAP-SIGN)')
                             ->password()
                             ->revealable(),
                         TextInput::make('webhook_secret')
-                            ->label('Секретный код проверки входящих сообщений')
+                            ->label('Токен для проверки входящих вебхуков')
                             ->password()
-                            ->revealable(),
+                            ->revealable()
+                            ->helperText('Подставляется в URL вебхука как ?token=... — CardsPro не подписывает колбэки, это наша дополнительная защита.'),
                     ]),
 
                 Section::make('Комиссии и стоимость выпуска')

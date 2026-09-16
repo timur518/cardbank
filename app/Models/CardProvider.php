@@ -19,6 +19,7 @@ class CardProvider extends Model
         'environment',
         'api_base_url',
         'api_key',
+        'api_secret',
         'webhook_secret',
         'issue_fee_tiers',
         'topup_fee_percent',
@@ -42,6 +43,7 @@ class CardProvider extends Model
 
     protected $hidden = [
         'api_key',
+        'api_secret',
         'webhook_secret',
     ];
 

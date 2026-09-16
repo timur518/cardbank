@@ -25,6 +25,8 @@ return new class extends Migration
             $table->string('provider_tx_id')->nullable();
             $table->timestamp('occurred_at');
             $table->timestamp('created_at')->nullable();
+            // Защита от дублей при повторной доставке вебхука CARD_TRANSACTION (NULL в provider_tx_id не участвует в уникальности).
+            $table->unique(['card_id', 'provider_tx_id']);
         });
     }
 
