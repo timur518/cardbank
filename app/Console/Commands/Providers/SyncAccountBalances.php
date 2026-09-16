@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Providers;
 
+use App\Console\Commands\Providers\Concerns\DescribesSyncErrors;
 use App\Enums\ActiveStatus;
 use App\Enums\DiscrepancyStatus;
 use App\Enums\DiscrepancyType;
@@ -23,6 +24,8 @@ use Throwable;
  */
 class SyncAccountBalances extends Command
 {
+    use DescribesSyncErrors;
+
     protected $signature = 'providers:sync-account-balances {--drop-threshold=20 : При просадке резерва на N% и больше заводить расхождение}';
 
     protected $description = 'Обновить остаток резерва провайдеров реальным балансом мастер-счёта из API';
@@ -38,7 +41,7 @@ class SyncAccountBalances extends Command
                 $balance = ProviderIntegrationResolver::for($provider)->fetchMasterBalanceUsd();
             } catch (Throwable $e) {
                 $failed++;
-                $this->warn("Провайдер «{$provider->name}»: {$e->getMessage()}");
+                $this->warn("Провайдер «{$provider->name}»: {$this->describeError($e)}");
 
                 continue;
             }

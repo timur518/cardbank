@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Providers;
 
+use App\Console\Commands\Providers\Concerns\DescribesSyncErrors;
 use App\Enums\ActiveStatus;
 use App\Enums\CardStatus;
 use App\Models\Card;
@@ -23,6 +24,8 @@ use Throwable;
  */
 class SyncCardBalances extends Command
 {
+    use DescribesSyncErrors;
+
     protected $signature = 'providers:sync-card-balances {--minutes=10 : Не проверять карты, обновлённые менее N минут назад}';
 
     protected $description = 'Обновить баланс и статус карт у всех активных провайдеров';
@@ -46,7 +49,7 @@ class SyncCardBalances extends Command
                             $snapshot = $integration->fetchCardSnapshot($card->provider_card_id);
                         } catch (Throwable $e) {
                             $failed++;
-                            $this->warn("Карта #{$card->id} ({$card->provider_card_id}): {$e->getMessage()}");
+                            $this->warn("Карта #{$card->id} ({$card->provider_card_id}): {$this->describeError($e)}");
 
                             continue;
                         }

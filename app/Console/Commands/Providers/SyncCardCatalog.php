@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Providers;
 
+use App\Console\Commands\Providers\Concerns\DescribesSyncErrors;
 use App\Enums\ActiveStatus;
 use App\Enums\DiscrepancyStatus;
 use App\Enums\DiscrepancyType;
@@ -28,6 +29,8 @@ use Throwable;
  */
 class SyncCardCatalog extends Command
 {
+    use DescribesSyncErrors;
+
     protected $signature = 'providers:sync-card-catalog';
 
     protected $description = 'Сверить каталог продуктов провайдеров с нашими «Карточными продуктами»';
@@ -42,7 +45,7 @@ class SyncCardCatalog extends Command
                 $catalog = ProviderIntegrationResolver::for($provider)->fetchProductCatalog();
             } catch (Throwable $e) {
                 $failed++;
-                $this->warn("Провайдер «{$provider->name}»: {$e->getMessage()}");
+                $this->warn("Провайдер «{$provider->name}»: {$this->describeError($e)}");
 
                 continue;
             }

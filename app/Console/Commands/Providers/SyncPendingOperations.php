@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Providers;
 
+use App\Console\Commands\Providers\Concerns\DescribesSyncErrors;
 use App\Enums\CardProviderOperationStatus;
 use App\Enums\DiscrepancyStatus;
 use App\Enums\DiscrepancyType;
@@ -25,6 +26,8 @@ use Throwable;
  */
 class SyncPendingOperations extends Command
 {
+    use DescribesSyncErrors;
+
     protected $signature = 'providers:sync-pending-operations {--stuck-minutes=30 : Через сколько минут без ответа провайдера заводить расхождение}';
 
     protected $description = 'Опросить статус незавершённых операций провайдера и применить результат, если вебхук потерялся';
@@ -45,7 +48,7 @@ class SyncPendingOperations extends Command
                 $result = ProviderIntegrationResolver::for($operation->provider)->fetchOperationStatus($operation->request_id);
             } catch (Throwable $e) {
                 $failed++;
-                $this->warn("Операция #{$operation->id} ({$operation->request_id}): {$e->getMessage()}");
+                $this->warn("Операция #{$operation->id} ({$operation->request_id}): {$this->describeError($e)}");
 
                 continue;
             }
