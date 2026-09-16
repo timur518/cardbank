@@ -42,6 +42,11 @@ class Expense extends Model
         return $this->belongsTo(CardProvider::class, 'provider_id');
     }
 
+    public function adPlacement(): BelongsTo
+    {
+        return $this->belongsTo(AdPlacement::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

@@ -27,6 +27,7 @@ class ExpenseForm
                         Select::make('category')
                             ->label('Статья расходов')
                             ->options(ExpenseCategory::class)
+                            ->live()
                             ->required(),
                         TextInput::make('amount')
                             ->label('Сумма')
@@ -46,6 +47,12 @@ class ExpenseForm
                             ->relationship('provider', 'name')
                             ->searchable()
                             ->preload(),
+                        Select::make('ad_placement_id')
+                            ->label('Рекламное размещение')
+                            ->relationship('adPlacement', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->visible(fn ($get) => $get('category') === ExpenseCategory::AdPlacement->value),
                         Textarea::make('comment')
                             ->label('Комментарий')
                             ->columnSpanFull(),
