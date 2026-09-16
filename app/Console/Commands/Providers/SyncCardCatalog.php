@@ -26,15 +26,19 @@ use Throwable;
  *   карт по нему перестанет работать.
  *
  * Без `--sync` ничего не создаёт и не меняет в самих «Карточных продуктах» автоматически —
- * цена и лимиты там задаются вручную и осознанно. С `--sync` на каждый новый продукт
- * провайдера дополнительно заводится {@see CardProduct} — неактивным (`active = false`),
- * с нулевой ценой/себестоимостью — чтобы осталось проставить цену, лимиты и включить вручную в админке.
+ * цена там задаётся вручную и осознанно. С `--sync`:
+ * - на каждый новый продукт провайдера заводится {@see CardProduct} — неактивным (`active = false`),
+ *   с нулевой ценой/себестоимостью (их API не отдаёт) — остаётся проставить цену и включить вручную;
+ * - у всех продуктов (и только что созданных, и уже существовавших) обновляются лимиты
+ *   выпуска/пополнения (`issue_min_amount`, `issue_max_amount`, `topup_min_amount`, `topup_max_amount`)
+ *   из `issueMinAmount`/`issueMaxAmount`/`topUpMinAmount`/`topUpMaxAmount` ответа провайдера —
+ *   это факты провайдера, а не решение админа, поэтому обновляются безусловно (в отличие от цены/себестоимости).
  */
 class SyncCardCatalog extends Command
 {
     use DescribesSyncErrors;
 
-    protected $signature = 'providers:sync-card-catalog {--sync : Автоматически создавать «Карточные продукты» для новых продуктов провайдера (неактивными, без цены)}';
+    protected $signature = 'providers:sync-card-catalog {--sync : Создавать «Карточные продукты» для новых кодов провайдера и обновлять лимиты выпуска/пополнения у всех продуктов}';
 
     protected $description = 'Сверить каталог продуктов провайдеров с нашими «Карточными продуктами»';
 
@@ -43,6 +47,7 @@ class SyncCardCatalog extends Command
         $sync = (bool) $this->option('sync');
         $flagged = 0;
         $created = 0;
+        $updated = 0;
         $failed = 0;
 
         foreach (CardProvider::where('status', ActiveStatus::Active)->get() as $provider) {
@@ -65,7 +70,7 @@ class SyncCardCatalog extends Command
                 $wasCreated = false;
 
                 if ($sync) {
-                    $this->createProductFromCatalog($provider, $catalogByCode[$newCode]);
+                    $this->syncProductFromCatalog($provider, $catalogByCode[$newCode]);
                     $wasCreated = true;
                     $created++;
                 }
@@ -87,6 +92,14 @@ class SyncCardCatalog extends Command
                 $flagged++;
             }
 
+            if ($sync) {
+                foreach (array_intersect($providerCodes, $allOurCodes) as $existingCode) {
+                    if ($this->syncProductFromCatalog($provider, $catalogByCode[$existingCode], updateOnly: true)) {
+                        $updated++;
+                    }
+                }
+            }
+
             foreach (array_diff($activeOurCodes, $providerCodes) as $missingCode) {
                 if ($this->hasOpenDiscrepancy($provider, DiscrepancyType::ProviderProductMissing, $missingCode)) {
                     continue;
@@ -104,7 +117,7 @@ class SyncCardCatalog extends Command
 
         $this->info(
             "Заведено расхождений: {$flagged}."
-            . ($sync ? " Создано «Карточных продуктов»: {$created}." : '')
+            . ($sync ? " Создано «Карточных продуктов»: {$created}. Обновлены лимиты у: {$updated}." : '')
             . ($failed > 0 ? " Ошибок: {$failed}." : '')
         );
 
@@ -112,23 +125,48 @@ class SyncCardCatalog extends Command
     }
 
     /**
-     * Создаёт неактивный «Карточный продукт» по данным из каталога провайдера.
-     * Цена (`price_rub`) и себестоимость (`provider_issue_cost_usd`) остаются 0 — их надо
-     * проставить вручную перед активацией.
+     * Создаёт неактивный «Карточный продукт» по данным из каталога провайдера, либо — если продукт с таким
+     * `provider_product_code` у этого провайдера уже есть — обновляет только его лимиты выпуска/пополнения,
+     * не трогая цену, активность и другие поля, которые задаются вручную. Цена (`price_rub`) и
+     * себестоимость (`provider_issue_cost_usd`) нового продукта остаются 0 — их надо проставить
+     * вручную перед активацией (их CardsPro не отдаёт).
      *
-     * @param  array{code: string, name: ?string, currency: ?string, raw: array<string, mixed>}  $catalogItem
+     * @param  array{code: string, name: ?string, currency: ?string, issue_min_amount: ?float, issue_max_amount: ?float, topup_min_amount: ?float, topup_max_amount: ?float, raw: array<string, mixed>}  $catalogItem
+     * @return bool обновились ли лимиты уже существующего продукта (игнорируется, если $updateOnly = false)
      */
-    protected function createProductFromCatalog(CardProvider $provider, array $catalogItem): CardProduct
+    protected function syncProductFromCatalog(CardProvider $provider, array $catalogItem, bool $updateOnly = false): bool
     {
-        return CardProduct::firstOrCreate(
-            ['provider_id' => $provider->id, 'provider_product_code' => $catalogItem['code']],
-            [
-                'key' => Str::slug("{$provider->code}-{$catalogItem['code']}"),
-                'name' => $catalogItem['name'] ?: "{$provider->name} {$catalogItem['code']}",
-                'currency' => $catalogItem['currency'] ?: 'USD',
-                'active' => false,
-            ]
-        );
+        $limits = [
+            'issue_min_amount' => $catalogItem['issue_min_amount'],
+            'issue_max_amount' => $catalogItem['issue_max_amount'],
+            'topup_min_amount' => $catalogItem['topup_min_amount'],
+            'topup_max_amount' => $catalogItem['topup_max_amount'],
+        ];
+
+        $product = CardProduct::where('provider_id', $provider->id)
+            ->where('provider_product_code', $catalogItem['code'])
+            ->first();
+
+        if ($product) {
+            $product->update($limits);
+
+            return true;
+        }
+
+        if ($updateOnly) {
+            return false;
+        }
+
+        CardProduct::create($limits + [
+            'provider_id' => $provider->id,
+            'provider_product_code' => $catalogItem['code'],
+            'key' => Str::slug("{$provider->code}-{$catalogItem['code']}"),
+            'name' => $catalogItem['name'] ?: "{$provider->name} {$catalogItem['code']}",
+            'currency' => $catalogItem['currency'] ?: 'USD',
+            'active' => false,
+        ]);
+
+        return false;
     }
 
     protected function hasOpenDiscrepancy(CardProvider $provider, DiscrepancyType $type, string $code): bool

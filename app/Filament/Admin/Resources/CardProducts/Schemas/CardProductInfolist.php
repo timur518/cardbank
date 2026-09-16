@@ -26,6 +26,14 @@ class CardProductInfolist
                         IconEntry::make('wallet_enabled')->label('Apple/Google Pay')->boolean(),
                         IconEntry::make('active')->label('Активен')->boolean(),
                     ]),
+                Section::make('Лимиты у провайдера')
+                    ->columns(4)
+                    ->schema([
+                        TextEntry::make('issue_min_amount')->label('Мин. сумма выпуска')->placeholder('—'),
+                        TextEntry::make('issue_max_amount')->label('Макс. сумма выпуска')->placeholder('—'),
+                        TextEntry::make('topup_min_amount')->label('Мин. сумма пополнения')->placeholder('—'),
+                        TextEntry::make('topup_max_amount')->label('Макс. сумма пополнения')->placeholder('—'),
+                    ]),
                 Section::make('Описание')
                     ->schema([
                         TextEntry::make('description')->label('')->placeholder('—')->columnSpanFull(),

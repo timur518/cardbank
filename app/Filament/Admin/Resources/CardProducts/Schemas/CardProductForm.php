@@ -65,6 +65,24 @@ class CardProductForm
                             ->prefix('₽'),
                     ]),
 
+                Section::make('Лимиты у провайдера')
+                    ->description('Подтягиваются из каталога провайдера командой providers:sync-card-catalog --sync')
+                    ->columns(4)
+                    ->schema([
+                        TextInput::make('issue_min_amount')
+                            ->label('Мин. сумма выпуска')
+                            ->numeric(),
+                        TextInput::make('issue_max_amount')
+                            ->label('Макс. сумма выпуска')
+                            ->numeric(),
+                        TextInput::make('topup_min_amount')
+                            ->label('Мин. сумма пополнения')
+                            ->numeric(),
+                        TextInput::make('topup_max_amount')
+                            ->label('Макс. сумма пополнения')
+                            ->numeric(),
+                    ]),
+
                 Section::make('Кошелёк')
                     ->columns(2)
                     ->schema([

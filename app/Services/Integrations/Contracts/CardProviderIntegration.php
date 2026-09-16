@@ -51,7 +51,7 @@ interface CardProviderIntegration
     /**
      * Каталог продуктов, которые провайдер сейчас готов выпускать.
      *
-     * @return array<int, array{code: string, name: ?string, currency: ?string, raw: array<string, mixed>}>
+     * @return array<int, array{code: string, name: ?string, currency: ?string, issue_min_amount: ?float, issue_max_amount: ?float, topup_min_amount: ?float, topup_max_amount: ?float, raw: array<string, mixed>}>
      */
     public function fetchProductCatalog(): array;
 

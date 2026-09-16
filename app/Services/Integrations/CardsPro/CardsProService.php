@@ -375,6 +375,10 @@ class CardsProService implements CardProviderIntegration
             'code' => (string) ($product['productCode'] ?? ''),
             'name' => $product['name'] ?? null,
             'currency' => $product['currency'] ?? null,
+            'issue_min_amount' => isset($product['issueMinAmount']) ? (float) $product['issueMinAmount'] : null,
+            'issue_max_amount' => isset($product['issueMaxAmount']) ? (float) $product['issueMaxAmount'] : null,
+            'topup_min_amount' => isset($product['topUpMinAmount']) ? (float) $product['topUpMinAmount'] : null,
+            'topup_max_amount' => isset($product['topUpMaxAmount']) ? (float) $product['topUpMaxAmount'] : null,
             'raw' => $product,
         ], $this->getCardProducts());
     }
