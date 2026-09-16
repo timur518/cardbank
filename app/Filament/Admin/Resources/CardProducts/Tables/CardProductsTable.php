@@ -42,15 +42,20 @@ class CardProductsTable
                     ->label('Валюта'),
                 TextColumn::make('limits')
                     ->label('Лимиты')
+                    // Сырое состояние должно быть непустым, иначе Filament считает ячейку пустой до
+                    // вызова formatStateUsing() (атрибута 'limits' в базе нет, настоящее значение считается ниже).
+                    ->state(fn (CardProduct $record) => (string) $record->getKey())
                     ->formatStateUsing(fn (CardProduct $record) => self::formatLimits($record))
                     ->html()
                     ->toggleable(),
                 TextColumn::make('costs')
                     ->label('Стоимости')
+                    ->state(fn (CardProduct $record) => (string) $record->getKey())
                     ->formatStateUsing(fn (CardProduct $record) => self::formatCosts($record))
                     ->html(),
                 TextColumn::make('wallets')
                     ->label('Apple/GooglePay')
+                    ->state(fn (CardProduct $record) => (string) $record->getKey())
                     ->formatStateUsing(fn (CardProduct $record) => self::formatWallets($record))
                     ->html(),
                 IconColumn::make('active')
