@@ -39,8 +39,8 @@ class ReferralSettings extends Page implements HasForms
         'referral_issue_rate',
         'referral_topup_rate',
         'referral_hold_days',
-        'referral_min_wallet_usd',
-        'referral_min_bank_usd',
+        'referral_min_wallet_rub',
+        'referral_min_bank_rub',
     ];
 
     public function mount(): void
@@ -64,12 +64,14 @@ class ReferralSettings extends Page implements HasForms
                         TextInput::make('referral_hold_days')
                             ->label('Сколько дней начисление ожидает перед выводом')
                             ->numeric(),
-                        TextInput::make('referral_min_wallet_usd')
-                            ->label('Минимальная сумма для вывода на внутренний счёт, $')
-                            ->numeric(),
-                        TextInput::make('referral_min_bank_usd')
-                            ->label('Минимальная сумма для вывода на банковскую карту, $')
-                            ->numeric(),
+                        TextInput::make('referral_min_wallet_rub')
+                            ->label('Минимальная сумма для вывода на внутренний счёт, ₽')
+                            ->numeric()
+                            ->prefix('₽'),
+                        TextInput::make('referral_min_bank_rub')
+                            ->label('Минимальная сумма для вывода на банковскую карту, ₽')
+                            ->numeric()
+                            ->prefix('₽'),
                     ]),
             ])
             ->statePath('data');

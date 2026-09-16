@@ -18,7 +18,6 @@ return new class extends Migration
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->decimal('cost_amount', 12, 2)->default(0);
-            $table->string('currency', 10)->default('RUB');
             $table->text('comment')->nullable();
             $table->string('utm_source')->nullable();
             $table->string('utm_medium')->nullable();

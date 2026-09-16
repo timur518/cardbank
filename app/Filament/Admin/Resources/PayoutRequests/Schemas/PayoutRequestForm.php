@@ -24,10 +24,10 @@ class PayoutRequestForm
                             ->searchable()
                             ->preload()
                             ->required(),
-                        TextInput::make('amount_usd')
-                            ->label('Сумма выплаты, $')
+                        TextInput::make('amount_rub')
+                            ->label('Сумма выплаты, ₽')
                             ->numeric()
-                            ->prefix('$')
+                            ->prefix('₽')
                             ->required(),
                         Select::make('destination')
                             ->label('Куда вывести')

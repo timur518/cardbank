@@ -2,7 +2,6 @@
 
 namespace App\Filament\Admin\Resources\AdPlacements\Schemas;
 
-use App\Models\AdPlacement;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -21,7 +20,7 @@ class AdPlacementInfolist
                         TextEntry::make('creator.name')->label('Кто добавил')->placeholder('—'),
                         TextEntry::make('start_date')->label('Начало показа')->date('d.m.Y')->placeholder('—'),
                         TextEntry::make('end_date')->label('Окончание показа')->date('d.m.Y')->placeholder('—'),
-                        TextEntry::make('cost_amount')->label('Стоимость размещения')->money(fn (AdPlacement $record) => $record->currency),
+                        TextEntry::make('cost_amount')->label('Стоимость размещения')->money('RUB'),
                         TextEntry::make('tracking_link')->label('Рекламная ссылка')->copyable()->columnSpanFull(),
                         TextEntry::make('comment')->label('Комментарий')->placeholder('—')->columnSpanFull(),
                     ]),
@@ -32,7 +31,7 @@ class AdPlacementInfolist
                         TextEntry::make('clicks_count')->label('Переходов по ссылке'),
                         TextEntry::make('registrations_count')->label('Регистраций'),
                         TextEntry::make('paid_issuances_count')->label('Оплаченных выпусков карт'),
-                        TextEntry::make('revenue_amount')->label('Заработано')->money(fn (AdPlacement $record) => $record->currency),
+                        TextEntry::make('revenue_amount')->label('Заработано')->money('RUB'),
                         TextEntry::make('roi_label')->label('Окупаемость'),
                     ]),
             ]);

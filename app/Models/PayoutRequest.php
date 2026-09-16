@@ -16,7 +16,7 @@ class PayoutRequest extends Model
 
     protected $fillable = [
         'partner_id',
-        'amount_usd',
+        'amount_rub',
         'destination',
         'bank_card_number',
         'bank_card_holder',
@@ -31,7 +31,7 @@ class PayoutRequest extends Model
         return [
             'destination' => PayoutDestination::class,
             'status' => PayoutRequestStatus::class,
-            'amount_usd' => 'decimal:2',
+            'amount_rub' => 'decimal:2',
             'resolved_at' => 'datetime',
         ];
     }

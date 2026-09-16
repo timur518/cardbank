@@ -28,9 +28,9 @@ class PayoutRequestsTable
             ->columns([
                 TextColumn::make('id')->label('ID')->sortable(),
                 TextColumn::make('partner.user.email')->label('Партнёр'),
-                TextColumn::make('amount_usd')
+                TextColumn::make('amount_rub')
                     ->label('Сумма')
-                    ->money('USD')
+                    ->money('RUB')
                     ->sortable(),
                 TextColumn::make('destination')
                     ->label('Куда вывести')

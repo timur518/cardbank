@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('payout_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('partner_id')->constrained()->cascadeOnDelete();
-            $table->decimal('amount_usd', 12, 2);
+            $table->decimal('amount_rub', 12, 2);
             $table->string('destination'); // wallet, bank_card
             $table->string('bank_card_number')->nullable();
             $table->string('bank_card_holder')->nullable();

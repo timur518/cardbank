@@ -35,7 +35,7 @@ class AdPlacementsTable
                     ->searchable(),
                 TextColumn::make('cost_amount')
                     ->label('Стоимость')
-                    ->money(fn (AdPlacement $record) => $record->currency)
+                    ->money('RUB')
                     ->sortable(),
                 TextColumn::make('clicks_count')
                     ->label('Переходов')
@@ -45,7 +45,7 @@ class AdPlacementsTable
                     ->sortable(),
                 TextColumn::make('revenue_amount')
                     ->label('Заработано')
-                    ->money(fn (AdPlacement $record) => $record->currency)
+                    ->money('RUB')
                     ->sortable(),
                 TextColumn::make('roi_label')
                     ->label('Окупаемость')

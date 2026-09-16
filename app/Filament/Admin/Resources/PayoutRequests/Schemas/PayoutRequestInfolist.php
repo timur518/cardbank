@@ -17,7 +17,7 @@ class PayoutRequestInfolist
                     ->schema([
                         TextEntry::make('id')->label('ID'),
                         TextEntry::make('partner.user.email')->label('Партнёр'),
-                        TextEntry::make('amount_usd')->label('Сумма')->money('USD'),
+                        TextEntry::make('amount_rub')->label('Сумма')->money('RUB'),
                         TextEntry::make('destination')->label('Куда вывести')->badge(),
                         TextEntry::make('bank_name')->label('Банк')->placeholder('—'),
                         TextEntry::make('bank_card_number')->label('Номер карты')->placeholder('—'),

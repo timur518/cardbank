@@ -34,14 +34,10 @@ class AdPlacementForm
                             ->native(false)
                             ->displayFormat('d.m.Y'),
                         TextInput::make('cost_amount')
-                            ->label('Стоимость размещения')
+                            ->label('Стоимость размещения, ₽')
                             ->numeric()
+                            ->prefix('₽')
                             ->required(),
-                        TextInput::make('currency')
-                            ->label('Валюта')
-                            ->required()
-                            ->default('RUB')
-                            ->maxLength(10),
                         Textarea::make('comment')
                             ->label('Комментарий / описание рекламного материала')
                             ->columnSpanFull(),

@@ -17,7 +17,6 @@ class AdPlacement extends Model
         'start_date',
         'end_date',
         'cost_amount',
-        'currency',
         'comment',
         'utm_source',
         'utm_medium',
