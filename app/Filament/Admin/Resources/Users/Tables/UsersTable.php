@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Users\Tables;
 
 use App\Enums\DecisionStatus;
+use App\Enums\IncomePaymentStatus;
 use App\Enums\KycStatus;
 use App\Enums\KycVerificationType;
 use App\Enums\RiskFlagType;
@@ -48,13 +49,11 @@ class UsersTable
                     ->sortable(query: fn ($query, string $direction) => $query->orderBy('created_at', $direction)),
                 TextColumn::make('cards_count')
                     ->label('Карты')
-                    ->state(fn () => 0)
-                    // TODO: подключить реальное количество карт, когда появится модуль «Карты».
+                    ->state(fn (User $record) => $record->cards()->count())
                     ->alignCenter(),
                 TextColumn::make('total_operations_sum')
                     ->label('Сумма операций')
-                    ->state(fn () => '—')
-                    // TODO: подключить реальную сумму операций, когда появится модуль «Финансы».
+                    ->state(fn (User $record) => self::formatOperationsSum($record))
                     ->alignEnd(),
                 TextColumn::make('kyc_status')
                     ->label('KYC')
@@ -161,5 +160,26 @@ class UsersTable
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    /**
+     * Сумма оплаченных операций пользователя (выпуск карт, пополнения и т.д.),
+     * отдельно по каждой валюте, в которой у него были операции.
+     */
+    protected static function formatOperationsSum(User $record): string
+    {
+        $sumsByCurrency = $record->incomes()
+            ->where('payment_status', IncomePaymentStatus::Paid)
+            ->selectRaw('currency, sum(amount) as total')
+            ->groupBy('currency')
+            ->pluck('total', 'currency');
+
+        if ($sumsByCurrency->isEmpty()) {
+            return '—';
+        }
+
+        return $sumsByCurrency
+            ->map(fn ($amount, $currency) => number_format((float) $amount, 2, ',', ' ') . ' ' . $currency)
+            ->implode(' · ');
     }
 }

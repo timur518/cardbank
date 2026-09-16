@@ -11,6 +11,7 @@ use App\Models\CardProvider;
 use App\Models\ProviderDiscrepancy;
 use App\Services\Integrations\ProviderIntegrationResolver;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -24,20 +25,24 @@ use Throwable;
  *   провайдера (`provider_product_missing`) — это может означать, что выпуск новых
  *   карт по нему перестанет работать.
  *
- * Ничего не создаёт и не меняет в самих «Карточных продуктах» автоматически — цена и
- * лимиты там задаются вручную и осознанно.
+ * Без `--sync` ничего не создаёт и не меняет в самих «Карточных продуктах» автоматически —
+ * цена и лимиты там задаются вручную и осознанно. С `--sync` на каждый новый продукт
+ * провайдера дополнительно заводится {@see CardProduct} — неактивным (`active = false`),
+ * с нулевой ценой/себестоимостью — чтобы осталось проставить цену, лимиты и включить вручную в админке.
  */
 class SyncCardCatalog extends Command
 {
     use DescribesSyncErrors;
 
-    protected $signature = 'providers:sync-card-catalog';
+    protected $signature = 'providers:sync-card-catalog {--sync : Автоматически создавать «Карточные продукты» для новых продуктов провайдера (неактивными, без цены)}';
 
     protected $description = 'Сверить каталог продуктов провайдеров с нашими «Карточными продуктами»';
 
     public function handle(): int
     {
+        $sync = (bool) $this->option('sync');
         $flagged = 0;
+        $created = 0;
         $failed = 0;
 
         foreach (CardProvider::where('status', ActiveStatus::Active)->get() as $provider) {
@@ -50,20 +55,33 @@ class SyncCardCatalog extends Command
                 continue;
             }
 
-            $providerCodes = collect($catalog)->pluck('code')->filter()->all();
+            $catalogByCode = collect($catalog)->filter(fn (array $item) => $item['code'] !== '')->keyBy('code');
+            $providerCodes = $catalogByCode->keys()->all();
 
             $allOurCodes = CardProduct::where('provider_id', $provider->id)->pluck('provider_product_code')->filter()->all();
             $activeOurCodes = CardProduct::where('provider_id', $provider->id)->where('active', true)->pluck('provider_product_code')->filter()->all();
 
             foreach (array_diff($providerCodes, $allOurCodes) as $newCode) {
+                $wasCreated = false;
+
+                if ($sync) {
+                    $this->createProductFromCatalog($provider, $catalogByCode[$newCode]);
+                    $wasCreated = true;
+                    $created++;
+                }
+
                 if ($this->hasOpenDiscrepancy($provider, DiscrepancyType::NewProviderProduct, $newCode)) {
                     continue;
                 }
 
+                $note = $wasCreated
+                    ? "У провайдера «{$provider->name}» появился новый продукт «{$newCode}» — автоматически создан «Карточный продукт» (неактивен, нужно проставить цену и активировать)."
+                    : "У провайдера «{$provider->name}» появился продукт «{$newCode}», которого нет в «Карточных продуктах».";
+
                 ProviderDiscrepancy::create([
                     'provider_id' => $provider->id,
                     'type' => DiscrepancyType::NewProviderProduct,
-                    'note' => "У провайдера «{$provider->name}» появился продукт «{$newCode}», которого нет в «Карточных продуктах».",
+                    'note' => $note,
                     'status' => DiscrepancyStatus::Open,
                 ]);
                 $flagged++;
@@ -84,9 +102,33 @@ class SyncCardCatalog extends Command
             }
         }
 
-        $this->info("Заведено расхождений: {$flagged}." . ($failed > 0 ? " Ошибок: {$failed}." : ''));
+        $this->info(
+            "Заведено расхождений: {$flagged}."
+            . ($sync ? " Создано «Карточных продуктов»: {$created}." : '')
+            . ($failed > 0 ? " Ошибок: {$failed}." : '')
+        );
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Создаёт неактивный «Карточный продукт» по данным из каталога провайдера.
+     * Цена (`price_rub`) и себестоимость (`provider_issue_cost_usd`) остаются 0 — их надо
+     * проставить вручную перед активацией.
+     *
+     * @param  array{code: string, name: ?string, currency: ?string, raw: array<string, mixed>}  $catalogItem
+     */
+    protected function createProductFromCatalog(CardProvider $provider, array $catalogItem): CardProduct
+    {
+        return CardProduct::firstOrCreate(
+            ['provider_id' => $provider->id, 'provider_product_code' => $catalogItem['code']],
+            [
+                'key' => Str::slug("{$provider->code}-{$catalogItem['code']}"),
+                'name' => $catalogItem['name'] ?: "{$provider->name} {$catalogItem['code']}",
+                'currency' => $catalogItem['currency'] ?: 'USD',
+                'active' => false,
+            ]
+        );
     }
 
     protected function hasOpenDiscrepancy(CardProvider $provider, DiscrepancyType $type, string $code): bool

@@ -25,7 +25,7 @@ class CardTransactionInfolist
                     ->placeholder('—')
                     ->helperText('Реальная стоимость операции для компании.'),
                 TextEntry::make('commission_amount')
-                    ->label('Наша комиссия')
+                    ->label('Комиссия')
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->placeholder('—')
                     ->helperText('Снэпшот для подсчёта прибыли с операции.'),

@@ -38,7 +38,7 @@ class CardTransactionsTable
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('commission_amount')
-                    ->label('Наша комиссия')
+                    ->label('Комиссия')
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->placeholder('—')
                     ->sortable()

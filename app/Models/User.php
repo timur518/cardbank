@@ -83,6 +83,16 @@ class User extends Authenticatable
         return $this->hasMany(OperatorNote::class);
     }
 
+    public function cards(): HasMany
+    {
+        return $this->hasMany(Card::class);
+    }
+
+    public function incomes(): HasMany
+    {
+        return $this->hasMany(Income::class);
+    }
+
     /**
      * Является ли пользователь сотрудником (есть хотя бы одна роль).
      */

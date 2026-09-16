@@ -41,7 +41,7 @@ class TransactionsRelationManager extends RelationManager
                     ->placeholder('—')
                     ->toggleable(),
                 TextColumn::make('commission_amount')
-                    ->label('Наша комиссия')
+                    ->label('Комиссия')
                     ->money(fn ($record) => $record->currency)
                     ->placeholder('—')
                     ->toggleable(),
