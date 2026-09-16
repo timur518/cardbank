@@ -71,4 +71,9 @@ class CardProvider extends Model
     {
         return $this->hasMany(ProviderDiscrepancy::class, 'provider_id');
     }
+
+    public function operations(): HasMany
+    {
+        return $this->hasMany(CardProviderOperation::class, 'provider_id');
+    }
 }

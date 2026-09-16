@@ -2,14 +2,17 @@
 
 namespace App\Services\Integrations\CardsPro;
 
+use App\Enums\CardProviderOperationType;
 use App\Enums\CardsProCallbackType;
 use App\Enums\CardStatus;
 use App\Enums\CardTransactionStatus;
 use App\Enums\CardTransactionType;
 use App\Models\Card;
 use App\Models\CardProvider;
+use App\Models\CardProviderOperation;
 use App\Models\CardStatusHistory;
 use App\Models\CardTransaction;
+use App\Services\CardProviderOperationResolver;
 
 /**
  * Применяет к нашим моделям изменения из вебхуков CardsPro — но только там, где в
@@ -18,9 +21,11 @@ use App\Models\CardTransaction;
  * контроллером до вызова этого класса — так что необработанные события не теряются,
  * их всегда можно разобрать вручную.
  *
- * Известное ограничение: колбэк CARD_ISSUE не содержит user_id/card_product_id,
- * поэтому создать карту по одному этому событию нельзя — событие только логируется.
- * Подробности — в docs/integrations/cardspro.md, раздел «Вебхуки».
+ * `CARD_ISSUE` обрабатывается, только если в `card_provider_operations` есть запись
+ * с таким `request_id` (её должна создавать та часть админки, которая инициирует
+ * выпуск через `issueCard()`) — именно там хранится будущий владелец и карточный
+ * продукт, которых нет в самом колбэке. Без такой записи событие по-прежнему
+ * только логируется. Подробности — в docs/integrations/cardspro.md, раздел «Вебхуки».
  */
 class CardsProWebhookHandler
 {
@@ -40,10 +45,44 @@ class CardsProWebhookHandler
             CardsProCallbackType::CardFreeze => $this->handleStatusChange($payload, CardStatus::Frozen, 'Карта заморожена по данным CardsPro (CARD_FREEZE)'),
             CardsProCallbackType::CardUnfreeze => $this->handleStatusChange($payload, CardStatus::Active, 'Карта разморожена по данным CardsPro (CARD_UNFREEZE)'),
             CardsProCallbackType::CardTransaction => $this->handleTransaction($payload),
-            // CARD_ISSUE, EXTRA_FEE_CARD, EXTRA_FEE_CAP, OTP_CODE, KYC_CHANGE:
+            CardsProCallbackType::CardIssue => $this->handleIssue($payload),
+            // EXTRA_FEE_CARD, EXTRA_FEE_CAP, OTP_CODE, KYC_CHANGE:
             // осознанно не обрабатываются автоматически — см. docblock класса.
             default => null,
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    protected function handleIssue(array $payload): void
+    {
+        $requestId = (string) ($payload['request_id'] ?? '');
+
+        if ($requestId === '') {
+            return;
+        }
+
+        $operation = CardProviderOperation::where('provider_id', $this->provider->id)
+            ->where('request_id', $requestId)
+            ->where('type', CardProviderOperationType::Issue)
+            ->first();
+
+        if (! $operation) {
+            return;
+        }
+
+        $outcome = match ((string) ($payload['status'] ?? '')) {
+            'EXECUTED' => 'completed',
+            'DECLINED' => 'failed',
+            default => null,
+        };
+
+        if ($outcome === null) {
+            return;
+        }
+
+        app(CardProviderOperationResolver::class)->resolve($operation, $outcome, $payload);
     }
 
     protected function findCard(string $san): ?Card

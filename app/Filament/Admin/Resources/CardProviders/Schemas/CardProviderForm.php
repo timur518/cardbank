@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\CardProviders\Schemas;
 
 use App\Enums\ActiveStatus;
 use App\Enums\ProviderEnvironment;
+use App\Models\CardProvider;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -78,7 +79,12 @@ class CardProviderForm
                             ->label('Текущий остаток резерва, $')
                             ->numeric()
                             ->required()
-                            ->prefix('$'),
+                            ->prefix('$')
+                            ->disabled(fn (?CardProvider $record) => $record !== null)
+                            ->dehydrated(fn (?CardProvider $record) => $record === null)
+                            ->helperText(fn (?CardProvider $record) => $record !== null
+                                ? 'Обновляется автоматически из реального баланса мастер-счёта (providers:sync-account-balances), вручную здесь уже не поменять.'
+                                : 'Начальное значение — дальше будет обновляться автоматически.'),
                         Repeater::make('issue_fee_tiers')
                             ->label('Уровни стоимости выпуска карты')
                             ->schema([

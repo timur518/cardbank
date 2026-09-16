@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands;
 
-use App\Enums\CardStatus;
 use App\Models\Card;
 use App\Models\CardProduct;
 use App\Models\CardProvider;
@@ -223,12 +222,12 @@ class CardsProListCards extends Command
                 'provider_id' => $provider->id,
                 'provider_card_id' => $san,
                 'card_number' => $details['cardNumber'] ?? $card['pan'] ?? null,
-                'expiry' => $this->formatExpiry($details),
+                'expiry' => CardsProService::formatExpiry($details),
                 'currency' => $details['currency'] ?? $card['currency'] ?? $product->currency,
                 'balance' => $details['balance'] ?? 0,
                 'price_rub' => $product->price_rub,
                 'issue_cost_usd' => $product->provider_issue_cost_usd,
-                'status' => $this->mapStatus((string) ($details['status'] ?? '')),
+                'status' => CardsProService::mapCardStatus((string) ($details['status'] ?? '')),
                 'issued_at' => $details['created'] ?? $card['created'] ?? now(),
             ]);
 
@@ -252,31 +251,6 @@ class CardsProListCards extends Command
         }
 
         return self::SUCCESS;
-    }
-
-    protected function mapStatus(string $cardsProStatus): CardStatus
-    {
-        return match ($cardsProStatus) {
-            'active' => CardStatus::Active,
-            'frozen' => CardStatus::Frozen,
-            'blocking', 'blocked', 'expired' => CardStatus::Closed,
-            default => CardStatus::Pending,
-        };
-    }
-
-    /**
-     * @param  array<string, mixed>  $details
-     */
-    protected function formatExpiry(array $details): ?string
-    {
-        $month = $details['expMonth'] ?? null;
-        $year = $details['expYear'] ?? null;
-
-        if (! $month || ! $year) {
-            return null;
-        }
-
-        return sprintf('%02d/%s', $month, substr((string) $year, -2));
     }
 
     /**

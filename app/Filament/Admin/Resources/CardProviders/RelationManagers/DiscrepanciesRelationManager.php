@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\CardProviders\RelationManagers;
 
 use App\Enums\DiscrepancyStatus;
+use App\Enums\DiscrepancyType;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -34,7 +35,12 @@ class DiscrepanciesRelationManager extends RelationManager
             ->emptyStateIcon('heroicon-o-exclamation-triangle')
             ->columns([
                 TextColumn::make('type')
-                    ->label('Тип расхождения'),
+                    ->label('Тип расхождения')
+                    ->badge(),
+                TextColumn::make('note')
+                    ->label('Подробности')
+                    ->wrap()
+                    ->placeholder('—'),
                 TextColumn::make('expected_amount')
                     ->label('Ожидаемая сумма')
                     ->money('USD')
@@ -57,6 +63,9 @@ class DiscrepanciesRelationManager extends RelationManager
                 SelectFilter::make('status')
                     ->label('Статус')
                     ->options(DiscrepancyStatus::class),
+                SelectFilter::make('type')
+                    ->label('Тип')
+                    ->options(DiscrepancyType::class),
             ])
             ->recordActions([
                 Action::make('resolve')

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\DiscrepancyStatus;
+use App\Enums\DiscrepancyType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ class ProviderDiscrepancy extends Model
     protected $fillable = [
         'provider_id',
         'type',
+        'note',
         'expected_amount',
         'actual_amount',
         'card_id',
@@ -24,6 +26,7 @@ class ProviderDiscrepancy extends Model
     protected function casts(): array
     {
         return [
+            'type' => DiscrepancyType::class,
             'status' => DiscrepancyStatus::class,
             'expected_amount' => 'decimal:2',
             'actual_amount' => 'decimal:2',
