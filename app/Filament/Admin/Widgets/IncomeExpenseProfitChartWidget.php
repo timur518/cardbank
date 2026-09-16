@@ -14,9 +14,9 @@ use Illuminate\Support\Collection;
 /**
  * «Доходы, расходы и прибыль» — сколько заработали (отдельно по выпуску карт и по
  * пополнениям), сколько заплатили провайдерам карт, сколько ушло на общие расходы
- * бизнеса, и итоговая прибыль. Суммы по всем валютам складываются по номиналу без
- * учёта курса — как и оценка прибыли с одного выпуска в карточных продуктах
- * (см. CardProduct::getEstimatedProfitAttribute).
+ * бизнеса, и итоговая прибыль. Всё считается только в долларах (поле «amount_usd»
+ * у поступлений и расходов), так как клиенты платят в рублях через СБП, а провайдеру
+ * карт мы платим в долларах. Записи без заполненного amount_usd в график не попадают.
  */
 class IncomeExpenseProfitChartWidget extends ChartWidget
 {
@@ -136,11 +136,11 @@ class IncomeExpenseProfitChartWidget extends ChartWidget
             ->where('type', $type)
             ->where('payment_status', IncomePaymentStatus::Paid)
             ->whereBetween('created_at', [$rangeStart, $rangeEnd])
-            ->get(['amount', 'created_at']);
+            ->get(['amount_usd', 'created_at']);
 
         return $periods->map(fn ($range) => (float) $rows
             ->filter(fn ($row) => $row->created_at->between($range[0], $range[1]))
-            ->sum('amount'));
+            ->sum('amount_usd'));
     }
 
     /**
@@ -163,10 +163,10 @@ class IncomeExpenseProfitChartWidget extends ChartWidget
             $query->whereNotIn('category', $except);
         }
 
-        $rows = $query->get(['amount', 'date']);
+        $rows = $query->get(['amount_usd', 'date']);
 
         return $periods->map(fn ($range) => (float) $rows
             ->filter(fn ($row) => $row->date->between($range[0], $range[1]))
-            ->sum('amount'));
+            ->sum('amount_usd'));
     }
 }

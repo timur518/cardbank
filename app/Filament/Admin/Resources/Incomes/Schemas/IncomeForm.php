@@ -31,6 +31,10 @@ class IncomeForm
                             ->label('Валюта')
                             ->required()
                             ->maxLength(10),
+                        TextInput::make('amount_usd')
+                            ->label('Сумма в $')
+                            ->helperText('Сколько реально получила компания после конвертации платёжной системой — используется для расчёта прибыли.')
+                            ->numeric(),
                         Select::make('user_id')
                             ->label('Пользователь')
                             ->relationship('user', 'email')

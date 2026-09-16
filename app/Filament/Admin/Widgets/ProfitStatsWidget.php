@@ -40,38 +40,40 @@ class ProfitStatsWidget extends StatsOverviewWidget
 
     /**
      * Доход минус связанные расходы провайдерам по операциям выпуска и пополнения, за
-     * всё время, одним числом. Суммы по всем валютам складываются по номиналу
-     * без учёта курса — как и в других виджетах главной страницы.
+     * всё время, одним числом. Считается только в долларах (поле «amount_usd»): клиенты
+     * платят в рублях через СБП, но платёжная система конвертирует их в доллары, а провайдеру
+     * карт мы платим тоже в долларах — так наценка считается в единой валюте без искажений от
+     * курса. Записи без заполненного amount_usd в расчёт не попадают.
      */
     protected function grossProfitStat(): Stat
     {
         $income = (float) Income::query()
             ->whereIn('type', [IncomeType::CardIssue, IncomeType::CardTopup])
             ->where('payment_status', IncomePaymentStatus::Paid)
-            ->sum('amount');
+            ->sum('amount_usd');
 
         $expense = (float) Expense::query()
             ->whereIn('category', [ExpenseCategory::CardIssue, ExpenseCategory::CardTopup])
-            ->sum('amount');
+            ->sum('amount_usd');
 
         $profit = $income - $expense;
 
-        return Stat::make('Валовая прибыль', number_format($profit, 2, ',', ' '))
-            ->description('Всего')
+        return Stat::make('Валовая прибыль', $this->formatMoney($profit, 'USD'))
+            ->description('Всего, выпуск + пополнения')
             ->icon(Heroicon::OutlinedCurrencyDollar)
             ->color($profit >= 0 ? 'success' : 'danger');
     }
 
+    /**
+     * Все расходы компании за всё время в долларовом эквиваленте — и выплаты провайдерам
+     * (уже в $), и общие расходы бизнеса в рублях (зарплаты, реклама и т.д.) по их
+     * долларовому эквиваленту из поля amount_usd.
+     */
     protected function expensesStat(): Stat
     {
-        $byCurrency = Expense::query()
-            ->selectRaw('currency, sum(amount) as total')
-            ->groupBy('currency')
-            ->pluck('total', 'currency')
-            ->map(fn ($value) => (float) $value)
-            ->toArray();
+        $total = (float) Expense::sum('amount_usd');
 
-        return Stat::make('Расходы', $this->formatMoneyByCurrency($byCurrency))
+        return Stat::make('Расходы', $this->formatMoney($total, 'USD'))
             ->description('Всего')
             ->icon(Heroicon::OutlinedReceiptPercent)
             ->color('danger');
@@ -92,12 +94,12 @@ class ProfitStatsWidget extends StatsOverviewWidget
         $issueIncome = (float) Income::where('type', IncomeType::CardIssue)
             ->where('payment_status', IncomePaymentStatus::Paid)
             ->whereIn('user_id', $referredUserIds)
-            ->sum('amount');
+            ->sum('amount_usd');
 
         $topupIncome = (float) Income::where('type', IncomeType::CardTopup)
             ->where('payment_status', IncomePaymentStatus::Paid)
             ->whereIn('user_id', $referredUserIds)
-            ->sum('amount');
+            ->sum('amount_usd');
 
         $accrued = $issueIncome * $issueRate + $topupIncome * $topupRate;
 

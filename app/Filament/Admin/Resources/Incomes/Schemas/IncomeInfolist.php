@@ -20,6 +20,7 @@ class IncomeInfolist
                         TextEntry::make('created_at')->label('Дата')->dateTime('d.m.Y H:i'),
                         TextEntry::make('type')->label('Тип поступления')->badge(),
                         TextEntry::make('amount')->label('Сумма')->money(fn (Income $record) => $record->currency),
+                        TextEntry::make('amount_usd')->label('Сумма в $')->money('USD')->placeholder('—'),
                         TextEntry::make('payment_status')->label('Статус платежа')->badge(),
                         TextEntry::make('payment_transaction_id')->label('ID транзакции')->placeholder('—'),
                         TextEntry::make('user.email')->label('Пользователь')->placeholder('—'),

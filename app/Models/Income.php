@@ -18,6 +18,7 @@ class Income extends Model
         'type',
         'amount',
         'currency',
+        'amount_usd',
         'card_id',
         'user_id',
         'card_transaction_id',
@@ -34,6 +35,7 @@ class Income extends Model
             'type' => IncomeType::class,
             'payment_status' => IncomePaymentStatus::class,
             'amount' => 'decimal:2',
+            'amount_usd' => 'decimal:2',
         ];
     }
 

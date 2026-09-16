@@ -30,6 +30,11 @@ class ExpensesTable
                     ->label('Сумма')
                     ->money(fn (Expense $record) => $record->currency)
                     ->sortable(),
+                TextColumn::make('amount_usd')
+                    ->label('Сумма в $')
+                    ->money('USD')
+                    ->placeholder('—')
+                    ->sortable(),
                 TextColumn::make('comment')
                     ->label('Комментарий')
                     ->limit(40)

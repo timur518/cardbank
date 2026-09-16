@@ -37,6 +37,10 @@ class ExpenseForm
                             ->label('Валюта')
                             ->required()
                             ->maxLength(10),
+                        TextInput::make('amount_usd')
+                            ->label('Сумма в $')
+                            ->helperText('Долларовый эквивалент расхода на момент операции — используется для расчёта прибыли.')
+                            ->numeric(),
                         Select::make('card_id')
                             ->label('Карта')
                             ->relationship('card', 'id')

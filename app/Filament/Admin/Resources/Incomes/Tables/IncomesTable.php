@@ -30,6 +30,11 @@ class IncomesTable
                     ->label('Сумма')
                     ->money(fn (Income $record) => $record->currency)
                     ->sortable(),
+                TextColumn::make('amount_usd')
+                    ->label('Сумма в $')
+                    ->money('USD')
+                    ->placeholder('—')
+                    ->sortable(),
                 TextColumn::make('payment_status')
                     ->label('Статус платежа')
                     ->badge(),

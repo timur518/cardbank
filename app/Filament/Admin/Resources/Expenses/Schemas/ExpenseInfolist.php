@@ -22,6 +22,7 @@ class ExpenseInfolist
                             ->label('Статья расходов')
                             ->badge(),
                         TextEntry::make('amount')->label('Сумма')->money(fn (Expense $record) => $record->currency),
+                        TextEntry::make('amount_usd')->label('Сумма в $')->money('USD')->placeholder('—'),
                         TextEntry::make('card.masked_number')->label('Карта')->placeholder('—'),
                         TextEntry::make('provider.name')->label('Провайдер')->placeholder('—'),
                         TextEntry::make('comment')->label('Комментарий')->placeholder('—')->columnSpanFull(),

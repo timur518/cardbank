@@ -16,6 +16,7 @@ class Expense extends Model
         'category',
         'amount',
         'currency',
+        'amount_usd',
         'card_id',
         'provider_id',
         'ad_placement_id',
@@ -29,6 +30,7 @@ class Expense extends Model
             'category' => ExpenseCategory::class,
             'date' => 'date',
             'amount' => 'decimal:2',
+            'amount_usd' => 'decimal:2',
         ];
     }
 

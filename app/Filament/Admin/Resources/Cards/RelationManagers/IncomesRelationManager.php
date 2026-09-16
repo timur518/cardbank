@@ -34,6 +34,10 @@ class IncomesRelationManager extends RelationManager
                 TextColumn::make('amount')
                     ->label('Сумма')
                     ->money(fn ($record) => $record->currency),
+                TextColumn::make('amount_usd')
+                    ->label('Сумма в $')
+                    ->money('USD')
+                    ->placeholder('—'),
                 TextColumn::make('payment_status')
                     ->label('Статус платежа')
                     ->badge(),
