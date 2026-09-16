@@ -3,11 +3,11 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Enums\CardStatus;
-use App\Enums\IncomePaymentStatus;
-use App\Enums\IncomeType;
+use App\Enums\CardTransactionStatus;
+use App\Enums\CardTransactionType;
 use App\Filament\Admin\Widgets\Concerns\FormatsMoney;
 use App\Models\Card;
-use App\Models\Income;
+use App\Models\CardTransaction;
 use App\Models\User;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
@@ -82,11 +82,16 @@ class OverviewStatsWidget extends StatsOverviewWidget
             ->color('warning');
     }
 
+    /**
+     * Оборот по картам — сумма всех успешных операций по картам (покупки и пополнения),
+     * а не сумма зачисленных нам платежей за выпуск/пополнение. Комиссии и
+     * отклонённые операции не учитываются.
+     */
     protected function paymentsStat(): Stat
     {
-        $totalByCurrency = Income::query()
-            ->whereIn('type', [IncomeType::CardIssue, IncomeType::CardTopup])
-            ->where('payment_status', IncomePaymentStatus::Paid)
+        $totalByCurrency = CardTransaction::query()
+            ->whereIn('type', [CardTransactionType::Purchase, CardTransactionType::Topup])
+            ->where('status', CardTransactionStatus::Success)
             ->selectRaw('currency, sum(amount) as total')
             ->groupBy('currency')
             ->pluck('total', 'currency')
@@ -94,7 +99,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
             ->toArray();
 
         return Stat::make('Оборот по картам', $this->formatMoneyByCurrency($totalByCurrency))
-            ->description('Выпуски и пополнения')
+            ->description('Покупки и пополнения')
             ->icon(Heroicon::OutlinedBanknotes)
             ->color('primary');
     }
