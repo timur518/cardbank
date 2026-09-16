@@ -96,7 +96,7 @@ $result = $cardsPro->issueCard([
 | `updateCardPhone(string $san, string $zoneNumber, string $phoneNumber)` | `zoneNumber` — код страны с `+` (`"+48"`), `phoneNumber` — номер без кода | `['success' => bool, 'message' => string]` |
 | `setCardPin(string $san, string $pin)` | `pin` — ровно 4 цифры, первичная установка | `['success' => bool, 'message' => string]` |
 | `updateCardPin(string $san, string $pin, ?string $oldPin = null)` | `pin` — новый PIN (4 цифры), `oldPin` — обязателен для части продуктов | `['success' => bool, 'message' => string]` |
-| `getCardTransactions(string $san, int $page = 0, int $size = 20, ?string $from = null, ?string $to = null)` | `page` ≥ 0, `size` 1-100, `from`/`to` — ISO-8601 UTC **с миллисекундами** (`2026-01-01T00:00:00.000Z`; без них — 400 `Invalid date format`) | `['total' => int, 'list' => [...]]`, поля элементов списка — `transactionId`/`status`/`transactionValue`/`transactionCommission`/`cardCurrency`/`transactionRecipient`/`date` (см. `CardsProService::normalizePolledTransaction()`, не путать с полями вебхука `CARD_TRANSACTION`) |
+| `getCardTransactions(string $san, int $page = 0, int $size = 20, ?string $from = null, ?string $to = null)` | `page` ≥ 0, `size` 1-100, `from`/`to` — ISO-8601 UTC **с миллисекундами** (`2026-01-01T00:00:00.000Z`; без них — 400 `Invalid date format`) | `['total' => int, 'list' => [...]]`, поля элементов списка — `transactionId`/`status`/`transactionValue`/`transactionCommission`/`transactionSum`/`cardCurrency`/`transactionRecipient`/`date` (сумма в БД = `transactionSum` — это уже итог с комиссией, `transactionValue` в API документирован как «до комиссии»; см. `CardsProService::normalizePolledTransaction()`, не путать с полями вебхука `CARD_TRANSACTION`) |
 | `getCardOtpCodes(string $san)` | `$san` | Массив до 10 `['code' => string, 'date' => string]` |
 
 ### Статусы асинхронных операций
@@ -182,27 +182,27 @@ POST {APP_URL}/api/webhooks/cardspro/{код_провайдера}?token={webhoo
 
 | `X-CP-Callback-Type` | Автоматическое действие |
 |---|---|
-| `CARD_TOPUP` (status=EXECUTED) | Находит карту по `san` (поле `provider_card_id`) и увеличивает `balance` на `params.amount` |
+| `CARD_TOPUP` (status=EXECUTED) | Находит карту по `san` (поле `provider_card_id`), увеличивает `balance` на `params.amount` и записывает запись в «Транзакции по картам» (тип Topup, статус Успешно), идемпотентно по `docid`/`request_id` |
 | `CARD_WITHDRAWAL` (status=EXECUTED) | Находит карту, уменьшает `balance` на `params.amount` |
 | `CARD_BLOCK` (status=EXECUTED) | Находит карту, ставит статус «Закрыта», `closed_at = now()`, пишет запись в историю статусов |
 | `CARD_FREEZE` | Находит карту, ставит статус «Заморожена», пишет историю статусов |
 | `CARD_UNFREEZE` | Находит карту, ставит статус «Активна», пишет историю статусов |
-| `CARD_TRANSACTION` | Создаёт/обновляет запись в «Транзакции по картам» (сумма = `billAmount`, комиссия = `fee`, тип/статус — по `txType`, см. таблицу ниже) и меняет баланс карты. Идемпотентно: повторная доставка того же `txId` не создаёт вторую запись и не списывает баланс дважды |
+| `CARD_TRANSACTION` | Создаёт/обновляет запись в «Транзакции по картам» (сумма = `billAmount + fee` — итоговая сумма, реально списанная с карты вместе с комиссией; `commission_amount` = `fee` отдельно для учёта; тип/статус — по `txType`, см. таблицу ниже) и меняет баланс карты. Идемпотентно: повторная доставка того же `txId` не создаёт вторую запись и не списывает баланс дважды |
 | `CARD_ISSUE`, `EXTRA_FEE_CARD`, `EXTRA_FEE_CAP`, `OTP_CODE`, `KYC_CHANGE` | **Только логируются** в `ProviderMessage` — см. «Известные ограничения» ниже |
 
 Соответствие `txType` → тип/статус транзакции в нашей базе:
 
 | `txType` CardsPro | `type` | `status` | Баланс |
 |---|---|---|---|
-| `expense` | Покупка | Успешно | −`billAmount` |
+| `expense` | Покупка | Успешно | −(`billAmount + fee`) |
 | `authorization` | Покупка | В обработке | не меняется (это только холд) |
 | `authorization_decline` | Отклонённый платёж | Отклонена | не меняется |
 | `verification` | Покупка | В обработке | не меняется |
 | `verification_decline` | Отклонённый платёж | Отклонена | не меняется |
-| `verification_expense` | Покупка | Успешно | −`billAmount` |
-| `refund` | Возврат | Успешно | +`billAmount` |
-| `reversal` | Возврат | Возвращена | +`billAmount` |
-| `maintenance_fee` | Комиссия | Успешно | −`billAmount` |
+| `verification_expense` | Покупка | Успешно | −(`billAmount + fee`) |
+| `refund` | Возврат | Успешно | +(`billAmount + fee`) |
+| `reversal` | Возврат | Возвращена | +(`billAmount + fee`) |
+| `maintenance_fee` | Комиссия | Успешно | −(`billAmount + fee`) |
 
 ### Известные ограничения
 

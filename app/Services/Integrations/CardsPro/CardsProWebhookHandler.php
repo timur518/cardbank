@@ -39,7 +39,7 @@ class CardsProWebhookHandler
     public function handle(CardsProCallbackType $type, array $payload): void
     {
         match ($type) {
-            CardsProCallbackType::CardTopup => $this->applyBalanceChange($payload, 1),
+            CardsProCallbackType::CardTopup => $this->handleTopup($payload),
             CardsProCallbackType::CardWithdrawal => $this->applyBalanceChange($payload, -1),
             CardsProCallbackType::CardBlock => $this->handleBlock($payload),
             CardsProCallbackType::CardFreeze => $this->handleStatusChange($payload, CardStatus::Frozen, 'Карта заморожена по данным CardsPro (CARD_FREEZE)'),
@@ -112,6 +112,50 @@ class CardsProWebhookHandler
         $card->increment('balance', $sign * $amount);
     }
 
+    /**
+     * CARD_TOPUP, в отличие от вывода средств, ещё и реальная оплатная операция клиента, поэтому
+     * кроме баланса также записываем её в «Транзакции по картам» (тип Topup) — иначе она нигде
+     * не видна и выпадает из оборота по картам. Идемпотентно по `docid`/`request_id`
+     * (в теле CARD_TOPUP нет своего `txId`, как у CARD_TRANSACTION).
+     */
+    protected function handleTopup(array $payload): void
+    {
+        if (($payload['status'] ?? null) !== 'EXECUTED') {
+            return;
+        }
+
+        $card = $this->findCard((string) ($payload['san'] ?? ''));
+        $amount = (float) ($payload['params']['amount'] ?? 0);
+
+        if (! $card || $amount <= 0) {
+            return;
+        }
+
+        $providerTxId = (string) ($payload['docid'] ?? $payload['request_id'] ?? '');
+        $isNewTransaction = $providerTxId === '' || ! CardTransaction::where('card_id', $card->id)
+            ->where('provider_tx_id', $providerTxId)
+            ->exists();
+
+        if ($providerTxId !== '') {
+            CardTransaction::updateOrCreate(
+                ['card_id' => $card->id, 'provider_tx_id' => $providerTxId],
+                [
+                    'type' => CardTransactionType::Topup,
+                    'amount' => $amount,
+                    'currency' => $payload['params']['currency'] ?? $card->currency,
+                    'status' => CardTransactionStatus::Success,
+                    'occurred_at' => now(),
+                ]
+            );
+        }
+
+        // Баланс двигаем только один раз, при первом получении события на этот provider_tx_id —
+        // повторная доставка того же вебхука не должна начислять дважды.
+        if ($isNewTransaction) {
+            $card->increment('balance', $amount);
+        }
+    }
+
     protected function handleBlock(array $payload): void
     {
         if (($payload['status'] ?? null) !== 'EXECUTED') {
@@ -163,7 +207,12 @@ class CardsProWebhookHandler
         }
 
         [$type, $status, $balanceSign] = $this->mapTransactionType((string) ($payload['txType'] ?? ''));
-        $amount = (float) ($payload['billAmount'] ?? $payload['txAmount'] ?? 0);
+        // billAmount — сумма до комиссии, fee — отдельная комиссия, списываемая с той
+        // же карты. amount — итоговая списанная сумма (billAmount + fee), именно она
+        // должна идти в оборот и в баланс карты (см. GET /{san}/transactions, где та же
+        // связка задокументирована явно: transactionValue + transactionCommission = transactionSum).
+        $fee = isset($payload['fee']) ? (float) $payload['fee'] : 0.0;
+        $amount = ((float) ($payload['billAmount'] ?? $payload['txAmount'] ?? 0)) + $fee;
 
         $isNewTransaction = ! CardTransaction::where('card_id', $card->id)
             ->where('provider_tx_id', $providerTxId)
@@ -174,7 +223,7 @@ class CardsProWebhookHandler
             [
                 'type' => $type,
                 'amount' => $amount,
-                'commission_amount' => $payload['fee'] ?? null,
+                'commission_amount' => isset($payload['fee']) ? $fee : null,
                 'currency' => $payload['billCurrency'] ?? $card->currency,
                 'merchant' => $payload['merchantName'] ?? null,
                 'status' => $status,

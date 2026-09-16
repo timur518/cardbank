@@ -415,20 +415,27 @@ class CardsProService implements CardProviderIntegration
      * `txDate`, `fee`. Для ответа `GET /{san}/transactions` см. {@see normalizePolledTransaction()}
      * — там другие имена полей.
      *
+     * `billAmount` — сумма до комиссии (по аналогии с `transactionValue` в `GET /{san}/transactions`,
+     * где это явно задокументировано), а `fee` — отдельная комиссия, списываемая
+     * с той же карты вместе с операцией. `amount` здесь — итоговая сумма, списанная с карты
+     * (`billAmount + fee`), а не сам по billAmount — иначе оборот и баланс карты занижаются
+     * на величину комиссии.
+     *
      * @param  array<string, mixed>  $payload
      * @return array{provider_tx_id: string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
      */
     public static function normalizeTransactionPayload(array $payload): array
     {
         [$type, $status, $balanceSign] = self::mapTransactionType((string) ($payload['txType'] ?? ''));
-        $amount = (float) ($payload['billAmount'] ?? $payload['txAmount'] ?? 0);
+        $fee = isset($payload['fee']) ? (float) $payload['fee'] : 0.0;
+        $amount = ((float) ($payload['billAmount'] ?? $payload['txAmount'] ?? 0)) + $fee;
 
         return [
             'provider_tx_id' => (string) ($payload['txId'] ?? ''),
             'type' => $type,
             'status' => $status,
             'amount' => $amount,
-            'commission_amount' => isset($payload['fee']) ? (float) $payload['fee'] : null,
+            'commission_amount' => isset($payload['fee']) ? $fee : null,
             'currency' => (string) ($payload['billCurrency'] ?? ''),
             'merchant' => $payload['merchantName'] ?? null,
             'decline_reason' => $payload['declineReason'] ?? null,
@@ -445,13 +452,18 @@ class CardsProService implements CardProviderIntegration
      * `transactionRecipient` вместо `merchantName`, `date` вместо `txDate`) — это два
      * независимых источника одних и тех же операций, а не один и тот же формат.
      *
+     * `transactionValue` — сумма до комиссии, `transactionCommission` — комиссия, `transactionSum` — итоговая
+     * сумма с комиссией уже готовая (так и задокументировано в API). `amount` берём из
+     * `transactionSum` — это реально списанная с карты сумма, именно она должна идти в
+     * оборот и в баланс карты, а не `transactionValue` без комиссии.
+     *
      * @param  array<string, mixed>  $payload
      * @return array{provider_tx_id: string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
      */
     public static function normalizePolledTransaction(array $payload): array
     {
         [$type, $status, $balanceSign] = self::mapTransactionType((string) ($payload['status'] ?? ''));
-        $amount = (float) ($payload['transactionValue'] ?? $payload['txAmount'] ?? 0);
+        $amount = (float) ($payload['transactionSum'] ?? $payload['transactionValue'] ?? $payload['txAmount'] ?? 0);
 
         return [
             'provider_tx_id' => (string) ($payload['transactionId'] ?? ''),
