@@ -96,7 +96,7 @@ $result = $cardsPro->issueCard([
 | `updateCardPhone(string $san, string $zoneNumber, string $phoneNumber)` | `zoneNumber` — код страны с `+` (`"+48"`), `phoneNumber` — номер без кода | `['success' => bool, 'message' => string]` |
 | `setCardPin(string $san, string $pin)` | `pin` — ровно 4 цифры, первичная установка | `['success' => bool, 'message' => string]` |
 | `updateCardPin(string $san, string $pin, ?string $oldPin = null)` | `pin` — новый PIN (4 цифры), `oldPin` — обязателен для части продуктов | `['success' => bool, 'message' => string]` |
-| `getCardTransactions(string $san, int $page = 0, int $size = 20, ?string $from = null, ?string $to = null)` | `page` ≥ 0, `size` 1-100, `from`/`to` — ISO-8601 UTC | `['total' => int, 'list' => [...]]` |
+| `getCardTransactions(string $san, int $page = 0, int $size = 20, ?string $from = null, ?string $to = null)` | `page` ≥ 0, `size` 1-100, `from`/`to` — ISO-8601 UTC **с миллисекундами** (`2026-01-01T00:00:00.000Z`; без них — 400 `Invalid date format`) | `['total' => int, 'list' => [...]]`, поля элементов списка — `transactionId`/`status`/`transactionValue`/`transactionCommission`/`cardCurrency`/`transactionRecipient`/`date` (см. `CardsProService::normalizePolledTransaction()`, не путать с полями вебхука `CARD_TRANSACTION`) |
 | `getCardOtpCodes(string $san)` | `$san` | Массив до 10 `['code' => string, 'date' => string]` |
 
 ### Статусы асинхронных операций

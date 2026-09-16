@@ -353,7 +353,10 @@ class CardsProService implements CardProviderIntegration
         $transactions = [];
         $page = 0;
         $size = 100;
-        $from = $since ? gmdate('Y-m-d\TH:i:s\Z', $since->getTimestamp()) : null;
+        // CardsPro требует миллисекунды в ISO-8601 ("2026-01-01T00:00:00.000Z") — без
+        // них /{san}/transactions отвечает 400 validation "Invalid date format for
+        // field 'from'".
+        $from = $since ? gmdate('Y-m-d\TH:i:s', $since->getTimestamp()) . '.000Z' : null;
 
         do {
             $response = $this->getCardTransactions($providerCardId, $page, $size, $from);
@@ -363,7 +366,7 @@ class CardsProService implements CardProviderIntegration
             $page++;
         } while ($batch !== [] && count($transactions) < $total);
 
-        return array_map(self::normalizeTransactionPayload(...), $transactions);
+        return array_map(self::normalizePolledTransaction(...), $transactions);
     }
 
     public function fetchProductCatalog(): array
@@ -403,11 +406,10 @@ class CardsProService implements CardProviderIntegration
     }
 
     /**
-     * Одна операция по карте (из вебхука CARD_TRANSACTION или из ответа
-     * `/{san}/transactions` — предполагаем те же поля: `txId`, `txType`,
-     * `billAmount`, `billCurrency`, `merchantName`, `declineReason`, `txDate`,
-     * `fee`; если реальный ответ `/{san}/transactions` называет поля иначе —
-     * поправить только этот метод, второй источник (вебхук) не пострадает).
+     * Одна операция из вебхука CARD_TRANSACTION (см. docs.cardspro.com/api/operations-callbacks) —
+     * `txId`, `txType`, `billAmount`, `billCurrency`, `merchantName`, `declineReason`,
+     * `txDate`, `fee`. Для ответа `GET /{san}/transactions` см. {@see normalizePolledTransaction()}
+     * — там другие имена полей.
      *
      * @param  array<string, mixed>  $payload
      * @return array{provider_tx_id: string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
@@ -427,6 +429,36 @@ class CardsProService implements CardProviderIntegration
             'merchant' => $payload['merchantName'] ?? null,
             'decline_reason' => $payload['declineReason'] ?? null,
             'occurred_at' => new \DateTimeImmutable((string) ($payload['txDate'] ?? 'now')),
+            'balance_delta' => $balanceSign * $amount,
+        ];
+    }
+
+    /**
+     * Одна операция из ответа `GET /{san}/transactions` (см. docs.cardspro.com/api/cards/card-transactions).
+     * Поля здесь ДРУГИЕ, чем в вебхуке CARD_TRANSACTION (`transactionId` вместо
+     * `txId`, `status` вместо `txType`, `transactionValue`/`transactionCommission`
+     * вместо `billAmount`/`fee`, `cardCurrency` вместо `billCurrency`,
+     * `transactionRecipient` вместо `merchantName`, `date` вместо `txDate`) — это два
+     * независимых источника одних и тех же операций, а не один и тот же формат.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array{provider_tx_id: string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
+     */
+    public static function normalizePolledTransaction(array $payload): array
+    {
+        [$type, $status, $balanceSign] = self::mapTransactionType((string) ($payload['status'] ?? ''));
+        $amount = (float) ($payload['transactionValue'] ?? $payload['txAmount'] ?? 0);
+
+        return [
+            'provider_tx_id' => (string) ($payload['transactionId'] ?? ''),
+            'type' => $type,
+            'status' => $status,
+            'amount' => $amount,
+            'commission_amount' => isset($payload['transactionCommission']) ? (float) $payload['transactionCommission'] : null,
+            'currency' => (string) ($payload['cardCurrency'] ?? ''),
+            'merchant' => $payload['transactionRecipient'] ?? null,
+            'decline_reason' => $payload['declineReason'] ?? null,
+            'occurred_at' => new \DateTimeImmutable((string) ($payload['date'] ?? 'now')),
             'balance_delta' => $balanceSign * $amount,
         ];
     }
