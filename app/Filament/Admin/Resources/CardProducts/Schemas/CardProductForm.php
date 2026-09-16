@@ -54,12 +54,12 @@ class CardProductForm
                         Toggle::make('provider_kyc_required')
                             ->label('Требуется проверка личности у провайдера'),
                         TextInput::make('provider_issue_cost_usd')
-                            ->label('Себестоимость выпуска, $')
+                            ->label('Стоимость выпуска карты, $')
                             ->numeric()
                             ->required()
                             ->prefix('$'),
                         TextInput::make('price_rub')
-                            ->label('Цена для клиента, ₽')
+                            ->label('Цена продажи, ₽')
                             ->numeric()
                             ->required()
                             ->prefix('₽'),
@@ -84,14 +84,17 @@ class CardProductForm
                     ]),
 
                 Section::make('Кошелёк')
-                    ->columns(2)
+                    ->columns(3)
                     ->schema([
-                        Toggle::make('wallet_enabled')
-                            ->label('Поддержка Apple Pay / Google Pay')
+                        Toggle::make('apple_pay_enabled')
+                            ->label('Apple Pay')
+                            ->live(),
+                        Toggle::make('google_pay_enabled')
+                            ->label('Google Pay')
                             ->live(),
                         TextInput::make('wallet_activation')
                             ->label('Способ подключения кошелька')
-                            ->visible(fn ($get) => (bool) $get('wallet_enabled'))
+                            ->visible(fn ($get) => (bool) $get('apple_pay_enabled') || (bool) $get('google_pay_enabled'))
                             ->maxLength(255),
                     ]),
 

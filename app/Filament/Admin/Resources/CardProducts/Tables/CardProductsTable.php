@@ -8,11 +8,12 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Number;
 
 class CardProductsTable
 {
@@ -41,22 +42,20 @@ class CardProductsTable
                     ->label('Валюта'),
                 TextColumn::make('limits')
                     ->label('Лимиты')
-                    ->state(fn (CardProduct $record) => self::formatLimits($record))
+                    ->formatStateUsing(fn (CardProduct $record) => self::formatLimits($record))
+                    ->html()
                     ->toggleable(),
-                TextColumn::make('price_rub')
-                    ->label('Цена для клиента')
-                    ->money('RUB')
-                    ->sortable(),
-                TextColumn::make('provider_issue_cost_usd')
-                    ->label('Себестоимость')
-                    ->money('USD')
-                    ->sortable(),
-                TextColumn::make('estimated_profit')
-                    ->label('Расчётная прибыль')
-                    ->money('RUB')
-                    ->color(fn (CardProduct $record) => (float) $record->estimated_profit >= 0 ? 'success' : 'danger'),
-                ToggleColumn::make('active')
-                    ->label('Активен'),
+                TextColumn::make('costs')
+                    ->label('Стоимости')
+                    ->formatStateUsing(fn (CardProduct $record) => self::formatCosts($record))
+                    ->html(),
+                TextColumn::make('wallets')
+                    ->label('Apple/GooglePay')
+                    ->formatStateUsing(fn (CardProduct $record) => self::formatWallets($record))
+                    ->html(),
+                IconColumn::make('active')
+                    ->label('Статус')
+                    ->boolean(),
             ])
             ->filters([
                 SelectFilter::make('provider_id')
@@ -77,7 +76,7 @@ class CardProductsTable
     }
 
     /**
-     * Коротко оба диапазона (выпуск и пополнение) одной строкой для таблицы.
+     * Лимиты выпуска и пополнения в две строки: «Выпуск: 1–100 000 $» / «Пополнение: 1–100 000 $».
      */
     protected static function formatLimits(CardProduct $record): string
     {
@@ -88,7 +87,10 @@ class CardProductsTable
             return '—';
         }
 
-        return collect(['Выпуск: ' . ($issue ?? '—'), 'Пополнение: ' . ($topup ?? '—')])->implode(' · ');
+        return implode('<br>', [
+            'Выпуск: ' . ($issue ?? '—'),
+            'Пополнение: ' . ($topup ?? '—'),
+        ]);
     }
 
     protected static function formatRange(?string $min, ?string $max): ?string
@@ -97,8 +99,36 @@ class CardProductsTable
             return null;
         }
 
-        return ($min !== null ? number_format((float) $min, 0, ',', ' ') : '—')
+        $range = ($min !== null ? number_format((float) $min, 0, ',', ' ') : '—')
             . '–'
             . ($max !== null ? number_format((float) $max, 0, ',', ' ') : '—');
+
+        return $range . ' $';
+    }
+
+    /**
+     * Цена продажи, себестоимость и наценка — тремя строками в одной ячейке.
+     */
+    protected static function formatCosts(CardProduct $record): string
+    {
+        return implode('<br>', [
+            Number::currency((float) $record->price_rub, 'RUB'),
+            Number::currency((float) $record->provider_issue_cost_usd, 'USD'),
+            Number::currency((float) $record->estimated_profit, 'RUB'),
+        ]);
+    }
+
+    /**
+     * Два индикатора: Apple Pay и Google Pay — галочка либо крестик за каждый.
+     */
+    protected static function formatWallets(CardProduct $record): string
+    {
+        return sprintf(
+            '<span class="%s">%s</span> <span class="%s">%s</span>',
+            $record->apple_pay_enabled ? 'text-success-600' : 'text-danger-600',
+            $record->apple_pay_enabled ? '✓' : '✗',
+            $record->google_pay_enabled ? 'text-success-600' : 'text-danger-600',
+            $record->google_pay_enabled ? '✓' : '✗',
+        );
     }
 }
