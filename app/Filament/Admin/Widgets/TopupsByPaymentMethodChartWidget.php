@@ -15,6 +15,8 @@ class TopupsByPaymentMethodChartWidget extends ChartWidget
 {
     protected static ?int $sort = 4;
 
+    protected ?string $maxHeight = '250px';
+
     protected function getType(): string
     {
         return 'doughnut';

@@ -17,7 +17,7 @@ class CardOperationsChartWidget extends ChartWidget
 {
     protected static ?int $sort = 5;
 
-    protected int|string|array $columnSpan = 'full';
+    protected ?string $maxHeight = '250px';
 
     protected function getType(): string
     {

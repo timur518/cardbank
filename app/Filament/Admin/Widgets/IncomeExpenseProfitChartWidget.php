@@ -26,6 +26,8 @@ class IncomeExpenseProfitChartWidget extends ChartWidget
 
     protected int|string|array $columnSpan = 'full';
 
+    protected ?string $maxHeight = '350px';
+
     protected function getType(): string
     {
         return 'line';
