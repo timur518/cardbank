@@ -19,7 +19,6 @@ return new class extends Migration
             $table->string('environment')->default('sandbox'); // sandbox, production
             $table->string('api_base_url')->nullable();
             $table->text('api_key')->nullable();
-            $table->text('api_secret')->nullable();
             $table->text('webhook_secret')->nullable();
             $table->json('issue_fee_tiers')->nullable();
             $table->decimal('topup_fee_percent', 5, 2)->default(0);
