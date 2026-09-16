@@ -22,6 +22,13 @@ class FinancialHealthWidget extends StatsOverviewWidget
 
     protected static ?int $sort = 9;
 
+    protected int|string|array $columnSpan = 'full';
+
+    protected function getColumns(): int|array|null
+    {
+        return 5;
+    }
+
     protected function getStats(): array
     {
         $owed = (float) Card::whereIn('status', [CardStatus::Active, CardStatus::Frozen])->sum('balance');

@@ -21,6 +21,13 @@ class ProfitStatsWidget extends StatsOverviewWidget
 
     protected static ?int $sort = 2;
 
+    protected int|string|array $columnSpan = 'full';
+
+    protected function getColumns(): int|array|null
+    {
+        return 5;
+    }
+
     protected function getStats(): array
     {
         return [
@@ -33,35 +40,26 @@ class ProfitStatsWidget extends StatsOverviewWidget
 
     /**
      * Доход минус связанные расходы провайдерам по операциям выпуска и пополнения, за
-     * всё время, отдельно по каждой валюте.
+     * всё время, одним числом. Суммы по всем валютам складываются по номиналу
+     * без учёта курса — как и в других виджетах главной страницы.
      */
     protected function grossProfitStat(): Stat
     {
-        $incomeByCurrency = Income::query()
+        $income = (float) Income::query()
             ->whereIn('type', [IncomeType::CardIssue, IncomeType::CardTopup])
             ->where('payment_status', IncomePaymentStatus::Paid)
-            ->selectRaw('currency, sum(amount) as total')
-            ->groupBy('currency')
-            ->pluck('total', 'currency');
+            ->sum('amount');
 
-        $expenseByCurrency = Expense::query()
+        $expense = (float) Expense::query()
             ->whereIn('category', [ExpenseCategory::CardIssue, ExpenseCategory::CardTopup])
-            ->selectRaw('currency, sum(amount) as total')
-            ->groupBy('currency')
-            ->pluck('total', 'currency');
+            ->sum('amount');
 
-        $profitByCurrency = $incomeByCurrency->keys()->merge($expenseByCurrency->keys())->unique()
-            ->mapWithKeys(fn ($currency) => [
-                $currency => (float) ($incomeByCurrency[$currency] ?? 0) - (float) ($expenseByCurrency[$currency] ?? 0),
-            ])
-            ->toArray();
+        $profit = $income - $expense;
 
-        $isNegative = collect($profitByCurrency)->contains(fn ($value) => $value < 0);
-
-        return Stat::make('Валовая прибыль', $this->formatMoneyByCurrency($profitByCurrency))
+        return Stat::make('Валовая прибыль', number_format($profit, 2, ',', ' '))
             ->description('Всего')
             ->icon(Heroicon::OutlinedCurrencyDollar)
-            ->color($isNegative ? 'danger' : 'success');
+            ->color($profit >= 0 ? 'success' : 'danger');
     }
 
     protected function expensesStat(): Stat
