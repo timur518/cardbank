@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Enums\CardStatus;
-use App\Enums\CardTransactionStatus;
 use App\Enums\CardTransactionType;
 use App\Filament\Admin\Widgets\Concerns\FormatsMoney;
 use App\Models\Card;
@@ -23,7 +22,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
 
     protected function getColumns(): int|array|null
     {
-        return 4;
+        return 3;
     }
 
     protected function getStats(): array
@@ -32,7 +31,6 @@ class OverviewStatsWidget extends StatsOverviewWidget
             $this->usersStat(),
             $this->activeCardsStat(),
             // $this->issuedCardsStat(),
-            $this->cardBalancesStat(),
             $this->paymentsStat(),
         ];
     }
@@ -67,31 +65,17 @@ class OverviewStatsWidget extends StatsOverviewWidget
             ->color('info');
     }
 
-    protected function cardBalancesStat(): Stat
-    {
-        $balancesByCurrency = Card::query()
-            ->whereIn('status', [CardStatus::Active, CardStatus::Frozen])
-            ->selectRaw('currency, sum(balance) as total')
-            ->groupBy('currency')
-            ->pluck('total', 'currency')
-            ->toArray();
-
-        return Stat::make('Баланс на картах', $this->formatMoneyByCurrency($balancesByCurrency))
-            ->description('На балансах клиентов')
-            ->icon(Heroicon::OutlinedWallet)
-            ->color('warning');
-    }
-
     /**
-     * Оборот по картам — сумма всех успешных операций по картам (покупки и пополнения),
-     * а не сумма зачисленных нам платежей за выпуск/пополнение. Комиссии и
-     * отклонённые операции не учитываются.
+     * Оборот по картам — сумма вообще всех операций по картам (покупки, пополнения,
+     * комиссии, возвраты), включая ещё не подтверждённые холды (`authorization`/
+     * `verification`, статус «В обработке») — деньги под ними уже фактически заняты
+     * на карте. Исключены только отклонённые операции (`Decline`) — по ним деньги
+     * никуда не двигались.
      */
     protected function paymentsStat(): Stat
     {
         $totalByCurrency = CardTransaction::query()
-            ->whereIn('type', [CardTransactionType::Purchase, CardTransactionType::Topup])
-            ->where('status', CardTransactionStatus::Success)
+            ->where('type', '!=', CardTransactionType::Decline)
             ->selectRaw('currency, sum(amount) as total')
             ->groupBy('currency')
             ->pluck('total', 'currency')
@@ -99,7 +83,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
             ->toArray();
 
         return Stat::make('Оборот по картам', $this->formatMoneyByCurrency($totalByCurrency))
-            ->description('Покупки и пополнения')
+            ->description('Сумма всех операций по картам')
             ->icon(Heroicon::OutlinedBanknotes)
             ->color('primary');
     }
