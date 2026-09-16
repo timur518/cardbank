@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('card_id')->constrained()->cascadeOnDelete();
             $table->string('type'); // purchase, topup, fee, refund, decline
             $table->decimal('amount', 14, 2);
+            $table->decimal('cost_amount', 14, 2)->nullable();
+            $table->decimal('commission_amount', 14, 2)->nullable();
             $table->string('currency');
             $table->string('merchant')->nullable();
             $table->string('status');
