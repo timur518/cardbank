@@ -73,7 +73,7 @@
     </section>
 
     {{-- ================= LIFESTYLE / OVAL CAROUSEL ================= --}}
-    <section id="lifestyle" class="overflow-hidden py-28 lg:py-40" data-carousel>
+    <section id="lifestyle" class="mt-[150px] overflow-hidden" data-carousel>
         <div class="mx-auto max-w-[1400px] px-6 lg:px-10">
             <div class="grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
                 <div data-reveal>
@@ -116,7 +116,7 @@
     </section>
 
     {{-- ================= PRODUCTS ================= --}}
-    <section id="products" class="px-6 py-28 lg:px-10 lg:py-40">
+    <section id="products" class="mt-[150px] px-6 lg:px-10">
         <div class="mx-auto max-w-[1400px]">
             <div data-reveal class="max-w-4xl">
                 <span class="eyebrow">Только три карты</span>
@@ -167,7 +167,7 @@
     </section>
 
     {{-- ================= HOW ================= --}}
-    <section id="how" class="editorial-dark px-6 py-28 lg:px-10 lg:py-40">
+    <section id="how" class="editorial-dark mt-[150px] px-6 py-28 lg:px-10 lg:py-40">
         <div class="mx-auto max-w-[1400px]">
             <div class="grid gap-10 lg:grid-cols-[1fr_.65fr] lg:items-end">
                 <div data-reveal><span class="eyebrow !text-[#f37338]">Онлайн за 3 минуты</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em] text-white">Простое и быстрое оформление карт</h2></div>
@@ -185,7 +185,7 @@
     </section>
 
     {{-- ================= SERVICES ================= --}}
-    <section id="features" class="px-6 py-28 lg:px-10 lg:py-40">
+    <section id="features" class="mt-[150px] px-6 lg:px-10">
         <div class="mx-auto max-w-[1400px]">
             <div data-reveal class="max-w-4xl"><span class="eyebrow">Для любых ситуаций</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Что оплатить?</h2></div>
             @php
@@ -238,7 +238,7 @@
     </section>
 
     {{-- ================= APP ================= --}}
-    <section class="px-6 pb-28 lg:px-10 lg:pb-40">
+    <section class="mt-[150px] px-6 lg:px-10">
         <div class="app-panel mx-auto max-w-[1400px] overflow-hidden rounded-[40px] bg-white">
             <div class="grid lg:grid-cols-[1fr_.75fr]">
                 <div data-reveal class="p-10 sm:p-14 lg:p-20"><span class="eyebrow">Личный кабинет</span><h2 class="mt-5 max-w-2xl text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Удобный и простой личный кабинет</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#141413]/60">Выпускайте карты в пару кликов, отслеживайте актуальный баланс и историю своих платежей из одного места.</p><div class="mt-9 grid gap-4 sm:grid-cols-2">@foreach(['Быстрый выпуск карт','История операций','Пополнение баланса из России','Push-уведомления'] as $item)<div class="rounded-2xl bg-[#f3f0ee] p-5 text-sm font-semibold">{{ $item }}</div>@endforeach</div><div class="mt-8 flex flex-wrap gap-4"><a href="#" class="btn btn-hero-orange">Зарегистрироваться</a><a href="#" class="btn btn-hero-black">Авторизоваться</a></div></div>
@@ -248,7 +248,7 @@
     </section>
 
     {{-- ================= PARTNERS ================= --}}
-    <section id="partners" class="px-6 py-28 lg:px-10 lg:py-40">
+    <section id="partners" class="mt-[150px] px-6 lg:px-10">
         <div class="mx-auto max-w-[1400px] rounded-[40px] bg-[#f37338] px-8 py-16 text-white sm:px-12 lg:px-20 lg:py-24">
             <div class="grid gap-12 lg:grid-cols-[1fr_.8fr] lg:items-end"><div data-reveal><span class="eyebrow !text-white">Вместе выгодней</span><h2 class="mt-5 max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Пользуйтесь сами и приглашайте знакомых</h2></div><div data-reveal><p class="text-lg leading-relaxed text-white/70">Зарабатывайте с каждого приглашенного и со всех его платежей.</p><a href="#" class="btn btn-primary mt-8">Зарегистрироваться</a></div></div>
             <div class="mt-16 grid gap-px overflow-hidden rounded-3xl bg-black/10 sm:grid-cols-3">@foreach ([['1%','с каждого пополнения'],['20%','с выпуска карты'],['24/7','автоматические начисления']] as $stat)<div class="bg-white/15 p-8"><p class="text-5xl font-semibold tracking-[-.04em]">{{ $stat[0] }}</p><p class="mt-3 text-sm font-semibold opacity-60">{{ $stat[1] }}</p></div>@endforeach</div>
@@ -256,14 +256,14 @@
     </section>
 
     {{-- ================= SECURITY ================= --}}
-    <section id="security" class="editorial-dark mx-4 rounded-[40px] px-6 py-28 text-white sm:mx-8 lg:px-10 lg:py-40">
+    <section id="security" class="editorial-dark mx-4 mt-[150px] rounded-[40px] px-6 py-28 text-white sm:mx-8 lg:px-10 lg:py-40">
         <div class="mx-auto max-w-[1200px]"><div data-reveal class="max-w-4xl"><span class="eyebrow !text-[#f37338]">Безопасность</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Цифровой продукт, в котором важен контроль</h2></div><div class="mt-16 grid gap-px overflow-hidden rounded-3xl bg-white/10 sm:grid-cols-2">@foreach(['Карты выпускает лицензированный партнёр-эмитент','Проверка личности при выпуске','Мониторинг операций в реальном времени','Реквизиты доступны только держателю'] as $i => $point)<div data-reveal style="--reveal-delay: {{ $i * 80 }}ms" class="bg-white/[.035] p-8"><span class="text-sm font-bold text-[#f37338]">0{{ $i + 1 }}</span><p class="mt-8 max-w-md text-lg leading-relaxed text-white/75">{{ $point }}</p></div>@endforeach</div></div>
     </section>
 
     {{-- ================= FAQ ================= --}}
-    <section id="faq" class="px-6 py-28 lg:px-10 lg:py-40"><div class="mx-auto max-w-[1100px]"><div data-reveal class="max-w-4xl"><span class="eyebrow">Вопросы</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.2rem)] font-medium leading-[.94] tracking-[-.045em]">Перед выпуском карты</h2></div>@php $faqs=[['Это законно?','Карту выпускает партнёр-эмитент по лицензии платёжной системы.'],['Что если платёж не проходит?','В приложении видна причина отказа; поддержка помогает разобраться с конкретной операцией.'],['Где карта не сработает?','Карта предназначена для международных онлайн- и офлайн-платежей в пределах доступности конкретного сервиса или торговой точки.'],['Какие данные нужны?','Только данные, которые требуются партнёру-эмитенту для выпуска карты.'],['Как быстро приходят реквизиты?','После подтверждения выпуска реквизиты появляются в приложении.'],['Сколько карт можно держать?','Можно выпускать отдельные карты под разные задачи в рамках доступных лимитов.']]; @endphp<div class="mt-14 divide-y divide-[#141413]/10 border-y border-[#141413]/10">@foreach($faqs as $faq)<div data-faq-item data-open="false" class="faq-item"><button type="button" data-faq-button aria-expanded="false" class="flex w-full items-center justify-between gap-6 py-7 text-left"><span class="text-xl font-semibold tracking-[-.02em]">{{ $faq[0] }}</span><span class="faq-plus">+</span></button><div class="faq-answer"><p class="max-w-3xl pb-7 pr-12 text-base leading-relaxed text-[#141413]/55">{{ $faq[1] }}</p></div></div>@endforeach</div></div></section>
+    <section id="faq" class="mt-[150px] px-6 lg:px-10"><div class="mx-auto max-w-[1100px]"><div data-reveal class="max-w-4xl"><span class="eyebrow">Вопросы</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.2rem)] font-medium leading-[.94] tracking-[-.045em]">Перед выпуском карты</h2></div>@php $faqs=[['Это законно?','Карту выпускает партнёр-эмитент по лицензии платёжной системы.'],['Что если платёж не проходит?','В приложении видна причина отказа; поддержка помогает разобраться с конкретной операцией.'],['Где карта не сработает?','Карта предназначена для международных онлайн- и офлайн-платежей в пределах доступности конкретного сервиса или торговой точки.'],['Какие данные нужны?','Только данные, которые требуются партнёру-эмитенту для выпуска карты.'],['Как быстро приходят реквизиты?','После подтверждения выпуска реквизиты появляются в приложении.'],['Сколько карт можно держать?','Можно выпускать отдельные карты под разные задачи в рамках доступных лимитов.']]; @endphp<div class="mt-14 divide-y divide-[#141413]/10 border-y border-[#141413]/10">@foreach($faqs as $faq)<div data-faq-item data-open="false" class="faq-item"><button type="button" data-faq-button aria-expanded="false" class="flex w-full items-center justify-between gap-6 py-7 text-left"><span class="text-xl font-semibold tracking-[-.02em]">{{ $faq[0] }}</span><span class="faq-plus">+</span></button><div class="faq-answer"><p class="max-w-3xl pb-7 pr-12 text-base leading-relaxed text-[#141413]/55">{{ $faq[1] }}</p></div></div>@endforeach</div></div></section>
 
-    <section id="support" class="px-6 pb-32 lg:px-10"><div data-reveal class="mx-auto max-w-[1000px] rounded-[40px] bg-[#141413] px-8 py-20 text-center text-white sm:px-12"><span class="eyebrow justify-center !text-[#f37338]">Поддержка</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Остался вопрос?</h2><p class="mx-auto mt-6 max-w-md text-lg text-white/55">Напишите в поддержку — поможем разобраться с выпуском и использованием карты.</p><a href="mailto:support@example.com" class="btn btn-ondark mt-9">Написать в поддержку</a></div></section>
+    <section id="support" class="mt-[150px] px-6 pb-32 lg:px-10"><div data-reveal class="mx-auto max-w-[1000px] rounded-[40px] bg-[#141413] px-8 py-20 text-center text-white sm:px-12"><span class="eyebrow justify-center !text-[#f37338]">Поддержка</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Остался вопрос?</h2><p class="mx-auto mt-6 max-w-md text-lg text-white/55">Напишите в поддержку — поможем разобраться с выпуском и использованием карты.</p><a href="mailto:support@example.com" class="btn btn-ondark mt-9">Написать в поддержку</a></div></section>
 </main>
 
 <footer class="border-t border-[#141413]/10 bg-[#f3f0ee] px-6 py-16 lg:px-10"><div class="mx-auto max-w-[1400px]"><div class="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]"><div><p class="brand-mark">[Бренд]</p><p class="mt-4 max-w-sm text-sm leading-relaxed text-[#141413]/50">Виртуальные карты для платежей, подписок и покупок по всему миру.</p></div><div><p class="footer-title">Продукт</p><ul class="footer-links"><li><a href="#lifestyle">Возможности</a></li><li><a href="#products">Карты</a></li><li><a href="#how">Как это работает</a></li></ul></div><div><p class="footer-title">Помощь</p><ul class="footer-links"><li><a href="#faq">Вопросы</a></li><li><a href="#support">Поддержка</a></li><li><a href="#">Вход</a></li></ul></div><div><p class="footer-title">Документы</p><ul class="footer-links"><li><a href="#">Пользовательское соглашение</a></li><li><a href="#">Политика конфиденциальности</a></li><li><a href="#">AML / KYC</a></li><li><a href="#">Тарифы</a></li></ul></div></div><p class="mt-16 max-w-4xl text-xs leading-relaxed text-[#141413]/35">[Бренд] не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p><p class="mt-5 text-xs text-[#141413]/30">© {{ date('Y') }} [Бренд]. Все права защищены.</p></div></footer>
