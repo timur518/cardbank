@@ -126,12 +126,12 @@
                     [
                         'class'=>'product-black', 'eyebrow'=>'CARD BLACK', 'title'=>'Для интернета. Подписок. Сервисов.',
                         'desc'=>'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов — без физического пластика.',
-                        'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'], 'image'=>'blackcard.png', 'cta'=>'Оформить карту Black'
+                        'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'], 'bgImage'=>'blackcardbg.png', 'cta'=>'Оформить карту Black'
                     ],
                     [
                         'class'=>'product-orange', 'eyebrow'=>'CARD ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-                        'points'=>['Apple Pay и Google Pay','Бесконтактная оплата по NFC','Работа с Apple Watch и Wear OS'], 'image'=>'orangecard.png', 'cta'=>'Оформить Card Orange'
+                        'points'=>['Apple Pay и Google Pay','Бесконтактная оплата по NFC','Работа с Apple Watch и Wear OS'], 'bgImage'=>'orangecardbg.png', 'cta'=>'Оформить Card Orange'
                     ],
                 ];
             @endphp
@@ -140,10 +140,7 @@
                 @foreach ($products as $i => $product)
                     <article data-reveal style="--reveal-delay: {{ $i * 120 }}ms" class="product-panel {{ $product['class'] }}">
                         <div class="product-visual">
-                            <div class="product-glow"></div>
-                            <div class="real-card">
-                                <img src="{{ asset('assets/images/'.$product['image']) }}" alt="{{ $product['title'] }}" loading="lazy">
-                            </div>
+                            <img src="{{ asset('assets/images/'.$product['bgImage']) }}" alt="{{ $product['title'] }}" loading="lazy" class="absolute inset-0 h-full w-full object-cover">
                         </div>
                         <div class="product-copy">
                             <span class="eyebrow">{{ $product['eyebrow'] }}</span>
