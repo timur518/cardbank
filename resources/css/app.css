@@ -3,11 +3,13 @@
 @tailwind utilities;
 
 :root {
-    --bg: #faf9f7;
-    --ink: #12131a;
-    --accent: #1a46ff;
-    --muted: #f1f1ee;
-    --border: #e6e5e1;
+    --bg: #f3f0ee;
+    --surface: #fff;
+    --ink: #141413;
+    --muted: #6f6a63;
+    --border: #e8e5e1;
+    --accent: #f37338;
+    --accent-dark: #cf4500;
 }
 
 html {
@@ -17,6 +19,7 @@ html {
 body {
     background-color: var(--bg);
     color: var(--ink);
+    font-weight: 450;
 }
 
 [data-reveal] {
@@ -51,6 +54,7 @@ body {
 
 .faq-item[data-open="true"] .faq-chevron {
     transform: rotate(180deg);
+    color: var(--accent);
 }
 
 .faq-answer {
@@ -64,16 +68,95 @@ body {
     opacity: 1;
 }
 
+/* Плавающая пилюля-навигация, как на mastercard.com */
 [data-site-header] {
-    background-color: transparent;
-    border-bottom: 1px solid transparent;
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
-[data-site-header].is-scrolled {
-    background-color: rgba(250, 249, 247, 0.82);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--border);
+[data-site-header] .nav-pill {
+    background-color: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 24px rgba(20, 20, 19, 0.05);
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+[data-site-header].is-scrolled .nav-pill {
+    background-color: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 8px 30px rgba(20, 20, 19, 0.1);
+}
+
+/* Пилюльные кнопки в духе mastercard.com */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    padding: 0.8rem 1.75rem;
+    border: 1.5px solid transparent;
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, color 0.15s ease-in-out;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background-color: var(--ink);
+    border-color: var(--ink);
+    color: #f3f0ee;
+}
+
+.btn-primary:hover {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border-color: var(--ink);
+    color: var(--ink);
+}
+
+.btn-secondary:hover {
+    background-color: var(--ink);
+    color: #f3f0ee;
+}
+
+.btn-ondark {
+    background-color: #f3f0ee;
+    border-color: #f3f0ee;
+    color: var(--ink);
+}
+
+.btn-ondark:hover {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--ink);
+}
+
+.btn-tertiary {
+    color: var(--ink);
+    font-weight: 600;
+    padding: 0;
+    border: none;
+}
+
+.btn-tertiary:hover {
+    color: var(--accent-dark);
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-dark);
 }
 
 @media (prefers-reduced-motion: reduce) {
