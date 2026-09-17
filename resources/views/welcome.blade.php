@@ -41,11 +41,14 @@
     <section class="px-6 pt-[20px] lg:px-10 lg:-mt-[115px]">
         <div class="mx-auto max-w-[1400px]">
             <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[750px] lg:rounded-[40px]">
-                <img
-                    src="assets/images/herobg.png"
-                    alt="Платежи без границ"
+                <video
+                    src="{{ asset('assets/images/herobg.mp4') }}"
                     class="absolute inset-0 h-full w-full object-cover"
-                >
+                    autoplay
+                    loop
+                    muted
+                    playsinline
+                ></video>
                 <div class="absolute inset-0 bg-gradient-to-t from-[#141413]/90 via-[#141413]/25 to-[#141413]/0"></div>
 
                 <div class="relative w-full px-6 pb-10 sm:px-10 sm:pb-12 lg:px-14 lg:pb-16">
