@@ -85,12 +85,11 @@
 
         @php
             $scenes = [
-                ['tag'=>'ИИ-сервисы', 'title'=>'Оплата ИИ-сервисов и подписок', 'img'=>'https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--e6176780-42de-4e72-b550-906d08a82da0/agentic-commerce-standards-hero.jpg?quality=84&preferwebp=true'],
-                ['tag'=>'Онлайн-шопинг', 'title'=>'Покупки в зарубежных онлайн-магазинах', 'img'=>'https://web.archive.org/web/20260913045549im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--efc24a51-bf03-4d56-a493-964b269c6aeb/br45724-mastercard-websiteimageryrefresh-solutions-3-9x16.jpg?quality=84&preferwebp=true'],
-                ['tag'=>'Путешествия', 'title'=>'Отели, билеты и поездки за границей', 'img'=>'https://images.unsplash.com/photo-1773393776477-61773dfc8a09?q=84&w=1600&auto=format&fit=crop'],
-                ['tag'=>'На кассе', 'title'=>'Оплата телефоном в кафе и ресторанах', 'img'=>'https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--31deb226-0992-429e-8fae-9bccb16fc665/br45724-mastercard-websiteimageryrefresh-solutions-4-1x1.jpg?quality=84&preferwebp=true'],
-                ['tag'=>'Покупки', 'title'=>'Одна карта — множество сценариев', 'img'=>'https://images.unsplash.com/photo-1758519289594-8e0444825b04?q=84&w=1400&auto=format&fit=crop'],
-            ];
+                ['tag'=>'ИИ-сервисы', 'title'=>'Оплата ИИ-сервисов и подписок', 'img'=>'assets/images/chatgpt.png'],
+                ['tag'=>'Онлайн-шопинг', 'title'=>'Покупки в зарубежных онлайн-магазинах', 'img'=>'assets/images/ecomm.png'],
+                ['tag'=>'Путешествия', 'title'=>'Отели, билеты и поездки за границей', 'img'=>'assets/images/booking.png'],
+                ['tag'=>'На кассе', 'title'=>'Оплата телефоном в кафе и ресторанах', 'img'=>'assets/images/cafe.png'],
+                ];
         @endphp
         <div class="oval-carousel mt-20" data-carousel-track tabindex="0" aria-label="Сценарии использования">
             @foreach ($scenes as $i => $scene)
