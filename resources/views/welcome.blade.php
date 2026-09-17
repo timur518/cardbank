@@ -247,8 +247,8 @@
 
     {{-- ================= PARTNERS ================= --}}
     <section id="partners" class="px-6 py-28 lg:px-10 lg:py-40">
-        <div class="mx-auto max-w-[1400px] rounded-[40px] bg-[#f37338] px-8 py-16 sm:px-12 lg:px-20 lg:py-24">
-            <div class="grid gap-12 lg:grid-cols-[1fr_.8fr] lg:items-end"><div data-reveal><span class="eyebrow">Вместе выгодней</span><h2 class="mt-5 max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Пользуйтесь сами и приглашайте знакомых</h2></div><div data-reveal><p class="text-lg leading-relaxed text-[#141413]/65">Зарабатывайте с каждого приглашенного и со всех его платежей.</p><a href="#" class="btn btn-primary mt-8">Зарегистрироваться</a></div></div>
+        <div class="mx-auto max-w-[1400px] rounded-[40px] bg-[#f37338] px-8 py-16 text-white sm:px-12 lg:px-20 lg:py-24">
+            <div class="grid gap-12 lg:grid-cols-[1fr_.8fr] lg:items-end"><div data-reveal><span class="eyebrow !text-white">Вместе выгодней</span><h2 class="mt-5 max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Пользуйтесь сами и приглашайте знакомых</h2></div><div data-reveal><p class="text-lg leading-relaxed text-white/70">Зарабатывайте с каждого приглашенного и со всех его платежей.</p><a href="#" class="btn btn-primary mt-8">Зарегистрироваться</a></div></div>
             <div class="mt-16 grid gap-px overflow-hidden rounded-3xl bg-black/10 sm:grid-cols-3">@foreach ([['1%','с каждого пополнения'],['20%','с выпуска карты'],['24/7','автоматические начисления']] as $stat)<div class="bg-white/15 p-8"><p class="text-5xl font-semibold tracking-[-.04em]">{{ $stat[0] }}</p><p class="mt-3 text-sm font-semibold opacity-60">{{ $stat[1] }}</p></div>@endforeach</div>
         </div>
     </section>
