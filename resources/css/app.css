@@ -171,6 +171,58 @@ body {
     color: var(--accent-dark);
 }
 
+.eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background-color: currentColor;
+}
+
+/* Слайдер сценариев использования — большие мягкие тени, как у mastercard.com */
+.carousel-arrow {
+    display: flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(20, 20, 19, 0.15);
+    color: var(--ink);
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.carousel-arrow:hover {
+    background-color: var(--ink);
+    border-color: var(--ink);
+    color: #f3f0ee;
+}
+
+.carousel-arrow:disabled {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
+.carousel-track {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+    display: none;
+}
+
+.card-lift {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-lift:hover {
+    transform: translateY(-8px);
+}
+
 @media (prefers-reduced-motion: reduce) {
     [data-reveal] {
         opacity: 1;

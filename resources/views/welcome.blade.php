@@ -46,194 +46,195 @@
     </header>
 
     <main id="top" class="bg-[#f3f0ee]">
-        {{-- ================= HERO — большой баннер, как на mastercard.com ================= --}}
-        <section class="relative isolate flex min-h-[94vh] items-end overflow-hidden">
-            <img
-                src="https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--f200757c-5753-49b3-b3e6-ef7b8b347072/us-summer-travel-hero.jpg?quality=82&preferwebp=true"
-                alt="Платежи без границ"
-                class="absolute inset-0 h-full w-full object-cover"
-            >
-            <div class="absolute inset-0 bg-gradient-to-t from-[#141413]/90 via-[#141413]/25 to-[#141413]/0"></div>
+        {{-- ================= HERO — фото внутри большого скруглённого блока, как на mastercard.com ================= --}}
+        <section class="px-4 pt-24 sm:px-6 sm:pt-28 lg:px-8">
+            <div class="relative isolate flex min-h-[84vh] items-end overflow-hidden rounded-[32px] sm:rounded-[40px] lg:rounded-[48px]">
+                <img
+                    src="https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--f200757c-5753-49b3-b3e6-ef7b8b347072/us-summer-travel-hero.jpg?quality=82&preferwebp=true"
+                    alt="Платежи без границ"
+                    class="absolute inset-0 h-full w-full object-cover"
+                >
+                <div class="absolute inset-0 bg-gradient-to-t from-[#141413]/90 via-[#141413]/25 to-[#141413]/0"></div>
 
-            <div class="relative w-full px-6 pb-20 pt-48 sm:px-10 lg:px-16 lg:pb-24">
-                <div data-reveal class="max-w-[680px]">
-                    <span class="eyebrow !text-white/80">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="12" r="7" fill-opacity=".55"/><circle cx="15" cy="12" r="7" fill-opacity=".85"/></svg>
-                        [Бренд]
-                    </span>
-                    <h1 class="mt-6 text-[clamp(3rem,7vw,5.75rem)] font-medium leading-[0.98] tracking-[-0.03em] text-white">
-                        Платежи без границ
-                    </h1>
-                    <p class="mt-7 max-w-lg text-xl leading-relaxed text-white/80">
-                        Mastercard и Visa для оплаты сервисов, подписок и покупок за рубежом —
-                        оформляется за минуты и пополняется из России через СБП.
-                    </p>
+                <div class="relative w-full px-6 pb-14 pt-20 sm:px-10 sm:pb-16 lg:px-16 lg:pb-20">
+                    <div data-reveal class="max-w-[680px]">
+                        <span class="eyebrow !text-white/80">[Бренд]</span>
+                        <h1 class="mt-6 text-[clamp(3rem,7vw,5.75rem)] font-medium leading-[0.98] tracking-[-0.03em] text-white">
+                            Платежи без границ
+                        </h1>
+                        <p class="mt-7 max-w-lg text-xl leading-relaxed text-white/80">
+                            Mastercard и Visa для оплаты сервисов, подписок и покупок за рубежом —
+                            оформляется за минуты и пополняется из России через СБП.
+                        </p>
 
-                    <div class="mt-10 flex flex-wrap items-center gap-4">
-                        <a href="#products" class="btn btn-ondark">Оформить карту онлайн</a>
-                        <a href="#" class="btn btn-outline-ondark">Войти в аккаунт</a>
+                        <div class="mt-10 flex flex-wrap items-center gap-4">
+                            <a href="#products" class="btn btn-ondark">Оформить карту онлайн</a>
+                            <a href="#" class="btn btn-outline-ondark">Войти в аккаунт</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        {{-- ================= ОБРАЗ ЖИЗНИ — большая витрина сценариев ================= --}}
-        <section id="lifestyle" class="px-6 py-28 lg:px-10 lg:py-36">
-            <div class="mx-auto max-w-[1320px]">
-                <div data-reveal class="max-w-2xl">
+        {{-- ================= ОБРАЗ ЖИЗНИ — слайдер сценариев, как на mastercard.com ================= --}}
+        <section id="lifestyle" class="py-28 lg:py-36" data-carousel>
+            <div class="mx-auto flex max-w-[1320px] flex-col gap-6 px-6 lg:flex-row lg:items-end lg:justify-between lg:px-10">
+                <div data-reveal>
                     <span class="eyebrow">Где это работает</span>
                     <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">
-                        Одна карта закрывает всю жизнь за рубежом
+                        Одна карта на всю жизнь за рубежом
                     </h2>
-                    <p class="mt-4 text-lg leading-relaxed text-[#141413]/60">
-                        От подписки на ИИ-сервис до отеля в отпуске — карта работает
-                        одинаково просто в интернете и на кассе.
-                    </p>
                 </div>
+                <div class="flex items-center gap-4">
+                    <p class="max-w-xs text-base leading-relaxed text-[#141413]/55">От ИИ-подписки до отеля в отпуске — платите одинаково просто.</p>
+                    <div class="hidden shrink-0 items-center gap-3 lg:flex">
+                        <button type="button" data-carousel-prev aria-label="Предыдущий слайд" class="carousel-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg>
+                        </button>
+                        <button type="button" data-carousel-next aria-label="Следующий слайд" class="carousel-arrow">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-                <div class="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-flow-row-dense lg:grid-cols-4 lg:auto-rows-[220px] lg:gap-6">
-                    @php
-                        $scenes = [
-                            [
-                                'title' => 'Покупки в зарубежных онлайн-магазинах',
-                                'img' => 'https://web.archive.org/web/20260913045549im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--efc24a51-bf03-4d56-a493-964b269c6aeb/br45724-mastercard-websiteimageryrefresh-solutions-3-9x16.jpg?quality=82&preferwebp=true',
-                                'span' => 'lg:col-span-2 lg:row-span-2',
-                            ],
-                            [
-                                'title' => 'Оплата любых ИИ-сервисов и подписок',
-                                'img' => 'https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--e6176780-42de-4e72-b550-906d08a82da0/agentic-commerce-standards-hero.jpg?quality=82&preferwebp=true',
-                                'span' => 'lg:col-span-2 lg:row-span-1',
-                            ],
-                            [
-                                'title' => 'Apple Pay и Google Pay на кассе',
-                                'img' => 'https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--31deb226-0992-429e-8fae-9bccb16fc665/br45724-mastercard-websiteimageryrefresh-solutions-4-1x1.jpg?quality=82&preferwebp=true',
-                                'span' => 'lg:col-span-1 lg:row-span-1',
-                            ],
-                            [
-                                'title' => 'Платежи в кафе и ресторанах',
-                                'img' => 'https://images.unsplash.com/photo-1758519289594-8e0444825b04?q=80&w=1200&auto=format&fit=crop',
-                                'span' => 'lg:col-span-1 lg:row-span-1',
-                            ],
-                            [
-                                'title' => 'Отели и гостиницы за рубежом',
-                                'img' => 'https://images.unsplash.com/photo-1773393776477-61773dfc8a09?q=80&w=1600&auto=format&fit=crop',
-                                'span' => 'lg:col-span-4 lg:row-span-1',
-                            ],
-                        ];
-                    @endphp
+            @php
+                $scenes = [
+                    [
+                        'tag' => 'Онлайн-шоппинг',
+                        'title' => 'Покупки в зарубежных онлайн-магазинах',
+                        'img' => 'https://web.archive.org/web/20260913045549im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--efc24a51-bf03-4d56-a493-964b269c6aeb/br45724-mastercard-websiteimageryrefresh-solutions-3-9x16.jpg?quality=82&preferwebp=true',
+                    ],
+                    [
+                        'tag' => 'ИИ-сервисы',
+                        'title' => 'Оплата любых ИИ-сервисов и подписок',
+                        'img' => 'https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--e6176780-42de-4e72-b550-906d08a82da0/agentic-commerce-standards-hero.jpg?quality=82&preferwebp=true',
+                    ],
+                    [
+                        'tag' => 'На кассе',
+                        'title' => 'Apple Pay и Google Pay на кассе',
+                        'img' => 'https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--31deb226-0992-429e-8fae-9bccb16fc665/br45724-mastercard-websiteimageryrefresh-solutions-4-1x1.jpg?quality=82&preferwebp=true',
+                    ],
+                    [
+                        'tag' => 'Кафе и рестораны',
+                        'title' => 'Платежи в кафе и ресторанах',
+                        'img' => 'https://images.unsplash.com/photo-1758519289594-8e0444825b04?q=80&w=1200&auto=format&fit=crop',
+                    ],
+                    [
+                        'tag' => 'Путешествия',
+                        'title' => 'Отели и гостиницы за рубежом',
+                        'img' => 'https://images.unsplash.com/photo-1773393776477-61773dfc8a09?q=80&w=1600&auto=format&fit=crop',
+                    ],
+                ];
+            @endphp
 
-                    @foreach ($scenes as $i => $scene)
-                        <div data-reveal style="--reveal-delay: {{ $i * 90 }}ms" class="group relative isolate h-[260px] overflow-hidden rounded-[28px] sm:h-[320px] lg:h-auto {{ $scene['span'] }}">
-                            <img src="{{ $scene['img'] }}" alt="{{ $scene['title'] }}" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105">
-                            <div class="absolute inset-0 bg-gradient-to-t from-[#141413]/85 via-[#141413]/10 to-transparent"></div>
-                            <p class="absolute inset-x-0 bottom-0 p-6 text-xl font-semibold leading-snug text-white sm:text-2xl">{{ $scene['title'] }}</p>
+            <div data-carousel-track class="carousel-track mt-14 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-6 lg:px-10">
+                @foreach ($scenes as $i => $scene)
+                    <article data-reveal style="--reveal-delay: {{ $i * 90 }}ms" class="group relative isolate w-[80%] flex-shrink-0 snap-start overflow-hidden rounded-[32px] shadow-[0_60px_100px_-40px_rgba(20,20,19,0.45)] sm:w-[52%] lg:w-[34%]">
+                        <div class="aspect-[4/5]">
+                            <img src="{{ $scene['img'] }}" alt="{{ $scene['title'] }}" loading="lazy" class="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105">
                         </div>
-                    @endforeach
-                </div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#141413]/85 via-[#141413]/5 to-transparent"></div>
+                        <span class="absolute left-6 top-6 rounded-full bg-white/90 px-4 py-1.5 text-xs font-semibold text-[#141413] backdrop-blur">{{ $scene['tag'] }}</span>
+                        <p class="absolute inset-x-6 bottom-6 text-2xl font-semibold leading-snug text-white">{{ $scene['title'] }}</p>
+                    </article>
+                @endforeach
             </div>
         </section>
 
         {{-- ================= ДВА ПРОДУКТА: CARD BLACK / CARD ORANGE ================= --}}
         <section id="products" class="px-6 py-28 lg:px-10 lg:py-36">
             <div class="mx-auto max-w-[1320px]">
-                <div data-reveal class="mx-auto max-w-2xl text-center">
-                    <span class="eyebrow justify-center">Карты</span>
-                    <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Два продукта под разные задачи</h2>
+                <div data-reveal class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <span class="eyebrow">Карты</span>
+                        <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Виртуальные карты для платежей и покупок</h2>
+                    </div>
+                    <p class="max-w-xs text-base leading-relaxed text-[#141413]/55 lg:pb-2">Свой продукт под каждую задачу — в интернете и на кассе.</p>
                 </div>
 
-                {{-- CARD BLACK --}}
-                <div class="mt-20 grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
-                    <div data-reveal class="order-2 lg:order-1">
-                        <span class="eyebrow">Card Black</span>
-                        <h3 class="mt-4 text-[clamp(1.9rem,3vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.02em] text-[#141413]">Для оплаты в интернете</h3>
-                        <p class="mt-5 max-w-lg text-lg leading-relaxed text-[#141413]/60">
-                            Подписки, облачные и ИИ-сервисы, зарубежные онлайн-магазины,
-                            реклама и любые другие сайты, принимающие карты — без физического
-                            пластика, реквизиты сразу в приложении.
-                        </p>
-                        <ul class="mt-8 space-y-4 text-base text-[#141413]/75">
-                            @foreach ([
-                                'Выпуск за минуты, полностью онлайн',
-                                'Мгновенное пополнение через СБП',
-                                'Отдельная карта под каждую задачу',
-                            ] as $li)
-                                <li class="flex items-start gap-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 flex-shrink-0 text-[#cf4500]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-                                    {{ $li }}
-                                </li>
-                            @endforeach
-                        </ul>
-                        <div class="mt-9 flex flex-wrap items-center gap-5">
-                            <a href="#" class="btn btn-primary">Оформить Card Black</a>
-                            <span class="text-base text-[#141413]/45">[X ₽] за выпуск · 0 ₽ в месяц</span>
-                        </div>
-                    </div>
+                <div class="mt-14 grid gap-8 lg:grid-cols-2">
+                    @php
+                        $products = [
+                            [
+                                'eyebrow' => 'Card Black',
+                                'title' => 'Для оплаты в интернете',
+                                'gradient' => 'from-[#2b2a28] to-[#141413]',
+                                'text' => 'text-white',
+                                'desc' => 'Подписки, облачные и ИИ-сервисы, зарубежные онлайн-магазины, реклама и любые другие сайты, принимающие карты — без физического пластика, реквизиты сразу в приложении.',
+                                'points' => [
+                                    'Выпуск за минуты, полностью онлайн',
+                                    'Мгновенное пополнение через СБП',
+                                    'Отдельная карта под каждую задачу',
+                                ],
+                                'network' => 'Mastercard',
+                                'digits' => '4821',
+                                'badges' => null,
+                                'cta' => 'Оформить Card Black',
+                            ],
+                            [
+                                'eyebrow' => 'Card Orange',
+                                'title' => 'Для онлайн- и офлайн-покупок с Apple Pay и Google Pay',
+                                'gradient' => 'from-[#f37338] to-[#9a3a0a]',
+                                'text' => 'text-white',
+                                'desc' => 'Добавляется в Apple Pay и Google Pay — прикладываете телефон или часы к терминалу в кафе, ресторане или отеле за границей, как обычной картой.',
+                                'points' => [
+                                    'Бесконтактная оплата по NFC за границей',
+                                    'Работает с Apple Watch и Wear OS',
+                                    'Продавец получает токен, а не номер карты',
+                                ],
+                                'network' => 'VISA',
+                                'digits' => '5678',
+                                'badges' => ['Pay', 'G Pay'],
+                                'cta' => 'Оформить Card Orange',
+                            ],
+                        ];
+                    @endphp
 
-                    <div data-reveal style="--reveal-delay:120ms" class="order-1 flex justify-center lg:order-2">
-                        <div class="w-full max-w-[380px] rotate-[3deg] rounded-[32px] bg-gradient-to-br from-[#2b2a28] to-[#141413] p-8 text-white shadow-2xl">
-                            <div class="flex items-start justify-between">
-                                <div class="h-10 w-14 rounded-md bg-gradient-to-br from-amber-100 to-amber-300"></div>
-                                <p class="text-base font-bold tracking-wide">Mastercard</p>
-                            </div>
-                            <p class="mt-16 font-mono text-2xl tracking-widest">•••• •••• •••• 4821</p>
-                            <div class="mt-10 flex items-end justify-between">
-                                <div>
-                                    <p class="text-xs uppercase tracking-wider text-white/50">Баланс</p>
-                                    <p class="mt-1 text-2xl font-semibold">$1,000.00</p>
+                    @foreach ($products as $i => $product)
+                        <article data-reveal style="--reveal-delay: {{ $i * 120 }}ms" class="card-lift group overflow-hidden rounded-[32px] bg-white shadow-[0_50px_100px_-40px_rgba(20,20,19,0.3)]">
+                            <div class="relative flex h-72 items-center justify-center overflow-hidden bg-gradient-to-br {{ $product['gradient'] }} p-8">
+                                <div class="w-full max-w-[300px] rounded-[24px] bg-white/10 p-6 {{ $product['text'] }} backdrop-blur-sm transition duration-500 ease-out group-hover:-translate-y-1.5 group-hover:scale-[1.02]">
+                                    <div class="flex items-start justify-between">
+                                        <div class="h-8 w-11 rounded-md bg-gradient-to-br from-amber-100 to-amber-300"></div>
+                                        @if ($product['badges'])
+                                            <div class="flex gap-1.5">
+                                                @foreach ($product['badges'] as $badge)
+                                                    <span class="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold backdrop-blur"> {{ $badge }}</span>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-sm font-bold tracking-wide">{{ $product['network'] }}</p>
+                                        @endif
+                                    </div>
+                                    <p class="mt-10 font-mono text-lg tracking-widest">•••• •••• •••• {{ $product['digits'] }}</p>
+                                    @if ($product['badges'])
+                                        <p class="mt-6 text-right text-sm font-bold italic text-white/80">{{ $product['network'] }}</p>
+                                    @endif
                                 </div>
-                                <p class="text-sm font-medium text-white/50">Card Black</p>
                             </div>
-                        </div>
-                    </div>
-                </div>
 
-                {{-- CARD ORANGE --}}
-                <div class="mt-28 grid items-center gap-14 lg:grid-cols-2 lg:gap-20">
-                    <div data-reveal class="flex justify-center">
-                        <div class="w-full max-w-[380px] -rotate-[3deg] rounded-[32px] bg-gradient-to-br from-[#f37338] to-[#9a3a0a] p-8 text-white shadow-2xl">
-                            <div class="flex items-start justify-between">
-                                <div class="h-10 w-14 rounded-md bg-gradient-to-br from-amber-100 to-amber-300"></div>
-                                <div class="flex gap-1.5">
-                                    <span class="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold backdrop-blur"> Pay</span>
-                                    <span class="rounded-full bg-white/20 px-2.5 py-1 text-[11px] font-semibold backdrop-blur">G Pay</span>
-                                </div>
-                            </div>
-                            <p class="mt-16 font-mono text-2xl tracking-widest">•••• •••• •••• 5678</p>
-                            <div class="mt-10 flex items-end justify-between">
-                                <div>
-                                    <p class="text-xs uppercase tracking-wider text-white/60">Баланс</p>
-                                    <p class="mt-1 text-2xl font-semibold">$100.00</p>
-                                </div>
-                                <p class="text-sm font-bold italic text-white/80">VISA</p>
-                            </div>
-                        </div>
-                    </div>
+                            <div class="p-8 lg:p-10">
+                                <span class="eyebrow">{{ $product['eyebrow'] }}</span>
+                                <h3 class="mt-3 text-2xl font-medium leading-snug tracking-[-0.01em] text-[#141413]">{{ $product['title'] }}</h3>
+                                <p class="mt-4 text-base leading-relaxed text-[#141413]/60">{{ $product['desc'] }}</p>
 
-                    <div data-reveal style="--reveal-delay:120ms">
-                        <span class="eyebrow">Card Orange</span>
-                        <h3 class="mt-4 text-[clamp(1.9rem,3vw,2.75rem)] font-medium leading-[1.08] tracking-[-0.02em] text-[#141413]">Для онлайн- и офлайн-покупок с Apple Pay и Google Pay</h3>
-                        <p class="mt-5 max-w-lg text-lg leading-relaxed text-[#141413]/60">
-                            Добавляется в Apple Pay и Google Pay — прикладываете телефон или
-                            часы к терминалу в кафе, ресторане или отеле за границей, как
-                            обычной картой.
-                        </p>
-                        <ul class="mt-8 space-y-4 text-base text-[#141413]/75">
-                            @foreach ([
-                                'Бесконтактная оплата по NFC за границей',
-                                'Работает с Apple Watch и Wear OS',
-                                'Продавец получает токен, а не номер карты',
-                            ] as $li)
-                                <li class="flex items-start gap-3">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-5 w-5 flex-shrink-0 text-[#cf4500]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
-                                    {{ $li }}
-                                </li>
-                            @endforeach
-                        </ul>
-                        <div class="mt-9 flex flex-wrap items-center gap-5">
-                            <a href="#" class="btn btn-primary">Оформить Card Orange</a>
-                            <span class="text-base text-[#141413]/45">[X ₽] за выпуск · 0 ₽ в месяц</span>
-                        </div>
-                    </div>
+                                <ul class="mt-6 space-y-3 text-sm text-[#141413]/75">
+                                    @foreach ($product['points'] as $point)
+                                        <li class="flex items-start gap-3">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="mt-0.5 h-4 w-4 flex-shrink-0 text-[#cf4500]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>
+                                            {{ $point }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+
+                                <div class="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-[#e8e5e1] pt-6">
+                                    <span class="text-sm text-[#141413]/45">[X ₽] за выпуск · 0 ₽ в месяц</span>
+                                    <a href="#" class="btn btn-primary text-sm">{{ $product['cta'] }}</a>
+                                </div>
+                            </div>
+                        </article>
+                    @endforeach
                 </div>
             </div>
         </section>
@@ -241,9 +242,12 @@
         {{-- ================= КАК ЭТО РАБОТАЕТ ================= --}}
         <section id="how" class="px-6 py-28 lg:px-10 lg:py-36">
             <div class="mx-auto max-w-[1320px]">
-                <div data-reveal class="mx-auto max-w-2xl text-center">
-                    <span class="eyebrow justify-center">Как это устроено</span>
-                    <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Четыре шага до первой оплаты</h2>
+                <div data-reveal class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <span class="eyebrow">Как это устроено</span>
+                        <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Четыре шага до первой оплаты</h2>
+                    </div>
+                    <p class="max-w-xs text-base leading-relaxed text-[#141413]/55 lg:pb-2">От регистрации до оплаты — без визита в офис.</p>
                 </div>
 
                 <div class="relative mt-20 grid gap-12 sm:grid-cols-2 lg:grid-cols-4">
@@ -270,14 +274,12 @@
         {{-- ================= ИНФРАСТРУКТУРА ================= --}}
         <section id="features" class="px-6 py-28 lg:px-10 lg:py-36">
             <div class="mx-auto max-w-[1320px]">
-                <div data-reveal class="max-w-2xl">
-                    <span class="eyebrow">Надёжность</span>
-                    <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Карта работает благодаря инфраструктуре, а не одному поставщику</h2>
-                    <p class="mt-4 text-lg leading-relaxed text-[#141413]/60">
-                        Сервис не привязан к одному банку-эмитенту. Несколько независимых
-                        партнёров и постоянный мониторинг каждой операции — так карта остаётся
-                        рабочей даже при сбоях на стороне отдельного поставщика.
-                    </p>
+                <div data-reveal class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <span class="eyebrow">Надёжность</span>
+                        <h2 class="mt-4 max-w-2xl text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Инфраструктура, а не один поставщик</h2>
+                    </div>
+                    <p class="max-w-xs text-base leading-relaxed text-[#141413]/55 lg:pb-2">Несколько партнёров и контроль каждой операции — без единой точки отказа.</p>
                 </div>
 
                 <div class="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -422,14 +424,12 @@
         {{-- ================= ПАРТНЁРСКАЯ ПРОГРАММА ================= --}}
         <section id="partners" class="px-6 py-28 lg:px-10 lg:py-36">
             <div class="mx-auto max-w-[1320px]">
-                <div data-reveal class="max-w-2xl">
-                    <span class="eyebrow">Партнёрам</span>
-                    <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Партнёрская программа с прозрачной статистикой</h2>
-                    <p class="mt-4 text-lg leading-relaxed text-[#141413]/60">
-                        Приглашённый пользователь закрепляется за вами навсегда. Начисления
-                        считаются автоматически и видны в личном кабинете в реальном времени —
-                        без ручных сверок и ожидания отчёта.
-                    </p>
+                <div data-reveal class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                        <span class="eyebrow">Партнёрам</span>
+                        <h2 class="mt-4 max-w-2xl text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Партнёрская программа без ручных сверок</h2>
+                    </div>
+                    <p class="max-w-xs text-base leading-relaxed text-[#141413]/55 lg:pb-2">Приглашённый пользователь закрепляется навсегда, начисления видны сразу.</p>
                 </div>
 
                 <div class="mt-14 grid gap-6 sm:grid-cols-3">

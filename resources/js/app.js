@@ -43,6 +43,41 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Слайдер сценариев использования (как карусель на mastercard.com).
+    document.querySelectorAll('[data-carousel]').forEach((carousel) => {
+        const track = carousel.querySelector('[data-carousel-track]');
+        const prevBtn = carousel.querySelector('[data-carousel-prev]');
+        const nextBtn = carousel.querySelector('[data-carousel-next]');
+        if (!track) {
+            return;
+        }
+
+        const scrollByCard = (direction) => {
+            const card = track.querySelector(':scope > *');
+            if (!card) {
+                return;
+            }
+            const gap = parseFloat(getComputedStyle(track).columnGap || '24') || 24;
+            track.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: 'smooth' });
+        };
+
+        prevBtn?.addEventListener('click', () => scrollByCard(-1));
+        nextBtn?.addEventListener('click', () => scrollByCard(1));
+
+        const updateArrows = () => {
+            if (!prevBtn && !nextBtn) {
+                return;
+            }
+            const maxScroll = track.scrollWidth - track.clientWidth;
+            if (prevBtn) prevBtn.disabled = track.scrollLeft <= 4;
+            if (nextBtn) nextBtn.disabled = track.scrollLeft >= maxScroll - 4;
+        };
+
+        updateArrows();
+        track.addEventListener('scroll', updateArrows, { passive: true });
+        window.addEventListener('resize', updateArrows);
+    });
+
     // Аккордеон вопросов и ответов.
     document.querySelectorAll('[data-faq-item]').forEach((item) => {
         const button = item.querySelector('[data-faq-button]');
