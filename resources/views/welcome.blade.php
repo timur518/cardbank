@@ -131,7 +131,7 @@
                     [
                         'class'=>'product-orange', 'eyebrow'=>'CARD ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-                        'points'=>['Apple Pay и Google Pay','Бесконтактная оплата по NFC','Работа с Apple Watch и Wear OS'], 'bgImage'=>'orangecardbg.png', 'cta'=>'Оформить Card Orange'
+                        'points'=>['Поддерживает привязку к Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'], 'bgImage'=>'orangecardbg.png', 'cta'=>'Оформить Card Orange'
                     ],
                 ];
             @endphp
@@ -166,12 +166,15 @@
     <section id="how" class="editorial-dark px-6 py-28 lg:px-10 lg:py-40">
         <div class="mx-auto max-w-[1400px]">
             <div class="grid gap-10 lg:grid-cols-[1fr_.65fr] lg:items-end">
-                <div data-reveal><span class="eyebrow !text-[#f37338]">Как это работает</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em] text-white">От регистрации до первой оплаты — четыре шага</h2></div>
-                <p data-reveal class="text-lg leading-relaxed text-white/55">Никаких офисов и пластика. Всё необходимое — в одном цифровом интерфейсе.</p>
+                <div data-reveal><span class="eyebrow !text-[#f37338]">Онлайн оформление за 3 минуты</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em] text-white">От регистрации до первой оплаты — четыре шага</h2></div>
+                <div data-reveal>
+                    <p class="text-lg leading-relaxed text-white/55">Никаких офисов и пластика. Всё необходимое — в одном цифровом интерфейсе.</p>
+                    <a href="#" class="btn btn-hero-orange mt-8">Зарегистрироваться</a>
+                </div>
             </div>
             <div class="mt-20 grid gap-px overflow-hidden rounded-[32px] bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
-                @foreach ([['01','Регистрация','Укажите данные и пройдите проверку личности.'],['02','Выбор карты','Выберите карту под свой сценарий использования.'],['03','Пополнение','Пополните баланс через СБП или картой российского банка.'],['04','Оплата','Получите реквизиты или добавьте карту в кошелёк.']] as $i => $step)
-                    <div data-reveal style="--reveal-delay: {{ $i * 90 }}ms" class="how-card"><span>{{ $step[0] }}</span><h3>{{ $step[1] }}</h3><p>{{ $step[2] }}</p></div>
+                @foreach ([['01','Зарегистрируйтесь','Создайте аккаунт или авторизуйтесь в один клик'],['02','Выберите карту','Выберите и выпустите карту, которая подходит под ваш запрос'],['03','Пополните баланс','Пополните баланс через СБП или картой российского банка.'],['04','Платите по миру','Оплачивайте зарубежные покупки <br>и сервисы уже сейчас']] as $i => $step)
+                    <div data-reveal style="--reveal-delay: {{ $i * 90 }}ms" class="how-card"><span>{{ $step[0] }}</span><h3>{{ $step[1] }}</h3><p>{!! $step[2] !!}</p></div>
                 @endforeach
             </div>
         </div>
