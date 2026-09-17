@@ -12,7 +12,7 @@
 <body class="font-sans antialiased">
 
 <header data-site-header class="site-header sticky top-[40px] z-50 mt-[40px] px-4 lg:px-8">
-    <div class="nav-pill mx-auto flex max-w-[1400px] items-center justify-between rounded-full px-5 py-3 sm:px-7">
+    <div class="nav-pill mx-auto flex max-w-[1350px] items-center justify-between rounded-full px-5 py-3 sm:px-7">
         <a href="#top" class="brand-mark">[Бренд]</a>
         <nav class="hidden items-center gap-8 text-[16px] text-[#141413] lg:flex">
             <a href="#lifestyle" class="nav-link">Возможности</a>
@@ -38,8 +38,8 @@
 
 <main id="top" class="bg-[#f3f0ee]">
     {{-- ================= HERO ================= --}}
-    <section class="px-6 pt-[20px] lg:px-10">
-        <div class="mx-auto max-w-[1320px]">
+    <section class="px-6 pt-[20px] lg:px-10 lg:-mt-[115px]">
+        <div class="mx-auto max-w-[1400px]">
             <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[750px] lg:rounded-[40px]">
                 <img
                     src="https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--f200757c-5753-49b3-b3e6-ef7b8b347072/us-summer-travel-hero.jpg?quality=82&preferwebp=true"
@@ -77,8 +77,8 @@
                     <h2 class="max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-semibold leading-[.94] tracking-[-.045em]">Виртуальные карты для платежей и покупок</h2>
                 </div>
                 <div data-reveal>
-                    <p class="max-w-lg text-[20px] font-normal leading-relaxed text-[#141414]">Удобный способ совершать покупки из России и СНГ</p>
-                    <p class="mt-4 max-w-lg text-base leading-relaxed text-[#141413]/45">От подписки на ИИ-сервис до отеля в отпуске — просто</p>
+                    <p class="mt-4 max-w-lg text-[20px] font-normal leading-relaxed text-[#141414]">Удобный способ совершать покупки из России и СНГ</p>
+                    <p class="max-w-lg text-base leading-relaxed text-[#141413]/45">От подписки на ИИ-сервис до отеля в отпуске — просто</p>
                 </div>
             </div>
         </div>
@@ -117,16 +117,16 @@
     <section id="products" class="px-6 py-28 lg:px-10 lg:py-40">
         <div class="mx-auto max-w-[1400px]">
             <div data-reveal class="max-w-4xl">
-                <span class="eyebrow">Два продукта</span>
-                <h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Карты, созданные под разные задачи</h2>
+                <span class="eyebrow">Только три карты</span>
+                <h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Карты, созданные <br> под основные задачи</h2>
             </div>
 
             @php
                 $products = [
                     [
                         'class'=>'product-black', 'eyebrow'=>'CARD BLACK', 'title'=>'Для интернета. Подписок. Сервисов.',
-                        'desc'=>'Главная карта для цифровой жизни. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов — без физического пластика.',
-                        'points'=>['Выпуск за несколько минут','Мгновенное пополнение через СБП','Отдельная карта под каждую задачу'], 'network'=>'Mastercard','digits'=>'4821','cta'=>'Оформить Card Black'
+                        'desc'=>'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов — без физического пластика.',
+                        'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'], 'network'=>'Mastercard','digits'=>'4821','cta'=>'Оформить карту Black'
                     ],
                     [
                         'class'=>'product-orange', 'eyebrow'=>'CARD ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
@@ -162,7 +162,7 @@
                                 @endforeach
                             </ul>
                             <div class="mt-10 flex flex-wrap items-center gap-5 border-t border-current/15 pt-7">
-                                <a href="#" class="btn {{ $i === 0 ? 'btn-ondark' : 'btn-dark-on-orange' }}">{{ $product['cta'] }}</a>
+                                <a href="#" class="btn {{ $i === 0 ? 'btn-hero-orange' : 'btn-dark-on-orange' }}">{{ $product['cta'] }}</a>
                                 <span class="text-sm opacity-50">[X ₽] за выпуск · 0 ₽ в месяц</span>
                             </div>
                         </div>
