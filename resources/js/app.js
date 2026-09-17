@@ -256,39 +256,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /*
-     * Второй carousel.
+     * Второй carousel — бесконечная карусель овалов.
      *
-     * Используется та же механика:
-     * один центральный овал + частично видимые соседние.
+     * Перед первым и после последнего реального слайда добавляется по одному клону,
+     * чтобы у первого и последнего слайда тоже был виден кусочек соседнего с обеих
+     * сторон. Когда прокрутка останавливается на клоне, происходит мгновенный (без
+     * анимации) перескок на тот же по виду настоящий слайд — так создаётся иллюзия
+     * бесконечной прокрутки в обе стороны.
      */
     document.querySelectorAll('[data-carousel]').forEach((carousel) => {
-        const track = carousel.querySelector(
-            '[data-carousel-track]'
-        );
+        const track = carousel.querySelector('[data-carousel-track]');
+        const realSlides = [...carousel.querySelectorAll('[data-carousel-item]')];
 
-        const slides = [
-            ...carousel.querySelectorAll(
-                '[data-carousel-item]'
-            ),
-        ];
+        const prevButton = carousel.querySelector('[data-carousel-prev]');
+        const nextButton = carousel.querySelector('[data-carousel-next]');
+        const dots = carousel.querySelector('[data-carousel-dots]');
 
-        const prevButton = carousel.querySelector(
-            '[data-carousel-prev]'
-        );
-
-        const nextButton = carousel.querySelector(
-            '[data-carousel-next]'
-        );
-
-        const dots = carousel.querySelector(
-            '[data-carousel-dots]'
-        );
-
-        if (!track || !slides.length) {
+        if (!track || realSlides.length < 2) {
             return;
         }
 
-        let activeIndex = 0;
+        const realCount = realSlides.length;
+
+        const firstClone = realSlides[0].cloneNode(true);
+        const lastClone = realSlides[realCount - 1].cloneNode(true);
+
+        [firstClone, lastClone].forEach((clone) => {
+            clone.removeAttribute('data-reveal');
+            clone.removeAttribute('style');
+            clone.setAttribute('data-carousel-clone', 'true');
+            clone.setAttribute('aria-hidden', 'true');
+            clone.setAttribute('tabindex', '-1');
+            clone.classList.add('is-visible');
+        });
+
+        track.insertBefore(lastClone, realSlides[0]);
+        track.appendChild(firstClone);
+
+        const slides = [...track.querySelectorAll('[data-carousel-item]')];
+        const firstRealIndex = 1;
+        const lastRealIndex = realCount;
+        const lastSlideIndex = slides.length - 1;
+
+        let activeIndex = firstRealIndex;
+        let settleTimer = null;
 
         const centerSlide = (index, smooth = true) => {
             const slide = slides[index];
@@ -297,9 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const left =
-                slide.offsetLeft -
-                (track.clientWidth - slide.offsetWidth) / 2;
+            const left = slide.offsetLeft - (track.clientWidth - slide.offsetWidth) / 2;
 
             track.scrollTo({
                 left,
@@ -307,22 +316,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
-        const updateActive = () => {
-            const center =
-                track.scrollLeft +
-                track.clientWidth / 2;
+        const realIndexOf = (index) => (((index - firstRealIndex) % realCount) + realCount) % realCount;
 
-            let closestIndex = 0;
+        const paintState = () => {
+            const center = track.scrollLeft + track.clientWidth / 2;
+
+            let closestIndex = activeIndex;
             let closestDistance = Infinity;
 
             slides.forEach((slide, index) => {
-                const slideCenter =
-                    slide.offsetLeft +
-                    slide.offsetWidth / 2;
-
-                const distance = Math.abs(
-                    center - slideCenter
-                );
+                const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+                const distance = Math.abs(center - slideCenter);
 
                 if (distance < closestDistance) {
                     closestDistance = distance;
@@ -333,43 +337,37 @@ document.addEventListener('DOMContentLoaded', () => {
             activeIndex = closestIndex;
 
             slides.forEach((slide, index) => {
-                slide.classList.toggle(
-                    'is-active',
-                    index === activeIndex
-                );
+                slide.classList.toggle('is-active', index === activeIndex);
             });
 
-            dots
-                ?.querySelectorAll('.carousel-dot')
-                .forEach((dot, index) => {
-                    dot.classList.toggle(
-                        'is-active',
-                        index === activeIndex
-                    );
-                });
+            const realIndex = realIndexOf(activeIndex);
 
-            if (prevButton) {
-                prevButton.disabled = activeIndex === 0;
-            }
+            dots?.querySelectorAll('.carousel-dot').forEach((dot, index) => {
+                dot.classList.toggle('is-active', index === realIndex);
+            });
+        };
 
-            if (nextButton) {
-                nextButton.disabled =
-                    activeIndex === slides.length - 1;
+        // Если после остановки прокрутки активен оказался клон — мгновенно переключаемся
+        // на соответствующий настоящий слайд с той же картинкой.
+        const settleOnRealSlide = () => {
+            if (activeIndex === 0) {
+                activeIndex = lastRealIndex;
+                centerSlide(activeIndex, false);
+                paintState();
+            } else if (activeIndex === lastSlideIndex) {
+                activeIndex = firstRealIndex;
+                centerSlide(activeIndex, false);
+                paintState();
             }
         };
 
         const goTo = (index) => {
-            activeIndex = Math.max(
-                0,
-                Math.min(index, slides.length - 1)
-            );
-
+            activeIndex = index;
             centerSlide(activeIndex);
-            updateActive();
         };
 
-        // Индикаторы carousel.
-        slides.forEach((_, index) => {
+        // Индикаторы carousel — по одному на каждый настоящий слайд.
+        realSlides.forEach((_, index) => {
             if (!dots) {
                 return;
             }
@@ -378,14 +376,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             dot.type = 'button';
             dot.className = 'carousel-dot';
-
-            dot.setAttribute(
-                'aria-label',
-                `Слайд ${index + 1}`
-            );
+            dot.setAttribute('aria-label', `Слайд ${index + 1}`);
 
             dot.addEventListener('click', () => {
-                goTo(index);
+                goTo(firstRealIndex + index);
             });
 
             dots.appendChild(dot);
@@ -401,7 +395,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         track.addEventListener(
             'scroll',
-            updateActive,
+            () => {
+                paintState();
+
+                clearTimeout(settleTimer);
+                settleTimer = setTimeout(settleOnRealSlide, 120);
+            },
             {
                 passive: true,
             }
@@ -421,12 +420,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         window.addEventListener('resize', () => {
             centerSlide(activeIndex, false);
-            updateActive();
+            paintState();
         });
 
+        // Первый реальный слайд открывается ровно по центру экрана.
         requestAnimationFrame(() => {
-            centerSlide(0, false);
-            updateActive();
+            activeIndex = firstRealIndex;
+            centerSlide(firstRealIndex, false);
+            paintState();
         });
     });
 

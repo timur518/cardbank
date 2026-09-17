@@ -11,36 +11,36 @@
 </head>
 <body class="font-sans antialiased">
 
-<header data-site-header class="site-header absolute inset-x-0 top-0 z-50 px-4 pt-5 lg:px-8">
+<header data-site-header class="site-header sticky top-[40px] z-50 mt-[40px] px-4 lg:px-8">
     <div class="nav-pill mx-auto flex max-w-[1400px] items-center justify-between rounded-full px-5 py-3 sm:px-7">
         <a href="#top" class="brand-mark">[Бренд]</a>
-        <nav class="hidden items-center gap-8 text-[15px] font-semibold text-[#141413]/75 lg:flex">
+        <nav class="hidden items-center gap-8 text-[16px] text-[#141413] lg:flex">
             <a href="#lifestyle" class="nav-link">Возможности</a>
             <a href="#products" class="nav-link">Карты</a>
             <a href="#how" class="nav-link">Как это работает</a>
             <a href="#partners" class="nav-link">Партнёрам</a>
             <a href="#faq" class="nav-link">Вопросы</a>
         </nav>
-        <div class="hidden lg:flex"><a href="#" class="btn btn-primary btn-small">Войти</a></div>
+        <div class="hidden lg:flex"><a href="#" class="btn btn-primary btn-small">Личный кабинет</a></div>
         <button data-menu-toggle type="button" aria-expanded="false" aria-controls="mobile-menu" class="flex h-10 w-10 items-center justify-center rounded-full bg-black/5 lg:hidden">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
     </div>
     <div data-mobile-menu id="mobile-menu" class="nav-pill mx-auto mt-2 hidden max-w-[1400px] flex-col gap-1 rounded-3xl px-5 py-4 lg:hidden">
-        <a href="#lifestyle" class="rounded-xl px-3 py-2.5 text-sm font-semibold">Возможности</a>
-        <a href="#products" class="rounded-xl px-3 py-2.5 text-sm font-semibold">Карты</a>
-        <a href="#how" class="rounded-xl px-3 py-2.5 text-sm font-semibold">Как это работает</a>
-        <a href="#partners" class="rounded-xl px-3 py-2.5 text-sm font-semibold">Партнёрам</a>
-        <a href="#faq" class="rounded-xl px-3 py-2.5 text-sm font-semibold">Вопросы</a>
-        <a href="#" class="btn btn-primary mt-2 justify-center text-sm">Войти</a>
+        <a href="#lifestyle" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Возможности</a>
+        <a href="#products" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Карты</a>
+        <a href="#how" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Как это работает</a>
+        <a href="#partners" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Партнёрам</a>
+        <a href="#faq" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Вопросы</a>
+        <a href="#" class="btn btn-primary mt-2 justify-center text-sm">Личный кабинет</a>
     </div>
 </header>
 
 <main id="top" class="bg-[#f3f0ee]">
     {{-- ================= HERO ================= --}}
-    <section class="px-6 pt-0 lg:px-10">
+    <section class="px-6 pt-[20px] lg:px-10">
         <div class="mx-auto max-w-[1320px]">
-            <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[700px] lg:rounded-[40px]">
+            <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[750px] lg:rounded-[40px]">
                 <img
                     src="https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--f200757c-5753-49b3-b3e6-ef7b8b347072/us-summer-travel-hero.jpg?quality=82&preferwebp=true"
                     alt="Платежи без границ"
@@ -60,8 +60,8 @@
                         </p>
 
                         <div class="mt-8 flex flex-wrap items-center gap-4">
-                            <a href="#products" class="btn btn-ondark">Оформить карту онлайн</a>
-                            <a href="#" class="btn btn-outline-ondark">Войти в аккаунт</a>
+                            <a href="#products" class="btn btn-hero-orange">Оформить карту онлайн</a>
+                            <a href="#" class="btn btn-hero-black">Войти в аккаунт</a>
                         </div>
                     </div>
                 </div>
@@ -72,14 +72,13 @@
     {{-- ================= LIFESTYLE / OVAL CAROUSEL ================= --}}
     <section id="lifestyle" class="overflow-hidden py-28 lg:py-40" data-carousel>
         <div class="mx-auto max-w-[1400px] px-6 lg:px-10">
-            <div class="grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
+            <div class="grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-start">
                 <div data-reveal>
-                    <span class="eyebrow">Повседневные платежи</span>
-                    <h2 class="mt-5 max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Виртуальные карты для платежей и покупок</h2>
+                    <h2 class="max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-semibold leading-[.94] tracking-[-.045em]">Виртуальные карты для платежей и покупок</h2>
                 </div>
-                <div data-reveal class="lg:pb-2">
-                    <p class="max-w-lg text-xl leading-relaxed text-[#141413]/65">Удобный способ оплачивать подписки и покупки по всему миру</p>
-                    <p class="mt-4 max-w-lg text-base leading-relaxed text-[#141413]/45">От подписки на ИИ-сервис до отеля в отпуске — карты работают одинаково просто</p>
+                <div data-reveal>
+                    <p class="max-w-lg text-[20px] font-normal leading-relaxed text-[#141414]">Удобный способ совершать покупки из России и СНГ</p>
+                    <p class="mt-4 max-w-lg text-base leading-relaxed text-[#141413]/45">От подписки на ИИ-сервис до отеля в отпуске — просто</p>
                 </div>
             </div>
         </div>
@@ -98,9 +97,9 @@
                 <article data-carousel-item data-reveal style="--reveal-delay: {{ $i * 80 }}ms" class="oval-slide group">
                     <img src="{{ $scene['img'] }}" alt="{{ $scene['title'] }}" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-1000 ease-out group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/5"></div>
-                    <div class="absolute inset-x-0 bottom-0 p-8 sm:p-10 lg:p-12">
+                    <div class="oval-slide-badges">
                         <span class="rounded-full bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[.08em] text-[#141413]">{{ $scene['tag'] }}</span>
-                        <h3 class="mt-5 max-w-md text-3xl font-medium leading-tight tracking-[-.025em] text-white sm:text-4xl">{{ $scene['title'] }}</h3>
+                        <span class="rounded-full bg-white px-6 py-3 text-center text-lg font-semibold leading-snug tracking-[-.01em] text-[#141413] sm:text-xl">{{ $scene['title'] }}</span>
                     </div>
                 </article>
             @endforeach
