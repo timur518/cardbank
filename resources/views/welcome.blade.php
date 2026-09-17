@@ -13,7 +13,7 @@
 
 <header data-site-header class="site-header sticky top-[40px] z-50 mt-[40px] px-4 lg:px-8">
     <div class="nav-pill mx-auto flex max-w-[1350px] items-center justify-between rounded-full px-5 py-3 sm:px-7">
-        <a href="#top" class="brand-mark">[Бренд]</a>
+        <a href="#top" class="brand-mark"><img src="assets/images/logo.png" width="55px"></a>
         <nav class="hidden items-center gap-8 text-[16px] text-[#141413] lg:flex">
             <a href="#lifestyle" class="nav-link">Возможности</a>
             <a href="#products" class="nav-link">Карты</a>
@@ -126,12 +126,14 @@
                     [
                         'class'=>'product-black', 'eyebrow'=>'CARD BLACK', 'title'=>'Для интернета. Подписок. Сервисов.',
                         'desc'=>'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов — без физического пластика.',
-                        'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'], 'bgImage'=>'blackcardbg.png', 'cta'=>'Оформить карту Black'
+                        'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'], 'bgImage'=>'blackcardbg.png', 'cta'=>'Оформить карту Black',
+                        'price' => '990',
                     ],
                     [
                         'class'=>'product-orange', 'eyebrow'=>'CARD ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-                        'points'=>['Поддерживает привязку к Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'], 'bgImage'=>'orangecardbg.png', 'cta'=>'Оформить Card Orange'
+                        'points'=>['Поддерживает привязку к Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'], 'bgImage'=>'orangecardbg.png', 'cta'=>'Оформить карту Orange',
+                        'price' => '3 490',
                     ],
                 ];
             @endphp
@@ -153,7 +155,7 @@
                             </ul>
                             <div class="mt-10 flex flex-wrap items-center gap-5 border-t border-current/15 pt-7">
                                 <a href="#" class="btn {{ $i === 0 ? 'btn-hero-orange' : 'btn-dark-on-orange' }}">{{ $product['cta'] }}</a>
-                                <span class="text-sm opacity-50">[X ₽] за выпуск · 0 ₽ в месяц</span>
+                                <span class="text-sm opacity-50">{{ $product['price'] }} ₽ за выпуск · 0 ₽ в месяц</span>
                             </div>
                         </div>
                     </article>
@@ -166,9 +168,9 @@
     <section id="how" class="editorial-dark px-6 py-28 lg:px-10 lg:py-40">
         <div class="mx-auto max-w-[1400px]">
             <div class="grid gap-10 lg:grid-cols-[1fr_.65fr] lg:items-end">
-                <div data-reveal><span class="eyebrow !text-[#f37338]">Онлайн оформление за 3 минуты</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em] text-white">От регистрации до первой оплаты — четыре шага</h2></div>
+                <div data-reveal><span class="eyebrow !text-[#f37338]">Онлайн за 3 минуты</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em] text-white">Простое и быстрое оформление карт</h2></div>
                 <div data-reveal>
-                    <p class="text-lg leading-relaxed text-white/55">Никаких офисов и пластика. Всё необходимое — в одном цифровом интерфейсе.</p>
+                    <p class="text-lg leading-relaxed text-white/55">Никаких офисов и пластика. Всё необходимое — здесь.</p>
                     <a href="#" class="btn btn-hero-orange mt-8">Зарегистрироваться</a>
                 </div>
             </div>
@@ -180,10 +182,10 @@
         </div>
     </section>
 
-    {{-- ================= FEATURES ================= --}}
+    {{-- ================= SERVICES ================= --}}
     <section id="features" class="px-6 py-28 lg:px-10 lg:py-40">
         <div class="mx-auto max-w-[1400px]">
-            <div data-reveal class="max-w-4xl"><span class="eyebrow">Контроль</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Всё важное — под рукой</h2></div>
+            <div data-reveal class="max-w-4xl"><span class="eyebrow">Для любых ситуаций</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Что можно оплатить?</h2></div>
             <div class="feature-grid mt-16 lg:mt-24">
                 @foreach ([['shield','Безопасность','Мониторинг операций и контроль каждой транзакции в реальном времени.'],['lock','Реквизиты','Данные карты доступны только держателю через защищённый интерфейс.'],['pulse','Баланс','Актуальное состояние счёта и операции видны без задержек.'],['nodes','Гибкость','Несколько карт под разные сервисы, подписки и поездки.']] as $i => $f)
                     <div data-reveal style="--reveal-delay: {{ $i * 80 }}ms" class="feature-card"><div class="feature-icon">@if($f[0]==='shield')🛡️@elseif($f[0]==='lock')🔒@elseif($f[0]==='pulse')↗@else◎@endif</div><h3>{{ $f[1] }}</h3><p>{{ $f[2] }}</p><span class="feature-number">0{{ $i + 1 }}</span></div>
