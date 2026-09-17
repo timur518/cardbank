@@ -126,12 +126,12 @@
                     [
                         'class'=>'product-black', 'eyebrow'=>'CARD BLACK', 'title'=>'Для интернета. Подписок. Сервисов.',
                         'desc'=>'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов — без физического пластика.',
-                        'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'], 'network'=>'Mastercard','digits'=>'4821','cta'=>'Оформить карту Black'
+                        'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'], 'image'=>'blackcard.png', 'cta'=>'Оформить карту Black'
                     ],
                     [
                         'class'=>'product-orange', 'eyebrow'=>'CARD ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-                        'points'=>['Apple Pay и Google Pay','Бесконтактная оплата по NFC','Работа с Apple Watch и Wear OS'], 'network'=>'VISA','digits'=>'5678','cta'=>'Оформить Card Orange'
+                        'points'=>['Apple Pay и Google Pay','Бесконтактная оплата по NFC','Работа с Apple Watch и Wear OS'], 'image'=>'orangecard.png', 'cta'=>'Оформить Card Orange'
                     ],
                 ];
             @endphp
@@ -141,15 +141,8 @@
                     <article data-reveal style="--reveal-delay: {{ $i * 120 }}ms" class="product-panel {{ $product['class'] }}">
                         <div class="product-visual">
                             <div class="product-glow"></div>
-                            <div class="real-card {{ $i === 0 ? 'real-card-black' : 'real-card-orange' }}">
-                                <div class="flex items-start justify-between">
-                                    <span class="chip"></span>
-                                    <span class="card-network">{{ $product['network'] }}</span>
-                                </div>
-                                <div class="mt-auto">
-                                    <p class="font-mono text-xl tracking-[.18em]">•••• •••• •••• {{ $product['digits'] }}</p>
-                                    <div class="mt-7 flex justify-between text-[10px] font-semibold uppercase tracking-[.16em] opacity-60"><span>Virtual</span><span>01 / 29</span></div>
-                                </div>
+                            <div class="real-card">
+                                <img src="{{ asset('assets/images/'.$product['image']) }}" alt="{{ $product['title'] }}" loading="lazy">
                             </div>
                         </div>
                         <div class="product-copy">
