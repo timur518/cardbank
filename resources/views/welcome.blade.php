@@ -14,7 +14,7 @@
 <body class="font-sans antialiased">
 
     {{-- ================= ШАПКА ================= --}}
-    <header data-site-header class="fixed inset-x-0 top-4 z-50 px-4">
+    <header data-site-header class="sticky top-0 z-50 px-4 py-4">
         <div class="nav-pill mx-auto flex max-w-[1180px] items-center justify-between rounded-full px-5 py-3 sm:px-7">
             <a href="#top" class="text-lg font-extrabold tracking-tight text-[#141413]">[Бренд]</a>
 
@@ -46,30 +46,32 @@
     </header>
 
     <main id="top" class="bg-[#f3f0ee]">
-        {{-- ================= HERO — фото внутри большого скруглённого блока, как на mastercard.com ================= --}}
-        <section class="px-4 pt-24 sm:px-6 sm:pt-28 lg:px-8">
-            <div class="relative isolate flex min-h-[84vh] items-end overflow-hidden rounded-[32px] sm:rounded-[40px] lg:rounded-[48px]">
-                <img
-                    src="https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--f200757c-5753-49b3-b3e6-ef7b8b347072/us-summer-travel-hero.jpg?quality=82&preferwebp=true"
-                    alt="Платежи без границ"
-                    class="absolute inset-0 h-full w-full object-cover"
-                >
-                <div class="absolute inset-0 bg-gradient-to-t from-[#141413]/90 via-[#141413]/25 to-[#141413]/0"></div>
+        {{-- ================= HERO — фото внутри скруглённого блока шириной с контент, как на mastercard.com ================= --}}
+        <section class="px-6 pt-10 lg:px-10 lg:pt-14">
+            <div class="mx-auto max-w-[1320px]">
+                <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[700px] lg:rounded-[40px]">
+                    <img
+                        src="https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--f200757c-5753-49b3-b3e6-ef7b8b347072/us-summer-travel-hero.jpg?quality=82&preferwebp=true"
+                        alt="Платежи без границ"
+                        class="absolute inset-0 h-full w-full object-cover"
+                    >
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#141413]/90 via-[#141413]/25 to-[#141413]/0"></div>
 
-                <div class="relative w-full px-6 pb-14 pt-20 sm:px-10 sm:pb-16 lg:px-16 lg:pb-20">
-                    <div data-reveal class="max-w-[680px]">
-                        <span class="eyebrow !text-white/80">[Бренд]</span>
-                        <h1 class="mt-6 text-[clamp(3rem,7vw,5.75rem)] font-medium leading-[0.98] tracking-[-0.03em] text-white">
-                            Платежи без границ
-                        </h1>
-                        <p class="mt-7 max-w-lg text-xl leading-relaxed text-white/80">
-                            Mastercard и Visa для оплаты сервисов, подписок и покупок за рубежом —
-                            оформляется за минуты и пополняется из России через СБП.
-                        </p>
+                    <div class="relative w-full px-6 pb-10 sm:px-10 sm:pb-12 lg:px-14 lg:pb-16">
+                        <div data-reveal class="max-w-[620px]">
+                            <span class="eyebrow !text-white/80">[Бренд]</span>
+                            <h1 class="mt-5 text-[clamp(2.5rem,5.5vw,4.5rem)] font-medium leading-[0.98] tracking-[-0.03em] text-white">
+                                Платежи без границ
+                            </h1>
+                            <p class="mt-6 max-w-lg text-lg leading-relaxed text-white/80">
+                                Mastercard и Visa для оплаты сервисов, подписок и покупок за рубежом —
+                                оформляется за минуты и пополняется из России через СБП.
+                            </p>
 
-                        <div class="mt-10 flex flex-wrap items-center gap-4">
-                            <a href="#products" class="btn btn-ondark">Оформить карту онлайн</a>
-                            <a href="#" class="btn btn-outline-ondark">Войти в аккаунт</a>
+                            <div class="mt-8 flex flex-wrap items-center gap-4">
+                                <a href="#products" class="btn btn-ondark">Оформить карту онлайн</a>
+                                <a href="#" class="btn btn-outline-ondark">Войти в аккаунт</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -130,7 +132,7 @@
 
             <div data-carousel-track class="carousel-track mt-14 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-6 lg:px-10">
                 @foreach ($scenes as $i => $scene)
-                    <article data-reveal style="--reveal-delay: {{ $i * 90 }}ms" class="group relative isolate w-[80%] flex-shrink-0 snap-start overflow-hidden rounded-[32px] shadow-[0_60px_100px_-40px_rgba(20,20,19,0.45)] sm:w-[52%] lg:w-[34%]">
+                    <article data-reveal style="--reveal-delay: {{ $i * 90 }}ms" class="group relative isolate w-[84%] flex-shrink-0 snap-center overflow-hidden rounded-[56px] shadow-[0_60px_100px_-40px_rgba(20,20,19,0.45)] sm:w-[68%] lg:w-[52%]">
                         <div class="aspect-[4/5]">
                             <img src="{{ $scene['img'] }}" alt="{{ $scene['title'] }}" loading="lazy" class="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105">
                         </div>
@@ -145,12 +147,11 @@
         {{-- ================= ДВА ПРОДУКТА: CARD BLACK / CARD ORANGE ================= --}}
         <section id="products" class="px-6 py-28 lg:px-10 lg:py-36">
             <div class="mx-auto max-w-[1320px]">
-                <div data-reveal class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <span class="eyebrow">Карты</span>
-                        <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Виртуальные карты для платежей и покупок</h2>
-                    </div>
-                    <p class="max-w-xs text-base leading-relaxed text-[#141413]/55 lg:pb-2">Свой продукт под каждую задачу — в интернете и на кассе.</p>
+                <div data-reveal class="max-w-3xl">
+                    <span class="eyebrow">Карты</span>
+                    <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Виртуальные карты для платежей и покупок</h2>
+                    <p class="mt-5 text-xl font-medium leading-snug text-[#141413]/80">Удобный способ оплачивать подписки и покупки по всему миру</p>
+                    <p class="mt-3 text-base leading-relaxed text-[#141413]/55">От подписки на ИИ-сервис до отеля в отпуске — карты работают одинаково просто.</p>
                 </div>
 
                 <div class="mt-14 grid gap-8 lg:grid-cols-2">
