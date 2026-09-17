@@ -14,7 +14,7 @@
 <body class="font-sans antialiased">
 
     {{-- ================= ШАПКА ================= --}}
-    <header data-site-header class="sticky top-0 z-50 px-4 pb-2 pt-4">
+    <header data-site-header class="sticky top-0 z-50 px-4 pb-1 pt-4">
         <div class="nav-pill mx-auto flex max-w-[1180px] items-center justify-between rounded-full px-5 py-3 sm:px-7">
             <a href="#top" class="text-lg font-extrabold tracking-tight text-[#141413]">[Бренд]</a>
 
@@ -47,7 +47,7 @@
 
     <main id="top" class="bg-[#f3f0ee]">
         {{-- ================= HERO — фото внутри скруглённого блока шириной с контент, как на mastercard.com ================= --}}
-        <section class="px-6 pt-2 lg:px-10">
+        <section class="px-6 pt-0 lg:px-10">
             <div class="mx-auto max-w-[1320px]">
                 <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[700px] lg:rounded-[40px]">
                     <img
