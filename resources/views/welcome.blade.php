@@ -245,19 +245,11 @@
         </div>
     </section>
 
-    {{-- ================= TOP-UP ================= --}}
-    <section class="px-6 py-28 lg:px-10 lg:py-40">
-        <div class="mx-auto grid max-w-[1400px] gap-16 lg:grid-cols-[.9fr_1.1fr] lg:items-center">
-            <div data-reveal><span class="eyebrow">Пополнение</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Курс и сумма известны заранее</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#141413]/60">Курс конвертации и комиссия показываются до подтверждения. После оплаты сумма не меняется.</p></div>
-            <div data-reveal class="topup-card"><div class="flex justify-between text-sm font-semibold"><span>Пополнить баланс</span><span class="opacity-40">Card •• 5678</span></div><div class="mt-12 flex items-end justify-between"><span class="text-7xl font-semibold tracking-[-.06em]">100</span><span class="mb-3 rounded-full bg-[#f3f0ee] px-4 py-2 text-sm font-bold">USD</span></div><p class="mt-3 text-sm opacity-40">Курс: 1 $ ≈ 100,53 ₽</p><div class="mt-8 space-y-4 border-t border-[#141413]/10 pt-6 text-sm"><div class="flex justify-between opacity-55"><span>Зачислим на карту</span><span>$100,00</span></div><div class="flex justify-between text-lg font-bold"><span>Итого к оплате</span><span>10 053 ₽</span></div></div><button type="button" class="btn btn-primary mt-8 w-full">Перейти к оплате</button></div>
-        </div>
-    </section>
-
     {{-- ================= PARTNERS ================= --}}
     <section id="partners" class="px-6 py-28 lg:px-10 lg:py-40">
         <div class="mx-auto max-w-[1400px] rounded-[40px] bg-[#f37338] px-8 py-16 sm:px-12 lg:px-20 lg:py-24">
-            <div class="grid gap-12 lg:grid-cols-[1fr_.8fr] lg:items-end"><div data-reveal><span class="eyebrow !text-[#141413]">Партнёрам</span><h2 class="mt-5 max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Рекомендуйте сервис и получайте вознаграждение</h2></div><div data-reveal><p class="text-lg leading-relaxed text-[#141413]/65">Приглашённый пользователь закрепляется навсегда. Начисления считаются автоматически.</p><a href="#" class="btn btn-primary mt-8">Получить партнёрскую ссылку</a></div></div>
-            <div class="mt-16 grid gap-px overflow-hidden rounded-3xl bg-black/10 sm:grid-cols-3">@foreach ([['[X]%','с каждого пополнения'],['[X]%','с выпуска карты'],['24/7','автоматические начисления']] as $stat)<div class="bg-white/15 p-8"><p class="text-5xl font-semibold tracking-[-.04em]">{{ $stat[0] }}</p><p class="mt-3 text-sm font-semibold opacity-60">{{ $stat[1] }}</p></div>@endforeach</div>
+            <div class="grid gap-12 lg:grid-cols-[1fr_.8fr] lg:items-end"><div data-reveal><span class="eyebrow">Вместе выгодней</span><h2 class="mt-5 max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Пользуйтесь сами и приглашайте знакомых</h2></div><div data-reveal><p class="text-lg leading-relaxed text-[#141413]/65">Зарабатывайте с каждого приглашенного и со всех его платежей.</p><a href="#" class="btn btn-primary mt-8">Зарегистрироваться</a></div></div>
+            <div class="mt-16 grid gap-px overflow-hidden rounded-3xl bg-black/10 sm:grid-cols-3">@foreach ([['1%','с каждого пополнения'],['20%','с выпуска карты'],['24/7','автоматические начисления']] as $stat)<div class="bg-white/15 p-8"><p class="text-5xl font-semibold tracking-[-.04em]">{{ $stat[0] }}</p><p class="mt-3 text-sm font-semibold opacity-60">{{ $stat[1] }}</p></div>@endforeach</div>
         </div>
     </section>
 
