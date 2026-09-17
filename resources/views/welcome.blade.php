@@ -14,7 +14,7 @@
 <body class="font-sans antialiased">
 
     {{-- ================= ШАПКА ================= --}}
-    <header data-site-header class="sticky top-0 z-50 px-4 py-4">
+    <header data-site-header class="sticky top-0 z-50 px-4 pb-2 pt-4">
         <div class="nav-pill mx-auto flex max-w-[1180px] items-center justify-between rounded-full px-5 py-3 sm:px-7">
             <a href="#top" class="text-lg font-extrabold tracking-tight text-[#141413]">[Бренд]</a>
 
@@ -47,7 +47,7 @@
 
     <main id="top" class="bg-[#f3f0ee]">
         {{-- ================= HERO — фото внутри скруглённого блока шириной с контент, как на mastercard.com ================= --}}
-        <section class="px-6 pt-10 lg:px-10 lg:pt-14">
+        <section class="px-6 pt-2 lg:px-10">
             <div class="mx-auto max-w-[1320px]">
                 <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[700px] lg:rounded-[40px]">
                     <img
@@ -132,7 +132,7 @@
 
             <div data-carousel-track class="carousel-track mt-14 flex snap-x snap-mandatory gap-6 overflow-x-auto px-6 pb-6 lg:px-10">
                 @foreach ($scenes as $i => $scene)
-                    <article data-reveal style="--reveal-delay: {{ $i * 90 }}ms" class="group relative isolate w-[84%] flex-shrink-0 snap-center overflow-hidden rounded-[56px] shadow-[0_60px_100px_-40px_rgba(20,20,19,0.45)] sm:w-[68%] lg:w-[52%]">
+                    <article data-reveal style="--reveal-delay: {{ $i * 90 }}ms" class="group relative isolate w-[86%] flex-shrink-0 snap-center overflow-hidden rounded-[56px] shadow-[0_60px_100px_-40px_rgba(20,20,19,0.45)] sm:w-[80%] lg:w-[72%]">
                         <div class="aspect-[4/5]">
                             <img src="{{ $scene['img'] }}" alt="{{ $scene['title'] }}" loading="lazy" class="h-full w-full object-cover transition duration-700 ease-out group-hover:scale-105">
                         </div>
@@ -151,7 +151,7 @@
                     <span class="eyebrow">Карты</span>
                     <h2 class="mt-4 text-[clamp(2.25rem,4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.02em] text-[#141413]">Виртуальные карты для платежей и покупок</h2>
                     <p class="mt-5 text-xl font-medium leading-snug text-[#141413]/80">Удобный способ оплачивать подписки и покупки по всему миру</p>
-                    <p class="mt-3 text-base leading-relaxed text-[#141413]/55">От подписки на ИИ-сервис до отеля в отпуске — карты работают одинаково просто.</p>
+                    <p class="mt-3 text-base leading-relaxed text-[#141413]/55">От подписки на ИИ-сервис до отеля в отпуске — карты работают одинаково просто</p>
                 </div>
 
                 <div class="mt-14 grid gap-8 lg:grid-cols-2">
