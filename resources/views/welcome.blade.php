@@ -42,7 +42,7 @@
         <div class="mx-auto max-w-[1400px]">
             <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[750px] lg:rounded-[40px]">
                 <img
-                    src="https://web.archive.org/web/20260913045546im_/https://www.mastercard.com/adobe/dynamicmedia/deliver/dm-aid--f200757c-5753-49b3-b3e6-ef7b8b347072/us-summer-travel-hero.jpg?quality=82&preferwebp=true"
+                    src="assets/images/herobg.png"
                     alt="Платежи без границ"
                     class="absolute inset-0 h-full w-full object-cover"
                 >
