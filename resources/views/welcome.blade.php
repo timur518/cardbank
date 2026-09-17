@@ -239,8 +239,8 @@
     <section class="px-6 pb-28 lg:px-10 lg:pb-40">
         <div class="app-panel mx-auto max-w-[1400px] overflow-hidden rounded-[40px] bg-white">
             <div class="grid lg:grid-cols-[1fr_.75fr]">
-                <div data-reveal class="p-10 sm:p-14 lg:p-20"><span class="eyebrow">Личный кабинет</span><h2 class="mt-5 max-w-2xl text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Управляйте картами в одном месте</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#141413]/60">История операций, баланс, заморозка, реквизиты и уведомления — без лишних экранов и звонков.</p><div class="mt-9 grid gap-4 sm:grid-cols-2">@foreach(['Несколько карт','История операций','Заморозка в одно касание','Push-уведомления'] as $item)<div class="rounded-2xl bg-[#f3f0ee] p-5 text-sm font-semibold">{{ $item }}</div>@endforeach</div></div>
-                <div data-reveal class="app-visual" style="background-image:url('{{ asset('assets/images/iphone.png') }}')"></div>
+                <div data-reveal class="p-10 sm:p-14 lg:p-20"><span class="eyebrow">Личный кабинет</span><h2 class="mt-5 max-w-2xl text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Удобный и простой личный кабинет</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#141413]/60">Выпускайте карты в пару кликов, отслеживайте актуальный баланс и историю своих платежей из одного места.</p><div class="mt-9 grid gap-4 sm:grid-cols-2">@foreach(['Быстрый выпуск карт','История операций','Пополнение баланса из России','Push-уведомления'] as $item)<div class="rounded-2xl bg-[#f3f0ee] p-5 text-sm font-semibold">{{ $item }}</div>@endforeach</div></div>
+                <div data-reveal class="app-visual" style="background-image:url('{{ asset('assets/images/iphone.png') }}');background-position:center;background-repeat:no-repeat;background-size: cover;"></div>
             </div>
         </div>
     </section>
