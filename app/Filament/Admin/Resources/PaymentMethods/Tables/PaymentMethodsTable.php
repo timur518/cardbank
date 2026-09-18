@@ -42,9 +42,6 @@ class PaymentMethodsTable
                 TextColumn::make('fee_percent')
                     ->label('Комиссия')
                     ->suffix('%'),
-                TextColumn::make('markup_percent')
-                    ->label('Наша наценка')
-                    ->suffix('%'),
             ])
             ->filters([
                 SelectFilter::make('type')

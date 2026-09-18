@@ -18,7 +18,6 @@ class PaymentMethod extends Model
         'currency',
         'status',
         'fee_percent',
-        'markup_percent',
         'min_amount',
         'max_amount',
         'settlement_config',
@@ -35,7 +34,6 @@ class PaymentMethod extends Model
             'status' => ActiveStatus::class,
             'settlement_config' => 'array',
             'fee_percent' => 'decimal:2',
-            'markup_percent' => 'decimal:2',
             'min_amount' => 'decimal:2',
             'max_amount' => 'decimal:2',
         ];

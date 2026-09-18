@@ -45,11 +45,6 @@ class PaymentMethodForm
                             ->numeric()
                             ->required()
                             ->suffix('%'),
-                        TextInput::make('markup_percent')
-                            ->label('Наша наценка сверху, %')
-                            ->numeric()
-                            ->required()
-                            ->suffix('%'),
                         TextInput::make('min_amount')
                             ->label('Минимальная сумма операции')
                             ->numeric(),

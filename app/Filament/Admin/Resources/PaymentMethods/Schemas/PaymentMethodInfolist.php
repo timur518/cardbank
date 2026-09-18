@@ -24,7 +24,6 @@ class PaymentMethodInfolist
                             ->label('Статус')
                             ->badge(),
                         TextEntry::make('fee_percent')->label('Комиссия способа')->suffix('%'),
-                        TextEntry::make('markup_percent')->label('Наша наценка')->suffix('%'),
                     ]),
 
                 Section::make('Технические настройки')
