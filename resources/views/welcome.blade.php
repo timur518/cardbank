@@ -259,7 +259,7 @@
     <section id="apply" class="mt-[150px] px-6 lg:px-10">
         <div class="mx-auto max-w-[1400px]">
             <div data-reveal class="max-w-4xl">
-                <span class="eyebrow">Оформление карты</span>
+                <span class="eyebrow">Получить карту</span>
                 <h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Оформление карты онлайн</h2>
                 <p class="mt-6 text-lg leading-relaxed text-[#141413]/60">Сможете использовать карту сразу</p>
             </div>
@@ -277,7 +277,7 @@
                         'wallets' => 'Apple Pay · Google Pay', 'price' => '3 490',
                     ],
                     [
-                        'name' => 'White', 'thumb' => null, 'currency' => '$ USD',
+                        'name' => 'White', 'thumb' => 'whitecard.png', 'currency' => '$ USD',
                         'desc' => 'Универсальная карта с повышенными лимитами. Для оффлайн и онлайн покупок.',
                         'wallets' => 'Apple Pay · Google Pay', 'price' => '4 990',
                     ],
