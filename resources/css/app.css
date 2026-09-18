@@ -58,7 +58,7 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 .apply-tip-item.is-active{position:relative;opacity:1;transform:translateY(0);pointer-events:auto}
 .apply-tip-title{display:block;font-size:.85rem;font-weight:800;color:var(--orange)}
 .apply-tip-text{margin-top:8px;font-size:.8rem;line-height:1.55;color:rgba(255,255,255,.65)}
-.apply-form-wrap{background:#fff;padding:44px 36px}
+.apply-form-wrap{display:flex;align-items:center;background:#fff;padding:44px 36px}.apply-form-wrap form{width:100%}
 .apply-field{display:flex;flex-direction:column;gap:8px;margin-top:22px}
 .apply-field:first-child{margin-top:0}
 .apply-field label{font-size:.8rem;font-weight:700;color:var(--muted)}
@@ -67,7 +67,7 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 .apply-hint{font-size:.75rem;color:var(--muted)}
 .apply-grid-2{display:grid;gap:20px;grid-template-columns:1fr;margin-top:22px}
 .apply-grid-2 .apply-field{margin-top:0}
-.apply-consent{margin-top:26px;display:flex;gap:12px;align-items:flex-start;font-size:.82rem;line-height:1.5;color:var(--muted);cursor:pointer}
+.apply-consent{margin-top:26px;display:flex;justify-content:space-between;gap:16px;align-items:flex-start;font-size:.82rem;line-height:1.5;color:var(--muted);cursor:pointer}
 .apply-consent input{margin-top:3px;flex-shrink:0;width:18px;height:18px;accent-color:#141413}
 .apply-submit{margin-top:26px;width:100%;justify-content:center}
 @media(min-width:640px){.apply-grid-2{grid-template-columns:1fr 1fr}}
