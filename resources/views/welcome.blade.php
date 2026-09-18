@@ -290,7 +290,7 @@
                 ];
             @endphp
 
-            <div data-reveal class="apply-panel mt-16 grid lg:grid-cols-[1fr_2fr] lg:mt-24">
+            <div data-reveal class="apply-panel mt-16 grid lg:grid-cols-[1fr_2fr] lg:mt-16">
                 <aside class="apply-sidebar">
                     <div class="apply-card-list" data-card-selector>
                         @foreach ($cardOptions as $i => $card)
@@ -359,7 +359,38 @@
     </section>
 
     {{-- ================= FAQ ================= --}}
-    <section id="faq" class="mt-[150px] px-6 lg:px-10"><div class="mx-auto max-w-[1100px]"><div data-reveal class="max-w-4xl"><span class="eyebrow">Вопросы</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.2rem)] font-medium leading-[.94] tracking-[-.045em]">Перед выпуском карты</h2></div>@php $faqs=[['Это законно?','Карту выпускает партнёр-эмитент по лицензии платёжной системы.'],['Что если платёж не проходит?','В приложении видна причина отказа; поддержка помогает разобраться с конкретной операцией.'],['Где карта не сработает?','Карта предназначена для международных онлайн- и офлайн-платежей в пределах доступности конкретного сервиса или торговой точки.'],['Какие данные нужны?','Только данные, которые требуются партнёру-эмитенту для выпуска карты.'],['Как быстро приходят реквизиты?','После подтверждения выпуска реквизиты появляются в приложении.'],['Сколько карт можно держать?','Можно выпускать отдельные карты под разные задачи в рамках доступных лимитов.']]; @endphp<div class="mt-14 divide-y divide-[#141413]/10 border-y border-[#141413]/10">@foreach($faqs as $faq)<div data-faq-item data-open="false" class="faq-item"><button type="button" data-faq-button aria-expanded="false" class="flex w-full items-center justify-between gap-6 py-7 text-left"><span class="text-xl font-semibold tracking-[-.02em]">{{ $faq[0] }}</span><span class="faq-plus">+</span></button><div class="faq-answer"><p class="max-w-3xl pb-7 pr-12 text-base leading-relaxed text-[#141413]/55">{{ $faq[1] }}</p></div></div>@endforeach</div></div></section>
+    <section id="faq" class="mt-[150px] px-6 lg:px-10">
+        <div class="mx-auto max-w-[1100px]">
+            <div data-reveal class="max-w-4xl">
+                <span class="eyebrow">Вопросы</span>
+                <h2 class="mt-5 text-[clamp(2.8rem,5vw,5.2rem)] font-medium leading-[.94] tracking-[-.045em]">Перед выпуском карты</h2>
+            </div>
+            @php
+                $faqs=[
+                    ['На чье имя выпускаются карты?','Все карты выпускаются на ваше имя, указанное в анкете при регистрации аккаунта.'],
+                    ['Сколько стоит обслуживание карты?','Обслуживание всех наших карт — бесплатное.'],
+                    ['Как оформить карту?','Зарегистрируйте аккаунт и выпускайте карты прямо из личного кабинета в режиме онлайн. Без посещений офиса и личных встреч.'],
+                    ['Как быстро я смогу начать пользоваться картой?','Сразу после выпуска карты и пополнения баланса. Реквизиты карты вы увидите в личном кабинете.'],
+                    ['Как пополнять карту из России?','Через СБП или любой картой российского банка. Рубли автоматически сконвертируются в валюту карты по актуальному курсу.'],
+                    ['Можно платить телефоном внутри РФ?','Нет. Российские банки не принимают карты международных платежных систем. Бесконтактная оплата телефоном или смарт-часами будет отлично работать в поездках за границей. Список санкционных стран будет доступен в подробной информации о карте в вашем личном кабинете.'],
+                    ['Сколько карт можно оформить?','Ограничений на количество карт нет. Вы можете выпустить несколько карт для разных задач на ваше усмотрение.']
+                    ];
+                @endphp
+            <div class="mt-14 divide-y divide-[#141413]/10 border-y border-[#141413]/10">
+                @foreach($faqs as $faq)
+                    <div data-faq-item data-open="false" class="faq-item">
+                        <button type="button" data-faq-button aria-expanded="false" class="flex w-full items-center justify-between gap-6 py-7 text-left">
+                            <span class="text-xl font-semibold tracking-[-.02em]">{{ $faq[0] }}</span>
+                            <span class="faq-plus">+</span>
+                        </button>
+                        <div class="faq-answer">
+                            <p class="max-w-3xl pb-7 pr-12 text-base leading-relaxed text-[#141413]/55">{{ $faq[1] }}</p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
 
     <section id="support" class="mt-[150px] px-6 pb-32 lg:px-10"><div data-reveal class="mx-auto max-w-[1000px] rounded-[40px] bg-[#141413] px-5 py-10 text-center text-white sm:px-12 sm:py-20"><span class="eyebrow justify-center !text-[#f37338]">Поддержка</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Остался вопрос?</h2><p class="mx-auto mt-6 max-w-md text-lg text-white/55">Напишите в поддержку — поможем разобраться с выпуском и использованием карты.</p><a href="mailto:support@example.com" class="btn btn-ondark mt-9">Написать в поддержку</a></div></section>
 </main>
