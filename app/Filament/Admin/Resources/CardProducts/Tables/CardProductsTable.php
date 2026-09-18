@@ -20,7 +20,7 @@ class CardProductsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('sort')
+            ->defaultSort(fn ($query, string $direction) => $query->orderByDesc('active')->orderBy('sort', $direction))
             ->reorderable('sort')
             ->emptyStateHeading('Карточных продуктов пока нет')
             ->emptyStateDescription('Добавьте первый продукт, который клиенты смогут выбрать при выпуске карты.')
