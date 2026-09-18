@@ -41,10 +41,10 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 .apply-panel{overflow:hidden;border-radius:40px;border:1px solid var(--border);box-shadow:0 40px 100px rgba(20,20,19,.1)}
 .apply-sidebar{display:flex;flex-direction:column;gap:22px;background:#f7f5f2;padding:36px 28px}
 .apply-card-list{display:flex;flex-direction:column;gap:6px}
-.apply-card-option{display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:18px;border:1.5px solid transparent;cursor:pointer;transition:.2s}
-.apply-card-option:hover{background:#fff}
-.apply-card-option.is-active{background:#fff;border-color:#141413;box-shadow:0 14px 34px rgba(20,20,19,.08)}
-.apply-card-thumb{flex-shrink:0;width:72px;height:44px;border-radius:8px;overflow:hidden;background:#e5e1dc}
+.apply-card-option{background:#fff;display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:18px;border:1.5px solid transparent;cursor:pointer;transition:.2s}
+.apply-card-option:hover{background:#f9f9f9;}
+.apply-card-option.is-active{background:#fff;border-color:var(--orange);box-shadow:0 14px 34px rgba(20,20,19,.08)}
+.apply-card-thumb{flex-shrink:0;width:115px;border-radius:8px;overflow:hidden;background:#e5e1dc}
 .apply-card-thumb img{width:100%;height:100%;object-fit:cover}
 .apply-card-thumb-white{background:linear-gradient(135deg,#fff,#e7e3de);border:1px solid var(--border)}
 .apply-card-info{min-width:0}
