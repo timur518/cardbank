@@ -391,10 +391,43 @@
             </div>
         </div>
     </section>
-
-    <section id="support" class="mt-[150px] px-6 pb-32 lg:px-10"><div data-reveal class="mx-auto max-w-[1000px] rounded-[40px] bg-[#141413] px-5 py-10 text-center text-white sm:px-12 sm:py-20"><span class="eyebrow justify-center !text-[#f37338]">Поддержка</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Остался вопрос?</h2><p class="mx-auto mt-6 max-w-md text-lg text-white/55">Напишите в поддержку — поможем разобраться с выпуском и использованием карты.</p><a href="mailto:support@example.com" class="btn btn-ondark mt-9">Написать в поддержку</a></div></section>
 </main>
 
-<footer class="border-t border-[#141413]/10 bg-[#f3f0ee] px-6 py-16 lg:px-10"><div class="mx-auto max-w-[1400px]"><div class="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]"><div><p class="brand-mark">[Бренд]</p><p class="mt-4 max-w-sm text-sm leading-relaxed text-[#141413]/50">Виртуальные карты для платежей, подписок и покупок по всему миру.</p></div><div><p class="footer-title">Продукт</p><ul class="footer-links"><li><a href="#lifestyle">Возможности</a></li><li><a href="#products">Карты</a></li><li><a href="#how">Как это работает</a></li></ul></div><div><p class="footer-title">Помощь</p><ul class="footer-links"><li><a href="#faq">Вопросы</a></li><li><a href="#support">Поддержка</a></li><li><a href="#">Вход</a></li></ul></div><div><p class="footer-title">Документы</p><ul class="footer-links"><li><a href="#">Пользовательское соглашение</a></li><li><a href="#">Политика конфиденциальности</a></li><li><a href="#">AML / KYC</a></li><li><a href="#">Тарифы</a></li></ul></div></div><p class="mt-16 max-w-4xl text-xs leading-relaxed text-[#141413]/35">[Бренд] не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p><p class="mt-5 text-xs text-[#141413]/30">© {{ date('Y') }} [Бренд]. Все права защищены.</p></div></footer>
+<footer class="border-t border-[#141413]/10 bg-[#f3f0ee] px-6 py-16 lg:px-10">
+    <div class="mx-auto max-w-[1400px]">
+        <div class="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
+            <div>
+                <p class="brand-mark">[Бренд]</p><p class="mt-4 max-w-sm text-sm leading-relaxed text-[#141413]/50">Виртуальные карты для платежей, подписок и покупок по всему миру.</p>
+            </div>
+            <div>
+                <p class="footer-title">Продукт</p>
+                <ul class="footer-links">
+                    <li><a href="#lifestyle">Возможности</a></li>
+                    <li><a href="#products">Карты</a></li>
+                    <li><a href="#how">Как это работает</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="footer-title">Помощь</p>
+                <ul class="footer-links">
+                    <li><a href="#faq">Вопросы</a></li>
+                    <li><a href="#support">Поддержка</a></li>
+                    <li><a href="#">Вход</a></li>
+                </ul>
+            </div>
+            <div>
+                <p class="footer-title">Документы</p>
+                <ul class="footer-links">
+                    <li><a href="#">Пользовательское соглашение</a></li>
+                    <li><a href="#">Политика конфиденциальности</a></li>
+                    <li><a href="#">AML / KYC</a></li>
+                    <li><a href="#">Тарифы</a></li>
+                </ul>
+            </div>
+        </div>
+        <p class="mt-16 max-w-4xl text-xs leading-relaxed text-[#141413]/35">[Бренд] не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p>
+        <p class="mt-5 text-xs text-[#141413]/30">© {{ date('Y') }} [Бренд]. Все права защищены.</p>
+    </div>
+</footer>
 </body>
 </html>
