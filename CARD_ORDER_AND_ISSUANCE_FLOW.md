@@ -12,19 +12,24 @@
 ## Итог по главному вопросу
 
 **Да, при описанном ниже порядке P&L будет сходиться и отражать реальную картину**, при
-двух условиях:
+трёх условиях:
 
 1. `CardProviderOperationResolver::applyIssue()` нужно **переделать** — сегодня он
    *создаёт* `Card`, а должен *обновлять* уже существующую (она заводится раньше, на
    шаге 0, ещё до платежа) — см. шаг 5.
-2. Пополнения мастер-счёта у CardsPro (`ProviderReserveTopup`) должны попадать в
-   `Expense`, чтобы виджеты прибыли их видели — сегодня они меняют только
-   `reserve_balance_usd`, в расходы не попадают — см. раздел «Расходы и P&L».
+2. Тот же `applyIssue()` должен **автоматически заводить `Expense`** на себестоимость
+   выпуска и на комиссию провайдера за пополнение — сегодня `Expense::create()`
+   вызывается только вручную (из «Возвратов»), для выпуска карты — никогда. Без этого
+   «Валовая прибыль» показывает выручку без единой копейки затрат — см. раздел
+   «Расходы: авто-Expense на выпуск и пополнение».
+3. На `CardProduct` нужно завести новое поле — комиссию провайдера за пополнение
+   конкретного продукта (`provider_topup_fee_percent`), она сейчас нигде не хранится —
+   см. тот же раздел.
 
-Оба пункта — это правки в уже существующем коде, не в самой логике, которую ты описал:
-её порядок (карта → поступление → оплата → CardsPro → активация) был правильным
-изначально, и в этой версии документа он не переставлен относительно твоего исходного
-плана.
+Все три пункта — это правки в уже существующем коде и схеме, не в самой логике,
+которую ты описал: её порядок (карта → поступление → оплата → CardsPro → активация)
+был правильным изначально, и в этой версии документа он не переставлен относительно
+твоего исходного плана.
 
 ---
 
@@ -32,12 +37,12 @@
 
 | Модель | Ключевые поля, которые участвуют в этом алгоритме |
 |---|---|
-| `CardProduct` | `price_rub` (цена продажи клиенту, ₽), `provider_issue_cost_usd` (себестоимость выпуска, $ — предлагается переименовать label в «Цена выпуска, $», см. ниже), `currency`, `topup_min_amount`/`topup_max_amount` (в валюте продукта), `provider_id`, `provider_product_code`, `billing_*` |
+| `CardProduct` | `price_rub` (цена продажи клиенту, ₽), `provider_issue_cost_usd` (себестоимость выпуска, $ — предлагается переименовать label в «Цена выпуска, $», см. ниже), `provider_topup_fee_percent` (**новое поле** — комиссия провайдера за пополнение карт этого продукта, %, см. «Расходы» ниже), `currency`, `topup_min_amount`/`topup_max_amount` (в валюте продукта), `provider_id`, `provider_product_code`, `billing_*` |
 | `Card` | `user_id`, `card_product_id`, `provider_id`, `provider_card_id` (SAN, заполняется только на шаге 5), `card_number`, `expiry`, `currency`, `balance`, `price_rub`, `issue_cost_usd` (то же переименование label, что и у `CardProduct.provider_issue_cost_usd`), `status` (enum `CardStatus`), `billing_*`, `issued_at` |
 | `Income` | `type` (enum `IncomeType`), `amount`, `currency`, `amount_usd`, `card_id`, `user_id`, `payment_method_id`, `payment_transaction_id`, `payment_status` (enum `IncomePaymentStatus`), `comment` |
-| `Expense` | `date`, `category` (enum `ExpenseCategory`), `amount`, `amount_usd`, `card_id`, `provider_id`, `comment` |
+| `Expense` | `date`, `category` (enum `ExpenseCategory`: в т.ч. `CardIssue` = «Выпуск карты», `CardTopup` = «Пополнение карты» — обе категории уже есть, их и используем), `amount`, `amount_usd`, `card_id`, `provider_id`, `comment` |
 | `CardProviderOperation` | `provider_id`, `card_id`, `type` (enum `CardProviderOperationType`: issue/topup/withdraw/block), `request_id`, `docid`, `status`, `payload` (json), `result`, `error`, `resolved_at` |
-| `ProviderReserveTopup` | `provider_id`, `amount` ($, пополнение мастер-счёта у провайдера), `comment`, `created_by` — сегодня только двигает `CardProvider.reserve_balance_usd`, в `Expense` не попадает (см. ниже) |
+| `ProviderReserveTopup` | `provider_id`, `amount` ($, пополнение мастер-счёта у провайдера), `comment`, `created_by` — учёт того, сколько мы завели денег провайдеру (казначейская метрика, «Резерв у провайдеров» в `ProfitStatsWidget`). Не участвует в P&L по картам — это отдельная метрика ликвидности, не путать с себестоимостью конкретной карты (см. «Расходы» ниже) |
 | `Setting` | `currency_rate_usd`, `currency_markup_usd_percent` — курс ЦБ и наша наценка (страница «Валютная система») |
 
 Уже реализовано и переиспользуется без изменений: `CardsProService::issueCard()`,
@@ -148,12 +153,12 @@ comment                 = 'Выпуск карты и пополнение ба�
 2. `INPROCESS`/`EXECUTED` в ответе → создаём `CardProviderOperation`:
    ```
    provider_id = CardProduct.provider_id
-   card_id     = $card->id            // уже известен — карта создана на шаге 0, в payload
-                                       // снепшот владельца/продукта больше не нужен
+   card_id     = $card->id            // уже известен — карта создана на шаге 0
    type        = CardProviderOperationType::Issue
    request_id  = <из ответа issueCard()>
    docid       = <из ответа issueCard()>
    status      = CardProviderOperationStatus::Pending
+   payload     = ['topup_usd' => $topup_usd]   // нужен на шаге 5 для расчёта комиссии за пополнение
    ```
    Дальше ничего делать не нужно — итог узнаём либо по вебхуку `CARD_ISSUE`, либо
    подстрахуется `providers:sync-pending-operations`, если вебхук потеряется.
@@ -165,10 +170,10 @@ comment                 = 'Выпуск карты и пополнение ба�
 (миграция, `docs/integrations/cardspro.md`) для `issue` снепшотились `user_id` и
 `card_product_id`, потому что карты ещё не было и взять владельца было неоткуда. При
 новом порядке (карта создаётся на шаге 0) это больше не нужно: `card_id` заполняется
-сразу при создании операции, `payload` для `issue` можно оставить пустым либо класть
-туда что-то вспомогательное (например, `topup_usd` для сверки). Комментарий в миграции
-`card_provider_operations` и докблок `CardProviderOperationResolver::applyIssue()`
-стоит поправить соответственно.
+сразу при создании операции. Вместо этого теперь в `payload` кладём `topup_usd` — он
+стал обязательным, потому что от него зависит расчёт комиссии за пополнение на
+шаге 5 (раздел «Расходы»). Комментарий в миграции `card_provider_operations` и докблок
+`CardProviderOperationResolver::applyIssue()` стоит поправить соответственно.
 
 ---
 
@@ -188,9 +193,10 @@ protected function applyIssue(CardProviderOperation $operation, array $raw): voi
         return;
     }
 
+    $card = Card::find($operation->card_id);
     $snapshot = ProviderIntegrationResolver::for($operation->provider)->fetchCardSnapshot($san);
 
-    Card::where('id', $operation->card_id)->update([
+    $card->update([
         'provider_card_id' => $san,
         'card_number'      => $snapshot['card_number'],
         'expiry'           => $snapshot['expiry'],
@@ -199,6 +205,10 @@ protected function applyIssue(CardProviderOperation $operation, array $raw): voi
         'status'           => $snapshot['status'],           // обычно сразу Active
         'issued_at'        => now(),
     ]);
+
+    // Новое: авто-Expense на себестоимость выпуска и на комиссию провайдера за
+    // начальное пополнение — см. раздел «Расходы» ниже.
+    $this->recordIssueExpenses($card, $operation);
 }
 ```
 
@@ -211,7 +221,8 @@ protected function applyIssue(CardProviderOperation $operation, array $raw): voi
 
 После этого шага у нас: `Card.status = Active`, `Card.balance` — реальный баланс,
 `Card.provider_card_id` заполнен, `Income.payment_status = Paid` (был выставлен на
-шаге 3) — заказ полностью выполнен.
+шаге 3), и два `Expense` (себестоимость выпуска + комиссия за пополнение) заведены —
+заказ полностью выполнен и полностью учтён в P&L.
 
 ---
 
@@ -219,51 +230,86 @@ protected function applyIssue(CardProviderOperation $operation, array $raw): voi
 
 | Что считаем | Какой курс | Почему |
 |---|---|---|
-| Сколько ₽ берём с клиента за пополнение (`topup_rub`, шаг 1) | `rate_sell = currency_rate_usd * (1 + currency_markup_usd_percent/100)` | Цена продажи с наценкой. Наценка одновременно покрывает и нашу маржу, и комиссию CardsPro за пополнение карты (3.5%) — отдельного поля/расчёта для этой комиссии не нужно, она заложена в `currency_markup_usd_percent` |
+| Сколько ₽ берём с клиента за пополнение (`topup_rub`, шаг 1) | `rate_sell = currency_rate_usd * (1 + currency_markup_usd_percent/100)` | Цена продажи с наценкой. Наценка — источник выручки, из которой мы покрываем комиссию CardsPro за пополнение (≈ 3.5%) и зарабатываем маржу — но сама комиссия всё равно отдельно ведётся через `Expense` (см. ниже), а не просто неявно «съедается» внутри наценки — иначе реальная себестоимость пополнения нигде не видна |
 | `Income.amount_usd` | голый `currency_rate_usd` (без наценки) | «Справедливая» долларовая оценка того, что клиент заплатил в рублях — нужна для сопоставления с расходами в долларах. Если взять курс с наценкой, наценка (по сути, вся наша прибыль на конвертации) исчезнет из отчётов |
 | `amount`, отправляемый в `issueCard()` | не курс, а сама сумма `topup_usd`, зафиксированная на шаге 1 | Операционный параметр («сколько долларов положить на карту»), а не бухгалтерская оценка |
 
 ---
 
-## Расходы и P&L: кассовый метод вместо расчётной себестоимости
+## Расходы: авто-Expense на выпуск и на комиссию за пополнение
 
-Изначальный вопрос был — нужно ли на каждый выпуск карты заводить `Expense` с
-себестоимостью выпуска (`CardProduct.provider_issue_cost_usd`), чтобы «Валовая
-прибыль» (`ProfitStatsWidget::grossProfitStat()`) не показывала выручку без вычета
-затрат.
+Себестоимость выпуска и комиссию провайдера за пополнение ведём как отдельные `Expense`
+на каждую карту — это даёт точную юнит-экономику по каждому выпуску и по каждому
+продукту, а не только общую картину по движению денег. Без этого «Валовая прибыль»
+(`ProfitStatsWidget::grossProfitStat()`) показывает выручку без вычета затрат.
 
-**Более простой и прозрачный вариант — не считать себестоимость по каждой карте
-отдельно, а признавать расходом реальное движение денег: пополнение мастер-счёта у
-CardsPro.** Логика: мы заранее переводим CardsPro крупную сумму (`ProviderReserveTopup`,
-уже есть в разделе «Провайдеры карт» → «Пополнения резерва»), из которой потом
-списываются и выпуски, и пополнения карт, и что угодно ещё. Реальные деньги покидают
-компанию именно в момент этого перевода — а не в момент, когда мы «мысленно» относим
-кусочек уже потраченной суммы на конкретную карту. Такой подход даёт кассовый P&L:
-доход = когда клиент реально заплатил, расход = когда компания реально заплатила
-CardsPro — без допущений о том, как именно провайдер расходует свой баланс внутри.
+(`ProviderReserveTopup`/`reserve_balance_usd` остаются как есть — это отдельная казначейская
+метрика «сколько денег лежит у провайдера» для контроля ликвидности, она не участвует
+в P&L по картам и не требует изменений.)
 
-**Что для этого нужно поправить (сейчас так не работает):**
+### Новое поле на `CardProduct`: `provider_topup_fee_percent`
 
-`ReserveTopupsRelationManager` при создании `ProviderReserveTopup` только
-инкрементирует `CardProvider.reserve_balance_usd` — в `Expense` запись не попадает.
-А `ProfitStatsWidget::expensesStat()`/`grossProfitStat()` считают именно из таблицы
-`Expense`. Значит, пополнения резерва сегодня **вообще не видны** в расходах и в
-прибыли — это надо починить одним из двух способов:
+Сейчас комиссия провайдера за пополнение (у CardsPro — 3.5%) нигде не хранится: поле
+`topup_fee_percent` было на `CardProvider`, его убрали миграцией
+`2026_09_18_120001_drop_fee_columns_from_card_providers_table` с комментарием «экономика
+считается на уровне карточных продуктов» — но замену на `CardProduct` тогда так и не
+завели. Нужно довести это до конца:
 
-1. При создании `ProviderReserveTopup` дополнительно создавать `Expense` (например,
-   новая категория `ExpenseCategory::ProviderReserveTopup` = «Пополнение резерва
-   провайдера», `amount_usd = amount`, `provider_id`); либо
-2. Не трогать `Expense`, а поправить сами виджеты, чтобы `expensesStat()`/
-   `grossProfitStat()` дополнительно суммировали `ProviderReserveTopup`.
+- Миграция: `card_products.provider_topup_fee_percent` (`decimal(5,2)`, `default(0)`).
+- `CardProduct::$fillable` + `casts()` — добавить поле аналогично `provider_issue_cost_usd`.
+- `CardProductForm` (блок «Провайдер и стоимость») — новое поле «Комиссия провайдера за
+  пополнение, %».
 
-Первый вариант лучше — тогда «Пополнение резерва провайдера» само встаёт в общий
-список расходов рядом с зарплатами и рекламой, без специального кода в каждом виджете.
+### Когда и какие расходы создаются
 
-При таком подходе никакого `Expense::create()` внутри `CardProviderOperationResolver::applyIssue()`
-заводить не нужно — себестоимость выпуска конкретной карты (`Card.issue_cost_usd`)
-остаётся справочным полем (сколько эта карта «стоила» по прайсу CardsPro на момент
-выпуска — полезно для юнит-экономики по продукту), но не самостоятельной проводкой в
-`Expense`.
+В `CardProviderOperationResolver::applyIssue()` (шаг 5), сразу после активации карты,
+создаются две записи `Expense`:
+
+```php
+protected function recordIssueExpenses(Card $card, CardProviderOperation $operation): void
+{
+    $product = $card->cardProduct;
+    $rate = (float) Setting::get('currency_rate_usd', 0);
+
+    // 1. Себестоимость выпуска у провайдера.
+    $issueCostUsd = (float) $card->issue_cost_usd; // снят на шаге 0 с CardProduct.provider_issue_cost_usd
+
+    Expense::create([
+        'date'        => now(),
+        'category'    => ExpenseCategory::CardIssue,
+        'amount'      => round($issueCostUsd * $rate, 2),
+        'amount_usd'  => $issueCostUsd,
+        'card_id'     => $card->id,
+        'provider_id' => $operation->provider_id,
+        'comment'     => "Себестоимость выпуска у провайдера (авто, операция #{$operation->id})",
+    ]);
+
+    // 2. Комиссия провайдера за начальное пополнение (то, что ушло в issueCard()
+    // как $topup_usd на шаге 4 — оно же лежит в payload этой операции).
+    $topupUsd = (float) ($operation->payload['topup_usd'] ?? 0);
+    $feePercent = (float) ($product?->provider_topup_fee_percent ?? 0);
+    $feeUsd = round($topupUsd * $feePercent / 100, 2);
+
+    if ($feeUsd > 0) {
+        Expense::create([
+            'date'        => now(),
+            'category'    => ExpenseCategory::CardTopup,
+            'amount'      => round($feeUsd * $rate, 2),
+            'amount_usd'  => $feeUsd,
+            'card_id'     => $card->id,
+            'provider_id' => $operation->provider_id,
+            'comment'     => "Комиссия провайдера за пополнение при выпуске (авто, операция #{$operation->id})",
+        ]);
+    }
+}
+```
+
+`amount_usd` в обоих записях — то, что видит `grossProfitStat()`; `amount` (в ₽ по курсу ЦБ
+на момент активации) — для единообразия с остальными `Expense`, где `amount` всегда в ₽.
+Такая же логика по аналогии пригодится для будущих пополнений уже выпущенной карты
+(`CardProviderOperationResolver::applyTopup()` и/или `CardsProWebhookHandler::handleTopup()`) —
+это отдельный сценарий (пополнение уже активной карты, а не выпуск), в этот документ
+не входит, но стоит сделать там же самое — отмечено в открытых вопросах в конце документа.
 
 ---
 
@@ -279,20 +325,25 @@ CardsPro — без допущений о том, как именно прова
 | 3 (вебхук оплаты → статус поступления, статус карты) | Корректно; статус карты на этом шаге не меняется (остаётся `Pending`, менять пока не на что) |
 | 4 (вызов CardsPro) | Корректно — один вызов `issueCard()` и на выпуск, и на пополнение. `CardProviderOperation.card_id` теперь заполняется сразу, а не после |
 | 5 (вебхук CardsPro → карта активна) | Корректно по смыслу; требуется правка `applyIssue()` — обновлять существующую карту, а не создавать новую (см. шаг 5 выше) |
+| Новое: авто-`Expense` на себестоимость выпуска и комиссию за пополнение | Согласовано — создаются в `applyIssue()` сразу после активации карты; требует нового поля `CardProduct.provider_topup_fee_percent` (см. раздел «Расходы») |
 
 ---
 
 ## Оставшиеся открытые вопросы (не блокируют реализацию успешного пути)
 
-1. **Расходы должны отражаться реальным движением денег** — см. раздел «Расходы и
-   P&L» выше. Единственный пункт, который стоит поправить до того, как считать P&L
-   окончательным.
-2. **Идемпотентность оформления заказа.** Двойной клик/повтор запроса с фронта не
+1. **Добавить поле `CardProduct.provider_topup_fee_percent`** и заполнить его для
+   всех действующих продуктов CardsPro (≈ 3.5%) — без этого авто-`Expense` на
+   комиссию будет считать 0. См. раздел «Расходы» выше.
+2. **Распространить ту же логику авто-`Expense` на послевыпускные пополнения** (когда
+   клиент пополняет уже активную карту, а не выпускает новую) — это уже отдельный
+   сценарий (`CardProviderOperationResolver::applyTopup()` / `CardsProWebhookHandler::handleTopup()`),
+   в этот документ не входит, но для единообразия P&L стоит сделать так же скоро.
+3. **Идемпотентность оформления заказа.** Двойной клик/повтор запроса с фронта не
    должен создавать два независимых `Card`+`Income` на один и тот же заказ — стоит
    добавить idempotency-key на API-метод оформления заказа.
-3. **Отложено осознанно (по договорённости):** сценарий «оплата прошла, а CardsPro
+4. **Отложено осознанно (по договорённости):** сценарий «оплата прошла, а CardsPro
    сразу вернул `DECLINED`» и прочие ошибочные ветки — прописываем отдельным заходом,
    когда обкатан успешный путь.
-4. **Необязательно, не про P&L:** более гранулярный `CardStatus` между «оформлено» и
+5. **Необязательно, не про P&L:** более гранулярный `CardStatus` между «оформлено» и
    «CardsPro подтвердил» — сегодня оба состояния это один `Pending`. Не обязательно
    для корректности денег, но может пригодиться для отладки зависших заказов и для ЛК.
