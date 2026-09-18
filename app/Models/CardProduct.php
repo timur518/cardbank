@@ -21,6 +21,7 @@ class CardProduct extends Model
         'provider_product_code',
         'provider_kyc_required',
         'provider_issue_cost_usd',
+        'provider_topup_fee_percent',
         'issue_min_amount',
         'issue_max_amount',
         'topup_min_amount',
@@ -44,6 +45,7 @@ class CardProduct extends Model
         return [
             'provider_kyc_required' => 'boolean',
             'provider_issue_cost_usd' => 'decimal:2',
+            'provider_topup_fee_percent' => 'decimal:2',
             'issue_min_amount' => 'decimal:2',
             'issue_max_amount' => 'decimal:2',
             'topup_min_amount' => 'decimal:2',
