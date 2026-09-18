@@ -21,10 +21,6 @@ class CardProvider extends Model
         'api_key',
         'api_secret',
         'webhook_secret',
-        'issue_fee_tiers',
-        'topup_fee_percent',
-        'extra_channel_fees',
-        'min_topup_usd',
         'reserve_balance_usd',
     ];
 
@@ -33,10 +29,6 @@ class CardProvider extends Model
         return [
             'status' => ActiveStatus::class,
             'environment' => ProviderEnvironment::class,
-            'issue_fee_tiers' => 'array',
-            'extra_channel_fees' => 'array',
-            'topup_fee_percent' => 'decimal:2',
-            'min_topup_usd' => 'decimal:2',
             'reserve_balance_usd' => 'decimal:2',
         ];
     }

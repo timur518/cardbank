@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Resources\CardProviders\Schemas;
 use App\Enums\ActiveStatus;
 use App\Enums\ProviderEnvironment;
 use App\Models\CardProvider;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -18,7 +17,8 @@ class CardProviderForm
         return $schema
             ->components([
                 Section::make('Основное')
-                    ->columns(2)
+                    ->columnSpanFull()
+                    ->columns(5)
                     ->schema([
                         TextInput::make('name')
                             ->label('Название провайдера')
@@ -37,10 +37,21 @@ class CardProviderForm
                             ->label('Окружение')
                             ->options(ProviderEnvironment::class)
                             ->required(),
+                        TextInput::make('reserve_balance_usd')
+                            ->label('Текущий остаток резерва, $')
+                            ->numeric()
+                            ->required()
+                            ->prefix('$')
+                            ->disabled(fn (?CardProvider $record) => $record !== null)
+                            ->dehydrated(fn (?CardProvider $record) => $record === null)
+                            ->helperText(fn (?CardProvider $record) => $record !== null
+                                ? 'Обновляется автоматически из реального баланса мастер-счёта (providers:sync-account-balances), вручную здесь уже не поменять.'
+                                : 'Начальное значение — дальше будет обновляться автоматически.'),
                     ]),
 
                 Section::make('Техническое подключение')
-                    ->columns(2)
+                    ->columnSpanFull()
+                    ->columns(4)
                     ->schema([
                         TextInput::make('api_base_url')
                             ->label('Адрес технического подключения')
@@ -59,62 +70,7 @@ class CardProviderForm
                             ->label('Токен для проверки входящих вебхуков')
                             ->password()
                             ->revealable()
-                            ->helperText('Подставляется в URL вебхука как ?token=... — CardsPro не подписывает колбэки, это наша дополнительная защита.'),
-                    ]),
-
-                Section::make('Комиссии и стоимость выпуска')
-                    ->columns(2)
-                    ->schema([
-                        TextInput::make('topup_fee_percent')
-                            ->label('Комиссия за пополнение, %')
-                            ->numeric()
-                            ->required()
-                            ->suffix('%'),
-                        TextInput::make('min_topup_usd')
-                            ->label('Минимальная сумма пополнения, $')
-                            ->numeric()
-                            ->required()
-                            ->prefix('$'),
-                        TextInput::make('reserve_balance_usd')
-                            ->label('Текущий остаток резерва, $')
-                            ->numeric()
-                            ->required()
-                            ->prefix('$')
-                            ->disabled(fn (?CardProvider $record) => $record !== null)
-                            ->dehydrated(fn (?CardProvider $record) => $record === null)
-                            ->helperText(fn (?CardProvider $record) => $record !== null
-                                ? 'Обновляется автоматически из реального баланса мастер-счёта (providers:sync-account-balances), вручную здесь уже не поменять.'
-                                : 'Начальное значение — дальше будет обновляться автоматически.'),
-                        Repeater::make('issue_fee_tiers')
-                            ->label('Уровни стоимости выпуска карты')
-                            ->schema([
-                                TextInput::make('name')
-                                    ->label('Название уровня')
-                                    ->required(),
-                                TextInput::make('cost_usd')
-                                    ->label('Стоимость, $')
-                                    ->numeric()
-                                    ->required()
-                                    ->prefix('$'),
-                            ])
-                            ->columns(2)
-                            ->columnSpanFull()
-                            ->addActionLabel('Добавить уровень'),
-                        Repeater::make('extra_channel_fees')
-                            ->label('Дополнительные комиссии по способам оплаты')
-                            ->schema([
-                                TextInput::make('channel')
-                                    ->label('Способ оплаты')
-                                    ->required(),
-                                TextInput::make('percent')
-                                    ->label('Комиссия, %')
-                                    ->numeric()
-                                    ->required()
-                                    ->suffix('%'),
-                            ])
-                            ->columns(2)
-                            ->columnSpanFull()
-                            ->addActionLabel('Добавить комиссию'),
+                            ->helperText('Подставляется в URL вебхука как ?token=[redacted]] — CardsPro не подписывает колбэки, это наша дополнительная защита.'),
                     ]),
             ]);
     }
