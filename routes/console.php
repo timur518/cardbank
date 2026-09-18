@@ -32,3 +32,12 @@ Schedule::command('providers:sync-account-balances')
 Schedule::command('providers:sync-card-catalog')
     ->daily()
     ->withoutOverlapping();
+
+// Курсы валют для страницы «Настройки» -> «Валютная система» (см.
+// App\Console\Commands\SyncCurrencyRates). ЦБ РФ обновляет курс сам не чаще раза
+// в сутки, но команда запускается почаще для устойчивости: если в момент планового
+// запуска ЦБ РФ и резервное зеркало недоступны, следующий запуск в течение того же
+// дня всё равно подхватит курс.
+Schedule::command('currency:sync-rates')
+    ->hourly()
+    ->withoutOverlapping();
