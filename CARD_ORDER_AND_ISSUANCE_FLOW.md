@@ -333,15 +333,54 @@ protected function recordIssueExpenses(Card $card, CardProviderOperation $operat
 
 ---
 
-## Оставшиеся открытые вопросы (не блокируют реализацию успешного пути)
+## Список задач для полной реализации сценария
 
-1. **Добавить поле `CardProduct.provider_topup_fee_percent`** и заполнить его для
-   всех действующих продуктов CardsPro (≈ 3.5%) — без этого авто-`Expense` на
-   комиссию будет считать 0. См. раздел «Расходы» выше.
-2. **Распространить ту же логику авто-`Expense` на послевыпускные пополнения** (когда
-   клиент пополняет уже активную карту, а не выпускает новую) — это уже отдельный
-   сценарий (`CardProviderOperationResolver::applyTopup()` / `CardsProWebhookHandler::handleTopup()`),
-   в этот документ не входит, но для единообразия P&L стоит сделать так же скоро.
-3. **Идемпотентность оформления заказа.** Двойной клик/повтор запроса с фронта не
+Всё, что по ходу документа было зафиксировано как «надо сделать» / «нужна правка
+кода» / «желательно учесть в других местах», собрано в одном месте.
+
+### Блокируют этот сценарий (без них шаги 0–5 не заработают как описано)
+
+1. **`CardStatus`: добавить статусы `Waiting`** («Ожидает оплаты»), **`Cancelled`**
+   («Отменён»), **`Failed`** («Ошибка») — сейчас в `app/Enums/CardStatus.php` только
+   `Pending`, `Active`, `Frozen`, `Closed`. Прописать `getLabel()`/`getColor()` для новых
+   случаев. Отдельно проверить все места, где код матчится на `CardStatus::Pending`
+   (например, действие `CardsTable` с `->visible(fn (Card $record) => $record->status ===
+   CardStatus::Pending)`) — после разделения статусов эта логика может относиться
+   уже не к тому состоянию карты, как раньше.
+2. **`CardProviderOperationResolver::applyIssue()`: переписать** с `Card::create(...)` на
+   поиск существующей карты по `operation->card_id` + `update()` — карта теперь
+   создаётся на шаге 0, а не тут. Убрать чтение `user_id`/`card_product_id` из `payload`
+   (это больше не нужно).
+3. **Добавить метод `recordIssueExpenses()`** в `CardProviderOperationResolver`, вызвать его
+   в конце `applyIssue()` — создаёт два `Expense` (себестоимость выпуска + сумма
+   пополнения с комиссией провайдера).
+4. **Новое поле `CardProduct.provider_topup_fee_percent`**: миграция (`decimal(5,2)`,
+   `default(0)`), `CardProduct::$fillable`+`casts()`, поле в `CardProductForm`
+   («Комиссия провайдера за пополнение, %»). Заполнить значением ≈ 3.5% для
+   всех действующих продуктов CardsPro — без этого `recordIssueExpenses()` посчитает
+   комиссию нулёвой.
+5. **Payload операции `issue`**: класть туда `topup_usd` вместо `user_id`/`card_product_id`.
+   Поправить комментарий в миграции `card_provider_operations`, докблок
+   `CardProviderOperationResolver::applyIssue()` и описание конвенции payload в
+   `docs/integrations/cardspro.md` (строки ≈210–213 и ≈273–274 — там дважды
+   зафиксировано старое поведение).
+6. **Синхронный `DECLINED` от `issueCard()`** (шаг 4, п. 3): зафиксировать —
+   `CardProviderOperation.status = CardProviderOperationStatus::Failed` (кейс уже есть в
+   enum), причина отказа CardsPro — в колонку `error` (уже есть в модели и
+   используется точно так же в `CardProviderOperationResolver::claim()`), а не в
+   `payload`. В документе (шаг 4) пока стоят плейсхолдеры `//ТУТ НАДО...`.
+7. **Вебхук платёжной системы** (шаг 3): в коде пока нет интеграции ни с одной
+   платёжной системой — этот вебхук предстоит реализовать с нуля (поиск `Income` по
+   `payment_transaction_id`, обновление `payment_status`, запуск шага 4).
+
+### Не блокируют этот сценарий, но желательно учесть для полной картины
+
+8. **Распространить логику `recordIssueExpenses()` на послевыпускные пополнения**
+   (когда клиент пополняет уже активную карту, а не выпускает новую) —
+   `CardProviderOperationResolver::applyTopup()` и/или `CardsProWebhookHandler::handleTopup()`.
+9. **Идемпотентность оформления заказа.** Двойной клик/повтор запроса с фронта не
    должен создавать два независимых `Card`+`Income` на один и тот же заказ — стоит
    добавить idempotency-key на API-метод оформления заказа.
+10. **(косметика)** Переименовать label `provider_issue_cost_usd`/`issue_cost_usd` в
+    «Цена выпуска, $» в формах/инфолистах — для ясности, что поле в долларах, а
+    не в рублях.
