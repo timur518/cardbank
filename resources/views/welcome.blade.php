@@ -58,7 +58,7 @@
                             Платежи без границ
                         </h1>
                         <p class="mt-6 max-w-lg text-lg leading-relaxed text-white/80">
-                            Mastercard и Visa для оплаты сервисов, подписок и покупок за рубежом —
+                            Виртуальные банковские карты для оплаты сервисов, подписок и покупок за рубежом —
                             оформляется за минуты и пополняется из России через СБП.
                         </p>
 
@@ -106,7 +106,7 @@
                 </article>
             @endforeach
         </div>
-        <div class="mx-auto mt-8 flex max-w-[1400px] items-center justify-between px-6 lg:px-10">
+        <div class="mx-auto flex max-w-[1400px] items-center justify-between px-6 lg:px-10">
             <div class="carousel-dots" data-carousel-dots></div>
             <div class="flex gap-2">
                 <button type="button" data-carousel-prev aria-label="Предыдущий слайд" class="carousel-arrow">←</button>
@@ -127,7 +127,7 @@
                 $products = [
                     [
                         'class'=>'product-black', 'eyebrow'=>'Карта BLACK', 'title'=>'Для интернета. Подписок. Сервисов.',
-                        'desc'=>'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов — без физического пластика.',
+                        'desc'=>'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов',
                         'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'], 'bgImage'=>'blackcardbg.png', 'cta'=>'Оформить карту Black',
                         'price' => '990',
                     ],
