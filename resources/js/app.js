@@ -487,4 +487,141 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // Форма оформления карты: селектор карты в сайдбаре.
+    document.querySelectorAll('[data-card-selector]').forEach((selector) => {
+        const options = [...selector.querySelectorAll('.apply-card-option')];
+
+        options.forEach((option) => {
+            const input = option.querySelector('input[type="radio"]');
+
+            input?.addEventListener('change', () => {
+                options.forEach((other) => {
+                    other.classList.toggle('is-active', other === option);
+                });
+            });
+        });
+    });
+
+    // Ротация подсказок внизу сайдбара формы оформления карты.
+    document.querySelectorAll('[data-rotating-tip]').forEach((tip) => {
+        const items = [...tip.querySelectorAll('[data-tip]')];
+
+        if (items.length < 2) {
+            return;
+        }
+
+        let activeIndex = items.findIndex((item) => item.classList.contains('is-active'));
+
+        if (activeIndex === -1) {
+            activeIndex = 0;
+        }
+
+        setInterval(() => {
+            items[activeIndex].classList.remove('is-active');
+            activeIndex = (activeIndex + 1) % items.length;
+            items[activeIndex].classList.add('is-active');
+        }, 3000);
+    });
+
+    /*
+     * Транслитерация ФИО в реальном времени.
+     *
+     * Первая буква каждого транслитерируемого символа наследует регистр исходной
+     * кириллической буквы (Х → Kh, а не KH), остальные символы приводятся к нижнему.
+     */
+    const translitMap = {
+        а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z',
+        и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+        с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh',
+        щ: 'shch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
+    };
+
+    const transliterate = (value) => value.replace(/[а-яёА-ЯЁ]/g, (char) => {
+        const lower = char.toLowerCase();
+        const mapped = translitMap[lower];
+
+        if (mapped === undefined) {
+            return char;
+        }
+
+        if (char === lower) {
+            return mapped;
+        }
+
+        return mapped.charAt(0).toUpperCase() + mapped.slice(1);
+    });
+
+    document.querySelectorAll('[data-translit-input]').forEach((input) => {
+        input.addEventListener('input', () => {
+            const transliterated = transliterate(input.value);
+
+            if (transliterated !== input.value) {
+                input.value = transliterated;
+            }
+        });
+    });
+
+    // Маска даты рождения: дд.мм.гггг.
+    document.querySelectorAll('[data-dob-input]').forEach((input) => {
+        input.addEventListener('input', () => {
+            const digits = input.value.replace(/\D/g, '').slice(0, 8);
+
+            let formatted = digits.slice(0, 2);
+
+            if (digits.length > 2) {
+                formatted += `.${digits.slice(2, 4)}`;
+            }
+
+            if (digits.length > 4) {
+                formatted += `.${digits.slice(4, 8)}`;
+            }
+
+            input.value = formatted;
+        });
+    });
+
+    // Маска российского мобильного телефона: +7 (___) ___-__-__.
+    document.querySelectorAll('[data-phone-input]').forEach((input) => {
+        input.addEventListener('input', () => {
+            let digits = input.value.replace(/\D/g, '');
+
+            if (!digits) {
+                input.value = '';
+                return;
+            }
+
+            if (digits.startsWith('8')) {
+                digits = `7${digits.slice(1)}`;
+            } else if (!digits.startsWith('7')) {
+                digits = `7${digits}`;
+            }
+
+            digits = digits.slice(0, 11);
+
+            let formatted = '+7';
+
+            if (digits.length > 1) {
+                formatted += ` (${digits.slice(1, 4)}`;
+            }
+
+            if (digits.length >= 4) {
+                formatted += ')';
+            }
+
+            if (digits.length >= 5) {
+                formatted += ` ${digits.slice(4, 7)}`;
+            }
+
+            if (digits.length >= 8) {
+                formatted += `-${digits.slice(7, 9)}`;
+            }
+
+            if (digits.length >= 10) {
+                formatted += `-${digits.slice(9, 11)}`;
+            }
+
+            input.value = formatted;
+        });
+    });
 });

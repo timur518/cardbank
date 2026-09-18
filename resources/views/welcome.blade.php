@@ -255,9 +255,104 @@
         </div>
     </section>
 
-    {{-- ================= SECURITY ================= --}}
-    <section id="security" class="editorial-dark mx-4 mt-[150px] rounded-[40px] px-6 py-28 text-white sm:mx-8 lg:px-10 lg:py-40">
-        <div class="mx-auto max-w-[1200px]"><div data-reveal class="max-w-4xl"><span class="eyebrow !text-[#f37338]">Безопасность</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Цифровой продукт, в котором важен контроль</h2></div><div class="mt-16 grid gap-px overflow-hidden rounded-3xl bg-white/10 sm:grid-cols-2">@foreach(['Карты выпускает лицензированный партнёр-эмитент','Проверка личности при выпуске','Мониторинг операций в реальном времени','Реквизиты доступны только держателю'] as $i => $point)<div data-reveal style="--reveal-delay: {{ $i * 80 }}ms" class="bg-white/[.035] p-8"><span class="text-sm font-bold text-[#f37338]">0{{ $i + 1 }}</span><p class="mt-8 max-w-md text-lg leading-relaxed text-white/75">{{ $point }}</p></div>@endforeach</div></div>
+    {{-- ================= APPLY ================= --}}
+    <section id="apply" class="mt-[150px] px-6 lg:px-10">
+        <div class="mx-auto max-w-[1400px]">
+            <div data-reveal class="max-w-4xl">
+                <span class="eyebrow">Оформление карты</span>
+                <h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Оформление карты онлайн</h2>
+                <p class="mt-6 text-lg leading-relaxed text-[#141413]/60">Сможете использовать карту сразу</p>
+            </div>
+
+            @php
+                $cardOptions = [
+                    [
+                        'name' => 'Black', 'thumb' => 'blackcard.png', 'currency' => '$ USD',
+                        'desc' => 'Для онлайн платежей, подписок и сервисов.',
+                        'wallets' => null, 'price' => '990',
+                    ],
+                    [
+                        'name' => 'Orange', 'thumb' => 'orangecard.png', 'currency' => '$ USD',
+                        'desc' => 'Для оффлайн и онлайн покупок.',
+                        'wallets' => 'Apple Pay · Google Pay', 'price' => '3 490',
+                    ],
+                    [
+                        'name' => 'White', 'thumb' => null, 'currency' => '$ USD',
+                        'desc' => 'Универсальная карта с повышенными лимитами. Для оффлайн и онлайн покупок.',
+                        'wallets' => 'Apple Pay · Google Pay', 'price' => '4 990',
+                    ],
+                ];
+
+                $tips = [
+                    ['Мгновенный выпуск карты', 'Можно пользоваться сразу после пополнения баланса'],
+                    ['Карты с ApplePay / GooglePay', 'Оплачивайте покупки телефоном или смарт-часами'],
+                    ['Пополнение баланса из России', 'Мгновенное пополнение баланса российскими картами или через СБП.'],
+                ];
+            @endphp
+
+            <div data-reveal class="apply-panel mt-16 grid lg:grid-cols-[1fr_2fr] lg:mt-24">
+                <aside class="apply-sidebar">
+                    <div class="apply-card-list" data-card-selector>
+                        @foreach ($cardOptions as $i => $card)
+                            <label class="apply-card-option {{ $i === 0 ? 'is-active' : '' }}">
+                                <input type="radio" name="card_product" value="{{ $card['name'] }}" class="sr-only" {{ $i === 0 ? 'checked' : '' }}>
+                                <span class="apply-card-thumb {{ $card['thumb'] ? '' : 'apply-card-thumb-white' }}">
+                                    @if ($card['thumb'])
+                                        <img src="{{ asset('assets/images/'.$card['thumb']) }}" alt="Карта {{ $card['name'] }}" loading="lazy">
+                                    @endif
+                                </span>
+                                <span class="apply-card-info">
+                                    <span class="apply-card-name">Карта {{ $card['name'] }} <span class="apply-card-badge">{{ $card['currency'] }}</span></span>
+                                    <span class="apply-card-desc">{{ $card['desc'] }}</span>
+                                    @if ($card['wallets'])
+                                        <span class="apply-card-wallets">{{ $card['wallets'] }}</span>
+                                    @endif
+                                    <span class="apply-card-price">{{ $card['price'] }} ₽ / 0 ₽ в мес.</span>
+                                </span>
+                            </label>
+                        @endforeach
+                    </div>
+
+                    <div class="apply-tip" data-rotating-tip>
+                        @foreach ($tips as $i => $tip)
+                            <div class="apply-tip-item {{ $i === 0 ? 'is-active' : '' }}" data-tip>
+                                <span class="apply-tip-title">{{ $tip[0] }}</span>
+                                <p class="apply-tip-text">{{ $tip[1] }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                </aside>
+
+                <div class="apply-form-wrap">
+                    <form data-apply-form novalidate>
+                        <div class="apply-field">
+                            <label for="apply-fio">Введите ваше ФИО</label>
+                            <input type="text" id="apply-fio" name="fio" data-translit-input autocomplete="name" placeholder="Халяпов Тимур Рамилевич" required>
+                            <p class="apply-hint">Можно на русском — поле само переведёт в английскую транскрипцию</p>
+                        </div>
+                        <div class="apply-grid-2">
+                            <div class="apply-field">
+                                <label for="apply-dob">Дата рождения</label>
+                                <input type="text" id="apply-dob" name="birth_date" inputmode="numeric" data-dob-input placeholder="дд.мм.гггг" maxlength="10" required>
+                            </div>
+                            <div class="apply-field">
+                                <label for="apply-phone">Мобильный телефон</label>
+                                <input type="tel" id="apply-phone" name="phone" inputmode="numeric" data-phone-input placeholder="+7 (___) ___-__-__" maxlength="18" required>
+                            </div>
+                        </div>
+                        <div class="apply-field">
+                            <label for="apply-email">Электронная почта</label>
+                            <input type="email" id="apply-email" name="email" autocomplete="email" placeholder="you@example.com" required>
+                        </div>
+                        <label class="apply-consent">
+                            <input type="checkbox" name="consent" required>
+                            <span>Я даю согласие на обработку персональных данных и принимаю пользовательское соглашение</span>
+                        </label>
+                        <button type="submit" class="btn btn-hero-orange apply-submit">Зарегистрироваться и продолжить</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </section>
 
     {{-- ================= FAQ ================= --}}
