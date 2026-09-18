@@ -27,7 +27,7 @@ class CardTransactionResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Транзакции по картам';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
 
     public static function infolist(Schema $schema): Schema
     {
