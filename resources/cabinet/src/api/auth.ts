@@ -1,5 +1,5 @@
 import { apiClient, ensureCsrfCookie } from './client';
-import type { LoginPayload, Profile, RegisterPayload } from './types';
+import type { LoginPayload, Profile, RegisterPayload, UpdatePasswordPayload, UpdateProfilePayload } from './types';
 
 // Аутентификация и управление текущей сессией личного кабинета (Sanctum SPA).
 
@@ -28,4 +28,17 @@ export async function logout(): Promise<void> {
 export async function fetchProfile(): Promise<Profile> {
     const { data } = await apiClient.get<{ data: Profile }>('/profile');
     return data.data;
+}
+
+// Блок «Мои данные» на странице профиля — ФИО, телефон, дата рождения. email через
+// этот эндпоинт не меняется (UpdateProfileRequest отклоняет поле email).
+export async function updateProfile(payload: UpdateProfilePayload): Promise<Profile> {
+    const { data } = await apiClient.patch<{ data: Profile }>('/profile', payload);
+    return data.data;
+}
+
+// Блок «Безопасность» на странице профиля — смена пароля с подтверждением текущим.
+export async function updatePassword(payload: UpdatePasswordPayload): Promise<string> {
+    const { data } = await apiClient.post<{ message: string }>('/profile/password', payload);
+    return data.message;
 }

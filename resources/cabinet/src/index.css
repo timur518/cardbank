@@ -120,6 +120,11 @@ body {
     outline: none;
     border-color: var(--color-orange);
 }
+.field input:disabled {
+    background: #f5f3f0;
+    color: var(--color-muted);
+    cursor: not-allowed;
+}
 .field-error {
     font-size: .78rem;
     color: #c94b0d;
@@ -275,6 +280,14 @@ body {
     background: #fdecea;
     border: 1.5px solid #f3b8ac;
     color: var(--color-orange-dark);
+    padding: 12px 16px;
+    font-size: .85rem;
+}
+.form-success-banner {
+    border-radius: 14px;
+    background: #e7f6ec;
+    border: 1.5px solid #b7e3c4;
+    color: #1e7a3c;
     padding: 12px 16px;
     font-size: .85rem;
 }

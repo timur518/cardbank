@@ -48,4 +48,19 @@ class UpdateProfileRequest extends FormRequest
             'email' => ['prohibited'],
         ];
     }
+
+    /**
+     * Русские сообщения об ошибках валидации — по той же причине, что и в RegisterRequest.
+     */
+    public function messages(): array
+    {
+        return [
+            'first_name.required' => 'Введите имя.',
+            'last_name.required' => 'Введите фамилию.',
+            'phone.unique' => 'Этот номер телефона уже зарегистрирован.',
+            'date_of_birth.date_format' => 'Некорректная дата рождения. Формат: дд.мм.гггг.',
+            'date_of_birth.before' => 'Дата рождения должна быть раньше сегодняшнего дня.',
+            'email.prohibited' => 'Email нельзя изменить.',
+        ];
+    }
 }

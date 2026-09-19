@@ -52,6 +52,15 @@ export function splitFio(fio: string): SplitFio {
     };
 }
 
+/**
+ * Обратная операция к splitFio() — собирает фамилию/имя/отчество (как отдаёт
+ * UserResource) обратно в одно поле в том же порядке «Фамилия Имя Отчество» — для
+ * поля ФИО на странице профиля.
+ */
+export function joinFio(parts: { first_name: string; last_name: string; middle_name: string | null }): string {
+    return [parts.last_name, parts.first_name, parts.middle_name].filter(Boolean).join(' ');
+}
+
 /** Маска российского мобильного телефона: +7 (999) 123-45-67. */
 export function formatPhoneMask(value: string): string {
     let digits = value.replace(/\D/g, '');
@@ -87,6 +96,16 @@ export function formatPhoneMask(value: string): string {
     }
 
     return formatted;
+}
+
+/** "1990-05-20" (как отдаёт UserResource) -> "20.05.1990" (формат маски поля ввода даты рождения). */
+export function isoDateToDisplay(iso: string | null): string {
+    if (!iso) {
+        return '';
+    }
+
+    const [year, month, day] = iso.split('-');
+    return `${day}.${month}.${year}`;
 }
 
 /** Маска даты рождения: дд.мм.гггг — именно в этом формате её ждёт RegisterRequest. */

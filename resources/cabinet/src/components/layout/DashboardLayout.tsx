@@ -47,9 +47,9 @@ export function DashboardLayout() {
                 <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 py-4 lg:px-8">
                     <BrandLogo />
                     <div className="flex items-center gap-4">
-                        <span className="text-sm font-semibold text-ink">
+                        <NavLink to="/profile" className="text-sm font-semibold text-ink hover:text-orange-dark">
                             {profile?.first_name} {profile?.last_name}
-                        </span>
+                        </NavLink>
                         <button type="button" className="btn btn-primary" onClick={() => logout()}>
                             Выйти
                         </button>

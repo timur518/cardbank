@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import * as authApi from '../api/auth';
-import type { LoginPayload, Profile, RegisterPayload } from '../api/types';
+import type { LoginPayload, Profile, RegisterPayload, UpdateProfilePayload } from '../api/types';
 
 type AuthStatus = 'checking' | 'guest' | 'authenticated';
 
@@ -10,6 +10,7 @@ interface AuthContextValue {
     login: (payload: LoginPayload) => Promise<void>;
     register: (payload: RegisterPayload) => Promise<void>;
     logout: () => Promise<void>;
+    updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -50,9 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStatus('guest');
     }, []);
 
+    // Обновляет профиль в контексте сразу после успешного PATCH /profile — чтобы
+    // имя в шапке (DashboardLayout) и везде ещё обновилось без перезагрузки страницы.
+    const updateProfile = useCallback(async (payload: UpdateProfilePayload) => {
+        const data = await authApi.updateProfile(payload);
+        setProfile(data);
+    }, []);
+
     const value = useMemo<AuthContextValue>(
-        () => ({ status, profile, login, register, logout }),
-        [status, profile, login, register, logout],
+        () => ({ status, profile, login, register, logout, updateProfile }),
+        [status, profile, login, register, logout, updateProfile],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

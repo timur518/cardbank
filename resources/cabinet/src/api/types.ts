@@ -18,6 +18,24 @@ export interface LoginPayload {
     password: string;
 }
 
+// Поля, редактируемые клиентом на странице профиля (PATCH /profile) — соответствует
+// UpdateProfileRequest::rules(). email через этот эндпоинт не меняется.
+export interface UpdateProfilePayload {
+    first_name: string;
+    last_name: string;
+    middle_name?: string;
+    phone: string;
+    date_of_birth: string;
+}
+
+// Соответствует UpdatePasswordRequest::rules() (POST /profile/password) — смена пароля
+// в личном кабинете, требует подтверждения текущим паролем.
+export interface UpdatePasswordPayload {
+    current_password: string;
+    password: string;
+    password_confirmation: string;
+}
+
 export interface RegisterPayload {
     first_name: string;
     last_name: string;
