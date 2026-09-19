@@ -34,3 +34,70 @@ export interface RegisterPayload {
     utm_campaign?: string;
     utm_content?: string;
 }
+
+// Соответствует CardProductResource (только поля, нужные для отображения карты
+// клиента, без себестоимостных полей продукта).
+export interface CardProductSummary {
+    key: string;
+    name: string;
+    skin: string | null;
+}
+
+export type CardStatus = 'waiting' | 'pending' | 'active' | 'frozen' | 'closed' | 'cancelled' | 'failed';
+
+// Соответствует CardResource.
+export interface Card {
+    id: number;
+    card_product: CardProductSummary;
+    status: CardStatus;
+    currency: string;
+    balance: string;
+    card_last4: string;
+    expiry: string | null;
+    issued_at: string | null;
+}
+
+export type CardTransactionType = 'purchase' | 'topup' | 'fee' | 'refund' | 'decline';
+export type CardTransactionStatus = 'pending' | 'success' | 'declined' | 'reversed';
+
+// Соответствует CardTransactionResource.
+export interface CardTransaction {
+    id: number;
+    card_id: number;
+    type: CardTransactionType;
+    amount: string;
+    currency: string;
+    merchant: string | null;
+    status: CardTransactionStatus;
+    occurred_at: string;
+}
+
+export interface PaginationMeta {
+    current_page: number;
+    last_page: number;
+    total: number;
+}
+
+export interface Paginated<T> {
+    data: T[];
+    meta: PaginationMeta;
+}
+
+// Соответствует ответу SettingsController::brand().
+export interface BrandSettings {
+    brand_domain: string | null;
+    brand_site_name: string | null;
+    brand_support_email: string | null;
+    brand_logo: string | null;
+    brand_theme_color: string | null;
+}
+
+// Соответствует ответу SettingsController::referral(). Поля могут быть null, если
+// админ ещё не заполнил ReferralSettings в Filament.
+export interface ReferralSettings {
+    referral_issue_rate: string | null;
+    referral_topup_rate: string | null;
+    referral_hold_days: string | null;
+    referral_min_wallet_rub: string | null;
+    referral_min_bank_rub: string | null;
+}

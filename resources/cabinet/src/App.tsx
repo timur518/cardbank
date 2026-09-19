@@ -2,10 +2,14 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { ProtectedRoute, GuestRoute } from './components/routing/ProtectedRoute';
 import { AuthShell } from './components/auth/AuthShell';
+import { DashboardLayout } from './components/layout/DashboardLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { CardsPage } from './pages/cards/CardsPage';
+import { TransactionsPage } from './pages/transactions/TransactionsPage';
+import { PartnershipPage } from './pages/partnership/PartnershipPage';
 
 export function App() {
     return (
@@ -21,7 +25,12 @@ export function App() {
                     </Route>
 
                     <Route element={<ProtectedRoute />}>
-                        <Route path="/" element={<DashboardPage />} />
+                        <Route element={<DashboardLayout />}>
+                            <Route path="/" element={<DashboardPage />} />
+                            <Route path="/cards" element={<CardsPage />} />
+                            <Route path="/transactions" element={<TransactionsPage />} />
+                            <Route path="/partnership" element={<PartnershipPage />} />
+                        </Route>
                     </Route>
                 </Routes>
             </AuthProvider>

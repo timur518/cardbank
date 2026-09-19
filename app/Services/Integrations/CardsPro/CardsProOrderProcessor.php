@@ -10,11 +10,11 @@ use App\Models\CardProviderOperation;
 use App\Services\CardProviderOperationResolver;
 
 /**
- * Реализует шаг 4 из CARD_ORDER_AND_ISSUANCE_FLOW.md: по оплаченному заказу
- * (`Income.payment_status = Paid`, см. {@see \App\Services\Payments\PaymentWebhookHandler})
- * инициирует у CardsPro сам выпуск карты (заказ = `IncomeType::CardIssue`) либо
- * пополнение уже выпущенной карты (заказ = `IncomeType::CardTopup`, через
- * `orders/topup`). `Card` в обоих случаях уже существует к этому моменту.
+ * По оплаченному заказу (`Income.payment_status = Paid`, см.
+ * {@see \App\Services\Payments\PaymentWebhookHandler}) инициирует у CardsPro сам
+ * выпуск карты (заказ = `IncomeType::CardIssue`) либо пополнение уже
+ * выпущенной карты (заказ = `IncomeType::CardTopup`, через `orders/topup`). `Card`
+ * в обоих случаях уже существует к этому моменту.
  *
  * `INPROCESS`/`EXECUTED` → заводим `CardProviderOperation` в статусе `Pending`, итог
  * узнаём позже по вебхуку CardsPro (`CardsProWebhookHandler`) или страховкой

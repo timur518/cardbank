@@ -158,7 +158,7 @@ class CardProviderOperationResolver
     /**
      * `amount_usd` — то, что видит `grossProfitStat()`; `amount` (в ₽ по курсу ЦБ на
      * момент создания расхода) — для единообразия с остальными `Expense`, где `amount`
-     * всегда в ₽ (см. CARD_ORDER_AND_ISSUANCE_FLOW.md, раздел «Курсы»).
+     * всегда в ₽ по курсу ЦБ РФ на момент операции.
      */
     protected function createExpense(Card $card, CardProviderOperation $operation, ExpenseCategory $category, float $amountUsd, string $comment): void
     {
@@ -198,9 +198,9 @@ class CardProviderOperationResolver
      * какого-либо вебхука) — в отличие от `resolve()`/`claim()`, сюда не попадает
      * асинхронный результат по вебхуку или `providers:sync-pending-operations`.
      * Заводит операцию сразу в статусе `Failed` (не `Pending`, ждать здесь нечего) и
-     * переводит карту в `CardStatus::Failed`. Вызывается будущим контроллером
-     * оформления заказа сразу по ответу `issueCard()` — см. CARD_ORDER_AND_ISSUANCE_FLOW.md,
-     * шаг 4, п. 3.
+     * переводит карту в `CardStatus::Failed`. Вызывается из
+     * `CardsProOrderProcessor::initiateIssue()` сразу по синхронному ответу `issueCard()`,
+     * если провайдер сразу вернул `DECLINED`.
      *
      * @param  array<string, mixed>  $raw
      */

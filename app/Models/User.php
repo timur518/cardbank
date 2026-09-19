@@ -115,8 +115,9 @@ class User extends Authenticatable implements FilamentUser
 
     /**
      * Доступ в Filament-панель (админка). Пользователи с ролью `customer`
-     * (регистрируются автоматически при регистрации в ЛК, см. CABINET_API_SPEC.md)
-     * никогда не проходят, даже если у них верный пароль/сессия.
+     * (присваивается автоматически при регистрации через API личного кабинета,
+     * см. AuthController::register()) никогда не проходят, даже если у них верный
+     * пароль/сессия.
      */
     public function canAccessPanel(Panel $panel): bool
     {
