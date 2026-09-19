@@ -9,10 +9,14 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\Webhooks\CardsProWebhookController;
+use App\Http\Controllers\Api\Webhooks\PaymentWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/webhooks/cardspro/{provider:code}', CardsProWebhookController::class)
     ->name('webhooks.cardspro');
+
+Route::post('/webhooks/payment/{paymentMethod}', PaymentWebhookController::class)
+    ->name('webhooks.payment');
 
 // Личный кабинет (ЛК) — см. CABINET_API_SPEC.md.
 Route::prefix('v1')->name('api.v1.')->group(function () {

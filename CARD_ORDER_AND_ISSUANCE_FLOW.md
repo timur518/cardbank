@@ -3,10 +3,12 @@
 Документ описывает полный путь от выбора карты клиентом до активной карты с реальным
 балансом, с точным маппингом на существующие модели/поля/сервисы
 (`app/Services/Integrations/CardsPro`, `CardProviderOperation`,
-`CardProviderOperationResolver`, `Income`, `Expense`, `ProviderReserveTopup`). Служит
-спецификацией для контроллера оформления заказа и вебхука платёжной системы — они
-пока не реализованы, всё остальное описанное ниже (модели, статусы, `applyIssue()`,
-`recordIssueExpenses()`, `recordDeclinedIssue()`) уже есть в коде.
+`CardProviderOperationResolver`, `Income`, `Expense`, `ProviderReserveTopup`). Все шаги
+1-5 реализованы: `OrderController` (шаги 1-2, см. CABINET_API_SPEC.md, п. 13-14),
+`PaymentWebhookController`/`PaymentWebhookHandler` (шаг 3), `CardsProOrderProcessor`
+(шаг 4), `CardProviderOperationResolver::applyIssue()`/`applyTopup()` (шаг 5) — платёжная
+система пока заглушка (`StubPaymentGateway`), см. раздел «Вебхук платёжной системы»
+ниже.
 
 По сути запись в ресурсе **«Карты»** и есть «Заказ» в терминах интернет-магазина —
 именно она объединяет продукт, покупателя, деньги и статус выполнения.
@@ -115,18 +117,37 @@ comment                 = 'Выпуск карты и пополнение ба�
 
 ## Шаг 3. Вебхук платёжной системы подтверждает оплату
 
-*(Провайдер платежей в коде пока не подключён — этот вебхук ещё предстоит
-реализовать. Ниже — контракт: по каким полям искать `Income` и что делать дальше.)*
+Реализовано в `PaymentWebhookController` (тонкий, миррорит `CardsProWebhookController`:
+проверяет подпись/токен через `PaymentGatewayContract::verifyWebhookSignature()`, всегда
+сохраняет сырое тело в `PaymentMethodMessage`) и `PaymentWebhookHandler` (разбор события).
+Маршрут — `POST /api/webhooks/payment/{paymentMethod}`. Провайдер платежей в коде пока
+не подключён — работает через `StubPaymentGateway` (см. раздел «Заглушка платёжной
+системы» ниже).
 
-1. Находим `Income` по `payment_transaction_id`.
-2. Оплата прошла → `payment_status = Paid`. Передаём заказ (по сути — `$card->id`,
-   `topup_usd`) в интеграционный модуль (шаг 4).
-3. Оплата не прошла → `payment_status = Failed`. `Card` переходит в статус
-   `CardStatus::Cancelled`, без движения дальше.
+`PaymentWebhookHandler::handle()`:
+
+1. Находим `Income` по `payment_transaction_id`. Если не найден либо уже не
+   `IncomePaymentStatus::Pending` (повторная доставка того же вебхука) — игнорируем,
+   идемпотентно.
+2. Оплата прошла → `payment_status = Paid`. Передаём заказ (`$card`, `topup_usd`) в
+   интеграционный модуль (шаг 4, `CardsProOrderProcessor`) — `initiateIssue()` для
+   `IncomeType::CardIssue`, `initiateTopup()` для `IncomeType::CardTopup` (заказ `orders/topup`
+   на уже активную карту — симметричное расширение той же схемы, в исходном
+   алгоритме явно не описано).
+3. Оплата не прошла → `payment_status = Failed`. Только для `IncomeType::CardIssue` — `Card`
+   переходит в статус `CardStatus::Cancelled` (с записью в `CardStatusHistory`), без
+   движения дальше. Для `IncomeType::CardTopup` карта уже активна и существует независимо
+   от этого конкретного пополнения — её статус не трогаем.
 
 ---
 
-## Шаг 4. Инициируем выпуск у CardsPro
+## Шаг 4. Инициируем выпуск/пополнение у CardsPro
+
+Реализовано в `CardsProOrderProcessor` (`app/Services/Integrations/CardsPro`), два входа:
+`initiateIssue(Card $card, float $topupUsd)` для выпуска карты и `initiateTopup(Card
+$card, float $topupUsd)` для пополнения уже активной карты.
+
+### Выпуск (`initiateIssue`)
 
 1. `CardsProService::for($provider)->issueCard(['productCode' => CardProduct.provider_product_code, 'amount' => $topup_usd, 'currency' => CardProduct.currency])`.
    Это один вызов сразу на выпуск и на начальное пополнение — у CardsPro `amount` в
@@ -164,6 +185,21 @@ comment                 = 'Выпуск карты и пополнение ба�
 `CardProviderOperation.card_id` заполняется сразу при создании операции (карта уже
 существует с шага 0), а `payload` для `issue` хранит только `topup_usd` — сумму
 начального пополнения, нужную на шаге 5 для расчёта комиссии провайдера.
+
+### Пополнение уже активной карты (`initiateTopup`)
+
+Симметрично выпуску, но без шага 0 (карта уже существует и активна) — это заказ
+`orders/topup`, а не начальное пополнение при выпуске:
+
+1. `CardsProService::for($provider)->topUpCard($card->provider_card_id, $topup_usd, $card->currency)`.
+2. `INPROCESS`/`EXECUTED` → создаём `CardProviderOperation` с `type = CardProviderOperationType::Topup`,
+   `status = Pending`, `payload = ['amount' => $topup_usd]` — именно это поле читает
+   `CardProviderOperationResolver::applyTopup()` на шаге 5. Итог — по вебхуку `CARD_TOPUP`
+   либо `providers:sync-pending-operations`.
+3. `DECLINED` → `CardProviderOperationResolver::recordDeclinedTopup($card, $provider, $requestId,
+   $docid, $raw)`. В отличие от `recordDeclinedIssue()`, статус `Card` не меняется —
+   карта уже выпущена и активна независимо от исхода этого конкретного пополнения —
+   фиксируется только неудачная `CardProviderOperation` (`status = Failed`).
 
 ---
 
@@ -290,3 +326,26 @@ protected function recordIssueExpenses(Card $card, CardProviderOperation $operat
 вне нашего трекинга операций, и без гарантии «ровно один раз» есть риск задвоить
 расход по комиссии (в отличие от баланса, который всегда пишется абсолютным
 значением и потому не задваивается).
+
+---
+
+## Заглушка платёжной системы
+
+Реальный провайдер оплаты не выбран, `PaymentGatewayContract` (интерфейс) реализован
+только `StubPaymentGateway` (см. привязку в `AppServiceProvider`):
+
+- `initiate()` — всегда «успешно» создаёт платёж, возвращает
+  `transaction_id = 'pt_' . Str::uuid()` и фиктивную `payment_url`.
+- `verifyWebhookSignature()` — если у `PaymentMethod.settlement_config.webhook_secret`
+  задан секрет, требует его в `?token=[redacted]] запроса (иначе проверка пропускается) —
+  та же схема, что у `CardsProWebhookController::tokenIsValid()`.
+- `parseWebhookPayload()` — наш собственный придуманный формат тела вебхука для ручного
+  тестирования:
+  ```json
+  {"transaction_id": "pt_...", "status": "paid"}
+  {"transaction_id": "pt_...", "status": "failed"}
+  ```
+
+При подключении реальной платёжной системы `PaymentWebhookController` и
+`PaymentWebhookHandler` менять не нужно — только реализацию этих трёх методов
+`PaymentGatewayContract` под настоящий протокол (подпись, формат колбэка).

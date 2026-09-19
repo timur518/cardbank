@@ -230,6 +230,30 @@ class CardProviderOperationResolver
         return $operation;
     }
 
+    /**
+     * Синхронный отказ CardsPro сразу в ответе на `topUpCard()` (`DECLINED`) — пополнение
+     * заказом (`orders/topup`, не начальное пополнение при выпуске) уже существующей
+     * активной карты. В отличие от `recordDeclinedIssue()`, карта тут ни при чём: она
+     * уже выпущена и активна независимо от исхода этого конкретного пополнения, поэтому
+     * её статус не трогаем — только фиксируем неудачную операцию.
+     *
+     * @param  array<string, mixed>  $raw
+     */
+    public function recordDeclinedTopup(Card $card, CardProvider $provider, string $requestId, ?string $docid, array $raw): CardProviderOperation
+    {
+        return CardProviderOperation::create([
+            'provider_id' => $provider->id,
+            'card_id' => $card->id,
+            'type' => CardProviderOperationType::Topup,
+            'request_id' => $requestId,
+            'docid' => $docid,
+            'status' => CardProviderOperationStatus::Failed,
+            'result' => $raw,
+            'error' => (string) ($raw['declineReason'] ?? $raw['message'] ?? 'Провайдер отклонил пополнение карты'),
+            'resolved_at' => now(),
+        ]);
+    }
+
     protected function applyWithdraw(CardProviderOperation $operation): void
     {
         $amount = (float) ($operation->payload['amount'] ?? 0);
