@@ -111,4 +111,15 @@ class Card extends Model
 
         return mb_substr($number, 0, 4) . ' •••• •••• ' . mb_substr($number, -4);
     }
+
+    /**
+     * Последние 4 цифры номера карты — безопасный аксессор для API ЛК поверх скрытого
+     * `card_number` (полный номер/CVV по API никогда не отдаются, см. CABINET_API_SPEC.md, п. 15).
+     */
+    public function getCardLast4Attribute(): ?string
+    {
+        $number = (string) $this->card_number;
+
+        return mb_strlen($number) >= 4 ? mb_substr($number, -4) : null;
+    }
 }

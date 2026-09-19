@@ -19,12 +19,14 @@ class Income extends Model
         'amount',
         'currency',
         'amount_usd',
+        'topup_usd',
         'card_id',
         'user_id',
         'card_transaction_id',
         'payment_method_id',
         'payment_transaction_id',
         'payment_status',
+        'idempotency_key',
         'comment',
         'created_by',
     ];
@@ -36,6 +38,7 @@ class Income extends Model
             'payment_status' => IncomePaymentStatus::class,
             'amount' => 'decimal:2',
             'amount_usd' => 'decimal:2',
+            'topup_usd' => 'decimal:2',
         ];
     }
 

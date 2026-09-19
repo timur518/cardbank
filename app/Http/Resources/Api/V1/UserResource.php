@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Http\Resources\Api\V1;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/**
+ * @mixin \App\Models\User
+ */
+class UserResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            // uuid, а не сквозной users.id — см. CABINET_API_SPEC.md, п. 3.
+            'id' => $this->uuid,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+            'middle_name' => $this->middle_name,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'date_of_birth' => optional($this->date_of_birth)->format('Y-m-d'),
+            'kyc_status' => $this->kyc_status?->value,
+            'two_factor_enabled' => (bool) $this->two_factor_enabled,
+            'referral_code' => $this->referral_code,
+            'created_at' => optional($this->created_at)->toIso8601String(),
+        ];
+    }
+}

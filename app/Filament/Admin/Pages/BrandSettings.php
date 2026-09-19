@@ -72,6 +72,9 @@ class BrandSettings extends Page implements HasForms
                         FileUpload::make('brand_logo')
                             ->label('Логотип')
                             ->image()
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('brand')
                             ->columnSpanFull(),
                     ]),
             ])
