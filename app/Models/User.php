@@ -38,6 +38,7 @@ class User extends Authenticatable
         'block_reason',
         'two_factor_enabled',
         'last_login_at',
+        'personal_data_consent_at',
     ];
 
     /**
@@ -65,6 +66,7 @@ class User extends Authenticatable
             'is_blocked' => 'boolean',
             'two_factor_enabled' => 'boolean',
             'last_login_at' => 'datetime',
+            'personal_data_consent_at' => 'datetime',
         ];
     }
 
