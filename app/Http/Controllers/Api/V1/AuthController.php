@@ -20,7 +20,9 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * POST /api/v1/auth/login — см. CABINET_API_SPEC.md, п. 1.
+     * Логин по телефону или email + паролю. Открывает сессионную (не токен-based)
+     * аутентификацию Sanctum на guard'е web — именно её кука затем используется
+     * SPA-фронтендом личного кабинета для всех последующих запросов к API.
      */
     public function login(LoginRequest $request): JsonResponse
     {
@@ -48,7 +50,9 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/v1/auth/register — см. CABINET_API_SPEC.md, п. 2.
+     * Регистрация нового клиента: создаёт пользователя, назначает ему роль
+     * customer (это единственная точка входа для клиентских аккаунтов) и сразу
+     * логинит через сессионную аутентификацию Sanctum, как и login().
      */
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -73,7 +77,7 @@ class AuthController extends Controller
             'is_blocked' => false,
         ]);
 
-        // Единственная точка входа для клиентских аккаунтов — см. CABINET_API_SPEC.md, п. 2.
+        // Роль customer явно блокирует доступ в /admin — см. User::canAccessPanel().
         $user->assignRole('customer');
 
         Auth::guard('web')->login($user);
@@ -83,7 +87,8 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/v1/auth/password/forgot — см. CABINET_API_SPEC.md, п. 5.
+     * Восстановление пароля: генерирует новый случайный пароль и отправляет его
+     * на email пользователя (если аккаунт с таким телефоном/email существует).
      */
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
     {
@@ -104,7 +109,7 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/v1/auth/logout — см. CABINET_API_SPEC.md, п. 6.
+     * Завершает текущую сессию (guard web) и инвалидирует CSRF-токен сессии.
      */
     public function logout(Request $request): JsonResponse
     {

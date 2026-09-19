@@ -18,7 +18,7 @@ class CardProductResource extends JsonResource
             'key' => $this->key,
             'name' => $this->name,
             'description' => $this->description,
-            // Относительный путь на диске public -> полный URL, см. CABINET_API_SPEC.md, п. 11.
+            // В БД хранится относительный путь на диске public — фронтенду нужен готовый URL.
             'skin' => $this->skin ? Storage::disk('public')->url($this->skin) : null,
             'currency' => $this->currency,
             'price_rub' => number_format((float) $this->price_rub, 2, '.', ''),

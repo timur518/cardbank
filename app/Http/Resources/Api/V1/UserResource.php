@@ -13,7 +13,8 @@ class UserResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            // uuid, а не сквозной users.id — см. CABINET_API_SPEC.md, п. 3.
+            // Клиенту отдаём uuid, а не сквозной users.id — чтобы не раскрывать
+            // наружу общее количество зарегистрированных пользователей.
             'id' => $this->uuid,
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,

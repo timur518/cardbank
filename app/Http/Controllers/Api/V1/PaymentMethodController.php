@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class PaymentMethodController extends Controller
 {
     /**
-     * GET /api/v1/payment-methods — см. CABINET_API_SPEC.md, п. 12.
+     * Список активных способов оплаты для выбора на шаге оплаты заказа/пополнения.
      */
     public function index(): AnonymousResourceCollection
     {

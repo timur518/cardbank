@@ -12,7 +12,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class CardController extends Controller
 {
     /**
-     * GET /api/v1/cards — см. CABINET_API_SPEC.md, п. 15.
+     * Список карт текущего клиента (активные и архивные), новые впереди.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -22,7 +22,8 @@ class CardController extends Controller
     }
 
     /**
-     * GET /api/v1/cards/{card} — см. CABINET_API_SPEC.md, п. 16.
+     * Карточка одной карты клиента с балансом и параметрами продукта;
+     * 403, если карта принадлежит другому пользователю.
      */
     public function show(Request $request, Card $card): JsonResponse
     {

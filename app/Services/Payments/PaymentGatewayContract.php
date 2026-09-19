@@ -6,9 +6,10 @@ use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 
 /**
- * Платёжная система для оплаты заказов ЛК (выпуск/пополнение карты). Реальный
- * провайдер в коде пока не подключён (см. CARD_ORDER_AND_ISSUANCE_FLOW.md, шаг 2–3) —
- * используется StubPaymentGateway, см. привязку в AppServiceProvider.
+ * Платёжная система для оплаты заказов личного кабинета (выпуск/пополнение
+ * карты). Абстрагирует конкретного провайдера, чтобы его можно было подключить/
+ * заменить, не меняя OrderController и PaymentWebhookController. Реальный провайдер
+ * в коде пока не подключён — используется StubPaymentGateway, см. привязку в AppServiceProvider.
  */
 interface PaymentGatewayContract
 {
@@ -20,8 +21,8 @@ interface PaymentGatewayContract
     public function initiate(float $amountRub, string $description, string $orderReference): array;
 
     /**
-     * Проверить подлинность вебхука (шаг 3 в CARD_ORDER_AND_ISSUANCE_FLOW.md) — подпись/
-     * токен, схема целиком зависит от протокола конкретной платёжной системы. Секрет
+     * Проверить подлинность входящего вебхука — подпись/токен, схема
+     * целиком зависит от протокола конкретной платёжной системы. Секрет
      * читается из `PaymentMethod.settlement_config`.
      */
     public function verifyWebhookSignature(Request $request, PaymentMethod $paymentMethod): bool;

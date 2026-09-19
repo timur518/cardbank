@@ -7,8 +7,8 @@ use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 /**
- * Письмо с новым паролем — см. CABINET_API_SPEC.md, п. 5
- * (POST /api/v1/auth/password/forgot).
+ * Письмо с новым случайным паролем клиенту, запросившему восстановление
+ * доступа в личном кабинете (AuthController::forgotPassword).
  */
 class NewPasswordNotification extends Notification
 {

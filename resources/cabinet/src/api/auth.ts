@@ -1,7 +1,7 @@
 import { apiClient, ensureCsrfCookie } from './client';
 import type { LoginPayload, Profile, RegisterPayload } from './types';
 
-// CABINET_API_SPEC.md, раздел 1.
+// Аутентификация и управление текущей сессией личного кабинета (Sanctum SPA).
 
 export async function login(payload: LoginPayload): Promise<Profile> {
     await ensureCsrfCookie();

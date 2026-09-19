@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { ProtectedRoute, GuestRoute } from './components/ProtectedRoute';
-import { AuthShell } from './components/AuthShell';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { ForgotPasswordPage } from './pages/ForgotPasswordPage';
-import { DashboardPage } from './pages/DashboardPage';
+import { ProtectedRoute, GuestRoute } from './components/routing/ProtectedRoute';
+import { AuthShell } from './components/auth/AuthShell';
+import { LoginPage } from './pages/auth/LoginPage';
+import { RegisterPage } from './pages/auth/RegisterPage';
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
 
 export function App() {
     return (

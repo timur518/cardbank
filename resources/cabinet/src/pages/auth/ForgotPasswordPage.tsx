@@ -1,9 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { AuthLayout } from '../components/AuthLayout';
-import { FormField } from '../components/FormField';
-import { forgotPassword } from '../api/auth';
-import { extractErrorMessage } from '../api/client';
+import { AuthLayout } from '../../components/auth/AuthLayout';
+import { FormField } from '../../components/common/FormField';
+import { forgotPassword } from '../../api/auth';
+import { extractErrorMessage } from '../../api/client';
 
 export function ForgotPasswordPage() {
     const [login, setLogin] = useState('');

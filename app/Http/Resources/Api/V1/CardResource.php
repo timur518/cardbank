@@ -23,7 +23,8 @@ class CardResource extends JsonResource
             'status' => $this->status->value,
             'currency' => $this->currency,
             'balance' => number_format((float) $this->balance, 2, '.', ''),
-            // Полный номер/CVV скрыты на модели, см. CABINET_API_SPEC.md, п. 15.
+            // Полный номер и CVV клиенту в личном кабинете не показываются — только
+            // последние 4 цифры для идентификации.
             'card_last4' => $this->card_last4,
             'expiry' => $this->expiry,
             'issued_at' => optional($this->issued_at)->toIso8601String(),

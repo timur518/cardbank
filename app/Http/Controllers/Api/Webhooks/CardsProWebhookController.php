@@ -14,11 +14,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
- * Принимает колбэки CardsPro (см. docs/integrations/cardspro.md, раздел «Вебхуки»).
+ * Принимает колбэки CardsPro о событиях по картам/транзакциям (выпуск, пополнение,
+ * списание и т.п.) и применяет их к состоянию карт через CardsProWebhookHandler.
  *
  * URL для настройки в личном кабинете CardsPro:
  *   POST {APP_URL}/api/webhooks/cardspro/{код провайдера из «Карты» → «Провайдеры карт»}
- *   ?token={webhook_secret этого провайдера, если он заполнен}
+ *   ?token={значение webhook_secret этого провайдера, если оно задано}
  *
  * Контроллер намеренно тонкий: он только проверяет токен, всегда сохраняет сырое
  * тело в ProviderMessage и передаёт разбор события в CardsProWebhookHandler —

@@ -6,9 +6,9 @@ use App\Models\Setting;
 
 /**
  * Курс продажи валюты клиенту (с наценкой) — тот же расчёт, что и в
- * CurrencySettings::costHelperText(). Переиспользуется в GET /settings/currency-rates
- * (см. CABINET_API_SPEC.md, п. 10) и в контроллере оформления заказа для пересчёта
- * ₽ ⇄ $ (см. CARD_ORDER_AND_ISSUANCE_FLOW.md, шаг 1).
+ * CurrencySettings::costHelperText(). Переиспользуется в SettingsController::currencyRates()
+ * для отдачи курса клиенту и в OrderController для пересчёта суммы пополнения
+ * между ₽ и $.
  */
 class CurrencyRateService
 {

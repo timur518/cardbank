@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 class ProfileController extends Controller
 {
     /**
-     * GET /api/v1/profile — см. CABINET_API_SPEC.md, п. 3.
+     * Отдаёт профиль текущего авторизованного клиента.
      */
     public function show(Request $request): JsonResponse
     {
@@ -22,7 +22,8 @@ class ProfileController extends Controller
     }
 
     /**
-     * PATCH /api/v1/profile — см. CABINET_API_SPEC.md, п. 4.
+     * Обновляет редактируемые клиентом поля профиля (ФИО, телефон, дата рождения);
+     * email и пароль через этот эндпоинт не меняются.
      */
     public function update(UpdateProfileRequest $request): JsonResponse
     {
@@ -33,7 +34,8 @@ class ProfileController extends Controller
     }
 
     /**
-     * POST /api/v1/profile/password — см. CABINET_API_SPEC.md, п. 7.
+     * Смена пароля клиентом в личном кабинете — требует подтверждения текущим паролем,
+     * в отличие от восстановления через email (AuthController::forgotPassword).
      */
     public function updatePassword(UpdatePasswordRequest $request): JsonResponse
     {

@@ -19,11 +19,12 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Реализует шаги 1–2 из CARD_ORDER_AND_ISSUANCE_FLOW.md (расчёт и оформление заказа).
- * Обращение к платёжной системе — через PaymentGatewayContract, сейчас это
- * StubPaymentGateway (реальный провайдер ещё не подключён). Дальнейшая обработка —
- * вебхук платёжной системы (шаг 3) и вебхук CardsPro (шаги 4–5) — вне этого
- * контроллера.
+ * Оформление заказов на выпуск карты и пополнение баланса: создаёт
+ * записи Card и Income со статусом ожидания оплаты и инициирует платёж
+ * через PaymentGatewayContract (сейчас это StubPaymentGateway — реальный провайдер
+ * ещё не подключён). Фактический выпуск/пополнение карты на стороне провайдера
+ * происходит уже после подтверждения оплаты вебхуками (PaymentWebhookController,
+ * затем CardsProWebhookController) — вне этого контроллера.
  */
 class OrderController extends Controller
 {
@@ -35,7 +36,10 @@ class OrderController extends Controller
     }
 
     /**
-     * POST /api/v1/orders/issue — см. CABINET_API_SPEC.md, п. 13.
+     * Оформляет заказ на выпуск новой карты с одновременным первым пополнением
+     * баланса: создаёт карту в статусе Waiting и одну запись Income на сумму
+     * «цена карты + пополнение», идемпотентно (повторный запрос с тем же
+     * idempotency_key вернёт ранее созданный заказ, не создав дубль).
      */
     public function issue(IssueOrderRequest $request): JsonResponse
     {
@@ -99,7 +103,8 @@ class OrderController extends Controller
     }
 
     /**
-     * POST /api/v1/orders/topup — см. CABINET_API_SPEC.md, п. 14.
+     * Оформляет пополнение уже активной карты клиента: создаёт Income и инициирует
+     * оплату через PaymentGatewayContract; идемпотентно, как и issue().
      */
     public function topup(TopupOrderRequest $request): JsonResponse
     {

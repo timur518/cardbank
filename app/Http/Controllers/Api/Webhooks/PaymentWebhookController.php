@@ -14,11 +14,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
- * Принимает вебхуки платёжной системы (см. CARD_ORDER_AND_ISSUANCE_FLOW.md, шаг 3).
+ * Принимает вебхуки платёжной системы о смене статуса оплаты (успешно/отказано)
+ * для заказов выпуска карты и пополнения (OrderController), чтобы запустить
+ * фактический выпуск/пополнение карты на стороне провайдера.
  *
  * URL для настройки в личном кабинете платёжной системы:
  *   POST {APP_URL}/api/webhooks/payment/{id способа оплаты из «Способы оплаты»}
- *   ?token=[redacted]] способа оплаты, если он заполнен в settlement_config.webhook_secret}
+ *   ?token={значение settlement_config.webhook_secret способа оплаты, если оно задано}
  *
  * Реальный провайдер пока не подключён — работает через {@see \App\Services\Payments\StubPaymentGateway}
  * (см. привязку в AppServiceProvider). Формат тела запроса — наш собственный

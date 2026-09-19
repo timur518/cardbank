@@ -10,7 +10,8 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class CardProductController extends Controller
 {
     /**
-     * GET /api/v1/card-products — см. CABINET_API_SPEC.md, п. 11.
+     * Каталог активных карточных продуктов для выбора при оформлении заявки,
+     * отсортирован как в админке (поле sort).
      */
     public function index(): AnonymousResourceCollection
     {

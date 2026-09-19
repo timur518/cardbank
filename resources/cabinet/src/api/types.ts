@@ -1,4 +1,4 @@
-// Соответствует UserResource — см. CABINET_API_SPEC.md, раздел 1, п. 3.
+// Соответствует полям, которые отдаёт UserResource на бэкенде.
 export interface Profile {
     id: string;
     first_name: string;

@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { AuthLayout } from '../components/AuthLayout';
-import { FormField } from '../components/FormField';
-import { extractErrorMessage } from '../api/client';
-import { formatDateMask, formatPhoneMask, splitFio, transliterateFio } from '../utils/masks';
+import { useAuth } from '../../context/AuthContext';
+import { AuthLayout } from '../../components/auth/AuthLayout';
+import { FormField } from '../../components/common/FormField';
+import { extractErrorMessage } from '../../api/client';
+import { formatDateMask, formatPhoneMask, splitFio, transliterateFio } from '../../utils/masks';
 
 // Локальное состояние формы: ФИО вводится одним полем (как на лендинге), а
 // на first_name/last_name/middle_name (как ждёт RegisterRequest) разбивается

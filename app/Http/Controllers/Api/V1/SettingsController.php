@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Storage;
 class SettingsController extends Controller
 {
     /**
-     * GET /api/v1/settings/brand — см. CABINET_API_SPEC.md, п. 8.
+     * Отдаёт публичные настройки бренда (логотип, контакты и т.п. из
+     * BrandSettings::KEYS) для оформления интерфейса личного кабинета.
      */
     public function brand(): JsonResponse
     {
@@ -27,7 +28,8 @@ class SettingsController extends Controller
     }
 
     /**
-     * GET /api/v1/settings/referral — см. CABINET_API_SPEC.md, п. 9.
+     * Отдаёт настройки реферальной программы (ReferralSettings::KEYS) для
+     * блока «peригласите друга» в личном кабинете.
      */
     public function referral(): JsonResponse
     {
@@ -35,8 +37,9 @@ class SettingsController extends Controller
     }
 
     /**
-     * GET /api/v1/settings/currency-rates — см. CABINET_API_SPEC.md, п. 10.
-     * Отдаётся только итоговый курс продажи, без сырого курса ЦБ и наценки.
+     * Отдаёт итоговый курс продажи валют (с наценкой к курсу ЦБ РФ) — именно
+     * его фронтенд использует для расчёта суммы в рублях при оплате в валюте;
+     * сырой курс ЦБ и наценка клиенту не показываются.
      */
     public function currencyRates(CurrencyRateService $rates): JsonResponse
     {

@@ -1,7 +1,7 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
-// Заготовка главной страницы аккаунта — точная структура (карты, транзакции,
-// пополнение и т.д., см. CABINET_API_SPEC.md, разделы 3–4) будет уточнена отдельно.
+// Заготовка главной страницы аккаунта — список карт, история операций и форма
+// пополнения будут добавлены отдельно.
 export function DashboardPage() {
     const { profile, logout } = useAuth();
 

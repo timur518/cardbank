@@ -13,7 +13,8 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 class TransactionController extends Controller
 {
     /**
-     * GET /api/v1/transactions — см. CABINET_API_SPEC.md, п. 17.
+     * Лента операций по всем картам клиента с фильтрами по card_id/типу/датам и
+     * пагинацией — общий раздел «Транзакции» в личном кабинете.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -28,7 +29,8 @@ class TransactionController extends Controller
     }
 
     /**
-     * GET /api/v1/cards/{card}/transactions — см. CABINET_API_SPEC.md, п. 18.
+     * Лента операций по конкретной карте (вкладка «История» на странице карты);
+     * 403, если карта принадлежит другому пользователю.
      */
     public function forCard(Request $request, Card $card): AnonymousResourceCollection
     {

@@ -28,8 +28,8 @@ export const apiClient = axios.create({
 
 /**
  * Взять CSRF-куку перед первым небезопасным запросом (логин/регистрация/логаут и
- * т.д.) — обязательный первый шаг SPA-аутентификации Sanctum, см. CABINET_API_SPEC.md,
- * раздел «Общие принципы».
+ * т.д.) — обязательный первый шаг SPA-аутентификации Sanctum: без этой
+ * куки сервер отвергает запрос как 419 CSRF token mismatch.
  */
 export function ensureCsrfCookie(): Promise<unknown> {
     return axios.get(`${API_ROOT}/sanctum/csrf-cookie`, { withCredentials: true });

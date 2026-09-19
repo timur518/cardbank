@@ -11,9 +11,9 @@ use App\Models\Income;
 use App\Services\Integrations\CardsPro\CardsProOrderProcessor;
 
 /**
- * Реализует шаг 3 из CARD_ORDER_AND_ISSUANCE_FLOW.md: вебхук платёжной системы
- * подтверждает (или отклоняет) оплату заказа (`Income`, найден по
- * `payment_transaction_id`), и по успешной оплате передаёт заказ дальше — в шаг 4
+ * Обрабатывает результат оплаты заказа от платёжной системы: находит `Income`
+ * по `payment_transaction_id`, проставляет ему итоговый статус оплаты и при успехе
+ * передаёт заказ дальше на фактический выпуск/пополнение карты у провайдера
  * ({@see CardsProOrderProcessor}).
  *
  * Идемпотентно: если `Income` уже не в статусе `Pending` (повторная доставка того же

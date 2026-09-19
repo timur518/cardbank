@@ -8,8 +8,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @mixin \App\Models\CardTransaction
  *
- * cost_amount/commission_amount намеренно не отдаются — внутренние P&L-поля,
- * см. CABINET_API_SPEC.md, п. 17.
+ * cost_amount/commission_amount намеренно не отдаются клиенту — это внутренние
+ * поля себестоимости/комиссии для внутреннего P&L, а не для личного кабинета.
  */
 class CardTransactionResource extends JsonResource
 {
