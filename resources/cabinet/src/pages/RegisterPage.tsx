@@ -4,13 +4,24 @@ import { useAuth } from '../context/AuthContext';
 import { AuthLayout } from '../components/AuthLayout';
 import { FormField } from '../components/FormField';
 import { extractErrorMessage } from '../api/client';
-import { formatDateMask, formatPhoneMask } from '../utils/masks';
-import type { RegisterPayload } from '../api/types';
+import { formatDateMask, formatPhoneMask, splitFio, transliterateFio } from '../utils/masks';
 
-const initialValues: RegisterPayload = {
-    first_name: '',
-    last_name: '',
-    middle_name: '',
+// Локальное состояние формы: ФИО вводится одним полем (как на лендинге), а
+// на first_name/last_name/middle_name (как ждёт RegisterRequest) разбивается
+// только перед отправкой, см. splitFio() в handleSubmit.
+interface RegisterFormValues {
+    fio: string;
+    phone: string;
+    email: string;
+    date_of_birth: string;
+    password: string;
+    password_confirmation: string;
+    personal_data_consent: boolean;
+    referral_code: string;
+}
+
+const initialValues: RegisterFormValues = {
+    fio: '',
     phone: '',
     email: '',
     date_of_birth: '',
@@ -25,11 +36,11 @@ export function RegisterPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
-    const [values, setValues] = useState<RegisterPayload>(initialValues);
+    const [values, setValues] = useState<RegisterFormValues>(initialValues);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    function setField<K extends keyof RegisterPayload>(key: K, value: RegisterPayload[K]) {
+    function setField<K extends keyof RegisterFormValues>(key: K, value: RegisterFormValues[K]) {
         setValues((prev) => ({ ...prev, [key]: value }));
     }
 
@@ -42,12 +53,28 @@ export function RegisterPage() {
             return;
         }
 
+        const { last_name, first_name, middle_name } = splitFio(values.fio);
+
+        if (!last_name || !first_name) {
+            setError('Укажите фамилию и имя в поле ФИО.');
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
             // UTM-метки из URL — молча прикладываем к заявке, отдельных полей в форме нет.
             await register({
-                ...values,
+                first_name,
+                last_name,
+                middle_name: middle_name || undefined,
+                phone: values.phone,
+                email: values.email,
+                date_of_birth: values.date_of_birth,
+                password: values.password,
+                password_confirmation: values.password_confirmation,
+                personal_data_consent: values.personal_data_consent,
+                referral_code: values.referral_code || undefined,
                 utm_source: searchParams.get('utm_source') ?? undefined,
                 utm_medium: searchParams.get('utm_medium') ?? undefined,
                 utm_campaign: searchParams.get('utm_campaign') ?? undefined,
@@ -74,28 +101,14 @@ export function RegisterPage() {
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                 {error ? <div className="form-error-banner">{error}</div> : null}
 
-                <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                        label="Имя"
-                        name="first_name"
-                        value={values.first_name}
-                        onChange={(e) => setField('first_name', e.target.value)}
-                        required
-                    />
-                    <FormField
-                        label="Фамилия"
-                        name="last_name"
-                        value={values.last_name}
-                        onChange={(e) => setField('last_name', e.target.value)}
-                        required
-                    />
-                </div>
-
                 <FormField
-                    label="Отчество"
-                    name="middle_name"
-                    value={values.middle_name}
-                    onChange={(e) => setField('middle_name', e.target.value)}
+                    label="ФИО"
+                    name="fio"
+                    placeholder="Халяпов Тимур Рамилевич"
+                    autoComplete="name"
+                    value={values.fio}
+                    onChange={(e) => setField('fio', transliterateFio(e.target.value))}
+                    required
                 />
 
                 <div className="grid grid-cols-2 gap-4">

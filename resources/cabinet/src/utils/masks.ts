@@ -1,6 +1,57 @@
 // Маски полей ввода — портированы из resources/js/app.js (форма заявки на карте на
 // лендинге), чтобы поведение совпадало в обоих местах.
 
+const CYRILLIC_TO_LATIN: Record<string, string> = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z',
+    и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+    с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh',
+    щ: 'shch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
+};
+
+/**
+ * Транслитерация ФИО кириллица → латиница в реальном времени — портирована из
+ * resources/js/app.js (форма заявки на лендинге), поведение идентично: первая
+ * буква транслитерированного блока наследует регистр исходной буквы (Х → Kh, а
+ * не KH), остальные символы — в нижнем регистре.
+ */
+export function transliterateFio(value: string): string {
+    return value.replace(/[а-яёА-ЯЁ]/g, (char) => {
+        const lower = char.toLowerCase();
+        const mapped = CYRILLIC_TO_LATIN[lower];
+
+        if (mapped === undefined) {
+            return char;
+        }
+
+        if (char === lower) {
+            return mapped;
+        }
+
+        return mapped.charAt(0).toUpperCase() + mapped.slice(1);
+    });
+}
+
+export interface SplitFio {
+    last_name: string;
+    first_name: string;
+    middle_name: string;
+}
+
+/**
+ * Разбивает одно поле ФИО (в порядке "Фамилия Имя Отчество", как на лендинге,
+ * placeholder "Халяпов Тимур Рамилевич") на три части для API — RegisterRequest
+ * ждёт first_name/last_name/middle_name отдельными полями.
+ */
+export function splitFio(fio: string): SplitFio {
+    const parts = fio.trim().split(/\s+/).filter(Boolean);
+
+    return {
+        last_name: parts[0] ?? '',
+        first_name: parts[1] ?? '',
+        middle_name: parts.slice(2).join(' '),
+    };
+}
+
 /** Маска российского мобильного телефона: +7 (999) 123-45-67. */
 export function formatPhoneMask(value: string): string {
     let digits = value.replace(/\D/g, '');
