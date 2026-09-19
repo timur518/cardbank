@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\KycStatus;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -10,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles;
@@ -109,6 +111,16 @@ class User extends Authenticatable
     public function isStaff(): bool
     {
         return $this->roles()->exists();
+    }
+
+    /**
+     * Доступ в Filament-панель (админка). Пользователи с ролью `customer`
+     * (регистрируются автоматически при регистрации в ЛК, см. CABINET_API_SPEC.md)
+     * никогда не проходят, даже если у них верный пароль/сессия.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return ! $this->hasRole('customer');
     }
 
     /**
