@@ -21,6 +21,14 @@ class LoginRequest extends FormRequest
         }
     }
 
+    public function messages(): array
+    {
+        return [
+            'login.required' => 'Введите телефон или email.',
+            'password.required' => 'Введите пароль.',
+        ];
+    }
+
     public function rules(): array
     {
         return [

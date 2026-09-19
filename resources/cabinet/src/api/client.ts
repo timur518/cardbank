@@ -18,6 +18,12 @@ export const apiClient = axios.create({
     headers: {
         Accept: 'application/json',
     },
+    // Некоторые расширения браузера патчат window.XMLHttpRequest (менеджеры паролей,
+    // блокировщики и т.п.) и ломают обработку CORS-ответа на стороне страницы —
+    // снаружи это выглядит как "No 'Access-Control-Allow-Origin' header", хотя сервер
+    // его отдаёт (см. CORS_ALLOWED_ORIGINS). Fetch API — отдельная реализация, которую
+    // такие расширения обычно не трогают — предпочитаем её, с откатом на xhr/http.
+    adapter: ['fetch', 'xhr', 'http'],
 });
 
 /**

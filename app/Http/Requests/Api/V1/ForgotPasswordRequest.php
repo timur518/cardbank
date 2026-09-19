@@ -21,6 +21,13 @@ class ForgotPasswordRequest extends FormRequest
         }
     }
 
+    public function messages(): array
+    {
+        return [
+            'login.required' => 'Введите телефон или email.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
