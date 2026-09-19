@@ -28,6 +28,15 @@ class CardResource extends JsonResource
             'card_last4' => $this->card_last4,
             'expiry' => $this->expiry,
             'issued_at' => optional($this->issued_at)->toIso8601String(),
+            // Платёжный адрес (AVS), скопированный с CardProduct при выпуске — нужен в списке карт
+            // на странице «Мои карты» (краткая строка адреса на карточке карты).
+            'billing_address' => [
+                'country' => $this->billing_country,
+                'city' => $this->billing_city,
+                'region' => $this->billing_region,
+                'address' => $this->billing_address,
+                'post_code' => $this->billing_post_code,
+            ],
         ];
     }
 }

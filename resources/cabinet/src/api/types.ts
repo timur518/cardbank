@@ -60,9 +60,10 @@ export interface Card {
     card_last4: string | null;
     expiry: string | null;
     issued_at: string | null;
+    billing_address: BillingAddress;
 }
 
-// Соответствует блоку `billing_address` в CardDetailResource — платёжный адрес карты
+// Соответствует блоку `billing_address` в CardResource — платёжный адрес карты
 // (AVS), скопированный с CardProduct при выпуске. Любое поле может быть null.
 export interface BillingAddress {
     country: string | null;
@@ -73,10 +74,9 @@ export interface BillingAddress {
 }
 
 // Соответствует CardDetailResource (ответ GET /cards/{card}) — всё, что есть в Card, плюс
-// стоимость выпуска и платёжный адрес — нужны только на странице одной карты.
+// стоимость выпуска — нужна только на странице одной карты.
 export interface CardDetail extends Card {
     price_rub: string;
-    billing_address: BillingAddress;
 }
 
 // Соответствует CardRequisitesResource (ответ GET /cards/{card}/requisites) — полный номер

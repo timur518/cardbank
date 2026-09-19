@@ -36,6 +36,23 @@ export function formatRub(amount: number): string {
     return `${Math.round(amount).toLocaleString('ru-RU')} ₽`;
 }
 
+/** Первый день текущего месяца в формате YYYY-MM-DD — для фильтра date_from при запросе
+ * трат за месяц (страница карты и список карт). */
+export function startOfMonth(): string {
+    const date = new Date();
+    date.setDate(1);
+
+    return date.toISOString().slice(0, 10);
+}
+
+/** Сумма успешных покупок из выборки транзакций — отклонённые попытки не
+ * списывают деньги с карты и не входят в «Потрачено в этом месяце». */
+export function sumSuccessfulPurchases(transactions: { status: string; amount: string | number }[]): number {
+    return transactions
+        .filter((tx) => tx.status === 'success')
+        .reduce((sum, tx) => sum + Math.abs(Number(tx.amount)), 0);
+}
+
 /** "2026-09-10T12:00:00Z" -> "10.09.2026, 15:00". */
 export function formatDateTime(iso: string): string {
     return new Date(iso).toLocaleString('ru-RU', {

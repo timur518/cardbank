@@ -11,15 +11,8 @@ import { CardsSidebar } from '../../components/cards/CardsSidebar';
 import { RequisitesPanel } from '../../components/cards/RequisitesPanel';
 import { TopupModal } from '../../components/cards/TopupModal';
 import { useAuth } from '../../context/AuthContext';
+import { startOfMonth, sumSuccessfulPurchases } from '../../utils/format';
 import { transliterateFio } from '../../utils/masks';
-
-/** Первый день текущего месяца в формате YYYY-MM-DD — для фильтра date_from. */
-function startOfMonth(): string {
-    const date = new Date();
-    date.setDate(1);
-
-    return date.toISOString().slice(0, 10);
-}
 
 // Полная информация об одной карте: слева — визуал карты с переключателем
 // лицевой/оборотной стороны и виджет баланса, справа — реквизиты для оплаты и
@@ -91,15 +84,8 @@ export function CardDetailPage() {
             .catch(() => setMonthPurchases([]));
     }, [id, card?.status]);
 
-    // В сумму трат (виджет BalancePanel) входят только успешные покупки — отклонённые
-    // попытки не списывают деньги с карты.
     const monthTotal = useMemo(
-        () =>
-            monthPurchases
-                ? monthPurchases
-                      .filter((tx) => tx.status === 'success')
-                      .reduce((sum, tx) => sum + Math.abs(Number(tx.amount)), 0)
-                : null,
+        () => (monthPurchases ? sumSuccessfulPurchases(monthPurchases) : null),
         [monthPurchases],
     );
 

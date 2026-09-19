@@ -44,6 +44,61 @@ body {
 .btn-block { width: 100%; }
 .btn-primary { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
 .btn-primary:hover { background: var(--color-orange); border-color: var(--color-orange); color: #fff; }
+.btn-orange { background: var(--color-orange); border-color: var(--color-orange); color: #fff; }
+.btn-orange:hover { background: var(--color-orange-dark); border-color: var(--color-orange-dark); color: #fff; }
+
+.cards-search {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex: 1 1 320px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 999px;
+    padding: .85rem 1.3rem;
+    color: var(--color-muted);
+    background: #fff;
+    transition: border-color .2s;
+}
+.cards-search:focus-within { border-color: var(--color-orange); }
+.cards-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: .92rem;
+    font-family: inherit;
+    color: var(--color-ink);
+}
+.cards-search input::placeholder { color: var(--color-muted); }
+
+.cards-filter-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: .2rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    padding: .3rem;
+    background: #fff;
+}
+.cards-filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    border-radius: 999px;
+    padding: .55rem 1rem;
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--color-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background .2s, color .2s;
+}
+.cards-filter-tab.is-active {
+    background: #fdf1e7;
+    color: var(--color-orange-dark);
+}
 
 .field label {
     font-size: .8rem;
