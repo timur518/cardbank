@@ -356,7 +356,7 @@
 
                     <div class="apply-step apply-loading" data-apply-step="loading" role="status" aria-live="polite">
                         <span class="apply-loading-spinner" aria-hidden="true"></span>
-                        <p class="apply-loading-title">Готовим форму пополнения баланса</p>
+                        <p class="apply-loading-title">Регистрируем аккаунт и готовим карту</p>
                         <p class="apply-loading-text">Это займёт всего пару секунд…</p>
                     </div>
 
