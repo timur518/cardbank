@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/*
+ * Дизайн-токены и общие классы продублированы из resources/css/app.css (лендинг на
+ * cardbank.ru), чтобы стилистика ЛК визуально совпадала с основным сайтом — сами
+ * проекты собираются независимо (разные Vite-приложения, разный поддомен).
+ */
+@theme {
+    --font-sans: 'Sofia Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --color-bg: #f3f1ef;
+    --color-surface: #fff;
+    --color-ink: #151515;
+    --color-muted: #77736e;
+    --color-border: #dedbd6;
+    --color-orange: #f37338;
+    --color-orange-dark: #c94b0d;
+}
+
+body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: 450;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    border-radius: 999px;
+    border: 1.5px solid transparent;
+    padding: 1rem 1.7rem;
+    font-size: .95rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform .25s cubic-bezier(.16,1,.3,1), background .2s, border-color .2s, color .2s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:disabled { opacity: .55; pointer-events: none; transform: none; }
+.btn-block { width: 100%; }
+.btn-primary { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
+.btn-primary:hover { background: var(--color-orange); border-color: var(--color-orange); color: #fff; }
+
+.field label {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--color-muted);
+}
+.field input {
+    border: 1.5px solid var(--color-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: .95rem;
+    font-family: inherit;
+    color: var(--color-ink);
+    background: #fff;
+    transition: border-color .2s;
+    width: 100%;
+}
+.field input:focus {
+    outline: none;
+    border-color: var(--color-orange);
+}
+.field-error {
+    font-size: .78rem;
+    color: #c94b0d;
+}
+
+.auth-panel {
+    border-radius: 40px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    box-shadow: 0 40px 100px rgba(243, 115, 56, .12);
+}
+
+.form-error-banner {
+    border-radius: 14px;
+    background: #fdecea;
+    border: 1.5px solid #f3b8ac;
+    color: var(--color-orange-dark);
+    padding: 12px 16px;
+    font-size: .85rem;
+}

@@ -1,5 +1,7 @@
 /.phpunit.cache
 /node_modules
+/resources/cabinet/node_modules
+/resources/cabinet/dist
 /public/build
 /public/css/filament
 /public/fonts/filament
@@ -24,3 +26,4 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+*.tsbuildinfo
