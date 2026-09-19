@@ -14,14 +14,17 @@ return new class extends Migration
         Schema::create('card_provider_operations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('provider_id')->constrained('card_providers')->cascadeOnDelete();
-            // Для issue карты ещё нет (SAN появляется только в ответе провайдера) — заполняется по факту.
+            // Card заводится до оплаты (шаг 0 оформления заказа) — для issue он известен уже на
+            // момент создания этой записи, а не только после ответа провайдера.
             $table->foreignId('card_id')->nullable()->constrained('cards')->nullOnDelete();
             $table->string('type'); // issue, topup, withdraw, block
             $table->string('request_id')->unique();
             $table->string('docid')->nullable()->index();
             $table->string('status')->default('pending'); // pending, completed, failed
-            // Что мы намеревались сделать: для issue — user_id/card_product_id/amount/currency и т.д.,
-            // чтобы по приходу подтверждения можно было создать карту, зная её будущего владельца.
+            // Что мы намеревались сделать: для issue — topup_usd (сумма начального пополнения,
+            // зафиксированная при инициации выпуска) — нужна по приходу подтверждения для
+            // расчёта комиссии провайдера (см. CardProviderOperationResolver::recordIssueExpenses()).
+            // Для topup/withdraw — amount.
             $table->json('payload')->nullable();
             $table->json('result')->nullable();
             $table->text('error')->nullable();

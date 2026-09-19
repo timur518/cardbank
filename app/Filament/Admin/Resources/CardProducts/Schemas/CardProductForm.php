@@ -58,6 +58,11 @@ class CardProductForm
                             ->numeric()
                             ->required()
                             ->prefix('$'),
+                        TextInput::make('provider_topup_fee_percent')
+                            ->label('Комиссия провайдера за пополнение, %')
+                            ->numeric()
+                            ->default(0)
+                            ->suffix('%'),
                         TextInput::make('price_rub')
                             ->label('Цена продажи, ₽')
                             ->numeric()

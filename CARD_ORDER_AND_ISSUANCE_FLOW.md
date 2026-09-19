@@ -156,36 +156,42 @@ comment                 = 'Выпуск карты и пополнение ба�
    ```
    Дальше ничего делать не нужно — итог узнаём либо по вебхуку `CARD_ISSUE`, либо
    подстрахуется `providers:sync-pending-operations`, если вебхук потеряется.
-3. `DECLINED` сразу в ответе — сценарий «оплата прошла, а выпуск с ходу отклонён» - `Card` переходит в статус `Failed` и
-   → создаём `CardProviderOperation`:
+3. `DECLINED` сразу в ответе — сценарий «оплата прошла, а выпуск с ходу отклонён».
+   Вызываем `CardProviderOperationResolver::recordDeclinedIssue($card, $provider, $requestId,
+   $docid, $raw)` — метод сам создаёт `CardProviderOperation`:
    ```
    provider_id = CardProduct.provider_id
    card_id     = $card->id            // уже известен — карта создана на шаге 0
    type        = CardProviderOperationType::Issue
    request_id  = <из ответа issueCard()>
    docid       = <из ответа issueCard()>
-   status      = //ТУТ НАДО УКАЗАТЬ СТАТУС ЗАПИСИ ОПЕРАЦИИ ПРОВАЙДЕРА. Например Failed если такое есть. или Error
-   payload     = []   //ТУТ НАДО УКАЗАТЬ ЧТОБЫ БЫЛА ЗАПИСАНА КОНКРЕТНАЯ ПРИЧИНА ПОЧЕМУ ПРОБЛЕМА С ВЫПУСКОМ КАРТЫ
+   status      = CardProviderOperationStatus::Failed   // кейс уже есть в enum, ждать здесь нечего
+   result      = $raw                                  // сырой ответ issueCard() целиком
+   error       = $raw['declineReason'] ?? $raw['message'] ?? 'Провайдер отклонил выпуск карты'
+   resolved_at = now()
    ```
-   Дальше ничего делать не нужно. 
+   и переводит `Card` в статус `CardStatus::Failed` (с записью в `CardStatusHistory`).
+   Дальше ничего делать не нужно.
 
-**Нужна правка кода:** сейчас в `CardProviderOperation.payload` по договорённости
+**Правка кода выполнена:** раньше в `CardProviderOperation.payload` по договорённости
 (миграция, `docs/integrations/cardspro.md`) для `issue` снепшотились `user_id` и
 `card_product_id`, потому что карты ещё не было и взять владельца было неоткуда. При
 новом порядке (карта создаётся на шаге 0) это больше не нужно: `card_id` заполняется
-сразу при создании операции. Вместо этого теперь в `payload` кладём `topup_usd` — он
-стал обязательным, потому что от него зависит расчёт комиссии за пополнение на
-шаге 5 (раздел «Расходы»). Комментарий в миграции `card_provider_operations` и докблок
-`CardProviderOperationResolver::applyIssue()` стоит поправить соответственно.
+сразу при создании операции. Вместо этого в `payload` теперь кладём `topup_usd` — он
+обязателен, потому что от него зависит расчёт комиссии за пополнение на шаге 5
+(раздел «Расходы»). Комментарий в миграции `card_provider_operations`, докблок
+`CardProviderOperationResolver::applyIssue()` и описание конвенции в
+`docs/integrations/cardspro.md` уже поправлены (см. чек-лист в конце документа,
+пункт 5).
 
 ---
 
 ## Шаг 5. CardsPro подтверждает выпуск — карта активируется
 
-Это `CardProviderOperationResolver::applyIssue()`. **Требуется переделать логику**:
-сегодня метод делает `Card::create(...)` (потому что раньше карты действительно не
-было). Теперь карта уже существует с шага 0 — нужно её найти по `operation->card_id` и
-обновить, а не создавать заново:
+Это `CardProviderOperationResolver::applyIssue()`. **Логика уже переделана** (было —
+метод делал `Card::create(...)`, потому что раньше карты действительно не было; теперь
+карта уже существует с шага 0 — метод находит её по `operation->card_id` и обновляет,
+а не создаёт заново):
 
 ```php
 protected function applyIssue(CardProviderOperation $operation, array $raw): void
@@ -203,7 +209,7 @@ protected function applyIssue(CardProviderOperation $operation, array $raw): voi
         'provider_card_id' => $san,
         'card_number'      => $snapshot['card_number'],
         'expiry'           => $snapshot['expiry'],
-        'currency'         => $snapshot['currency'] ?: null, // не затирать снепшот с продукта, если провайдер не прислал
+        'currency'         => $snapshot['currency'] ?: $card->currency, // не затирать снепшот с продукта, если провайдер не прислал
         'balance'          => $snapshot['balance'],
         'status'           => $snapshot['status'],           // обычно сразу Active
         'issued_at'        => now(),
@@ -335,46 +341,63 @@ protected function recordIssueExpenses(Card $card, CardProviderOperation $operat
 
 ## Список задач для полной реализации сценария
 
+Пункт про вебхук платёжной системы (был под №7) убран из списка — это будет делаться
+позже, вместе с самой платёжной системой и контроллерами оформления заказа. Всё
+остальное ниже уже реализовано в этой итерации.
+
 ### Блокируют этот сценарий (без них шаги 0–5 не заработают как описано)
 
-1. **`CardStatus`: добавить статусы `Waiting`** («Ожидает оплаты»), **`Cancelled`**
-   («Отменён»), **`Failed`** («Ошибка») — сейчас в `app/Enums/CardStatus.php` только
-   `Pending`, `Active`, `Frozen`, `Closed`. Прописать `getLabel()`/`getColor()` для новых
-   случаев. Отдельно проверить все места, где код матчится на `CardStatus::Pending`
-   (например, действие `CardsTable` с `->visible(fn (Card $record) => $record->status ===
-   CardStatus::Pending)`) — после разделения статусов эта логика может относиться
-   уже не к тому состоянию карты, как раньше.
-2. **`CardProviderOperationResolver::applyIssue()`: переписать** с `Card::create(...)` на
-   поиск существующей карты по `operation->card_id` + `update()` — карта теперь
-   создаётся на шаге 0, а не тут. Убрать чтение `user_id`/`card_product_id` из `payload`
-   (это больше не нужно).
-3. **Добавить метод `recordIssueExpenses()`** в `CardProviderOperationResolver`, вызвать его
-   в конце `applyIssue()` — создаёт два `Expense` (себестоимость выпуска + сумма
-   пополнения с комиссией провайдера).
-4. **Новое поле `CardProduct.provider_topup_fee_percent`**: миграция (`decimal(5,2)`,
-   `default(0)`), `CardProduct::$fillable`+`casts()`, поле в `CardProductForm`
-   («Комиссия провайдера за пополнение, %»). Заполнить значением ≈ 3.5% для
-   всех действующих продуктов CardsPro — без этого `recordIssueExpenses()` посчитает
-   комиссию нулёвой.
-5. **Payload операции `issue`**: класть туда `topup_usd` вместо `user_id`/`card_product_id`.
-   Поправить комментарий в миграции `card_provider_operations`, докблок
-   `CardProviderOperationResolver::applyIssue()` и описание конвенции payload в
-   `docs/integrations/cardspro.md` (строки ≈210–213 и ≈273–274 — там дважды
-   зафиксировано старое поведение).
-6. **Синхронный `DECLINED` от `issueCard()`** (шаг 4, п. 3): зафиксировать —
-   `CardProviderOperation.status = CardProviderOperationStatus::Failed` (кейс уже есть в
-   enum), причина отказа CardsPro — в колонку `error` (уже есть в модели и
-   используется точно так же в `CardProviderOperationResolver::claim()`), а не в
-   `payload`. В документе (шаг 4) пока стоят плейсхолдеры `//ТУТ НАДО...`.
+1. **`CardStatus`: добавлены статусы `Waiting`** («Ожидает оплаты»), **`Cancelled`**
+   («Отменён»), **`Failed`** («Ошибка выпуска») — в `app/Enums/CardStatus.php`, с
+   `getLabel()`/`getColor()`. Существующие места, матчащиеся на `CardStatus::Pending`
+   (`CardsTable`: заморозка/разморозка/закрытие/перевыпуск/«Запросить обновление у
+   провайдера»), проверены — `Pending` там означает «провайдер ещё обрабатывает
+   выпуск/перевыпуск», это отдельное от нового `Waiting` состояние («ждём оплату
+   клиента»), правок не потребовалось.
+2. **`CardProviderOperationResolver::applyIssue()` переписан** — вместо
+   `Card::create(...)` теперь ищет карту по `operation->card_id` и обновляет её.
+   Заодно исправлена ошибка в более раннем черновике этого документа: `currency`
+   при отсутствии значения в снепшоте провайдера теперь берёт `$card->currency`
+   (было по ошибке `null`, что стирало бы валюту карты).
+3. **Добавлен метод `recordIssueExpenses()`** в `CardProviderOperationResolver`,
+   вызывается в конце `applyIssue()` — создаёт `Expense` на себестоимость выпуска
+   (`CardIssue`) и на сумму начального пополнения с комиссией провайдера (`CardTopup`).
+   Общая логика расчёта суммы+комиссии вынесена в `recordTopupExpense()` — она же
+   переиспользуется в `applyTopup()` (см. пункт 7).
+4. **Новое поле `CardProduct.provider_topup_fee_percent`** — миграция
+   `2026_09_18_140001_add_provider_topup_fee_percent_to_card_products_table`
+   (`decimal(5,2)`, `default(0)`), `CardProduct::$fillable`+`casts()`, поле
+   «Комиссия провайдера за пополнение, %» в `CardProductForm`. Значение для
+   действующих продуктов CardsPro (≈3.5%) нужно проставить вручную в админке — миграция
+   его не заполняет (значение зависит от условий конкретного продукта/провайдера).
+5. **Payload операции `issue` переведён на `topup_usd`** вместо `user_id`/
+   `card_product_id` — поправлены комментарии в миграции `card_provider_operations`,
+   докблок `CardProviderOperationResolver::applyIssue()`, докблок класса
+   `CardsProWebhookHandler` и описание конвенции в `docs/integrations/cardspro.md`
+   (оба места).
+6. **Синхронный `DECLINED` от `issueCard()`** — добавлен метод
+   `CardProviderOperationResolver::recordDeclinedIssue()`: заводит
+   `CardProviderOperation` сразу в статусе `CardProviderOperationStatus::Failed` с
+   причиной в `error` (та же логика извлечения причины, что и в `claim()` —
+   `declineReason`/`message`), переводит `Card` в `CardStatus::Failed` с записью в
+   `CardStatusHistory`. Будущий контроллер оформления заказа должен вызвать этот метод
+   сразу по ответу `issueCard()` — сам метод уже реализован и готов к использованию.
 
 ### Не блокируют этот сценарий, но желательно учесть для полной картины
 
-7. **Распространить логику `recordIssueExpenses()` на послевыпускные пополнения**
-   (когда клиент пополняет уже активную карту, а не выпускает новую) —
-   `CardProviderOperationResolver::applyTopup()` и/или `CardsProWebhookHandler::handleTopup()`.
-8. **Идемпотентность оформления заказа.** Двойной клик/повтор запроса с фронта не
-   должен создавать два независимых `Card`+`Income` на один и тот же заказ — стоит
-   добавить idempotency-key на API-метод оформления заказа.
-9. **(косметика)** Переименовать label `provider_issue_cost_usd`/`issue_cost_usd` в
-    «Цена выпуска, $» в формах/инфолистах — для ясности, что поле в долларах, а
-    не в рублях.
+7. **Логика `recordTopupExpense()` распространена на послевыпускные пополнения** —
+   `CardProviderOperationResolver::applyTopup()` теперь тоже вызывает её при
+   инкременте баланса. `CardsProWebhookHandler::handleTopup()` (сырой вебхук
+   `CARD_TOPUP` без привязки к `CardProviderOperation`) сознательно не тронут — туда
+   можно прилетать событиям вне нашего трекинга операций, и без гарантии
+   «ровно один раз» есть риск задвоить `Expense` по комиссии (в отличие от баланса,
+   расходы не самокорректируются периодической синхронизацией).
+8. **Идемпотентность оформления заказа** — не реализовано: самого API-метода
+   оформления заказа ещё нет (создаётся вместе с платёжной системой и контроллерами
+   заказа, см. начало этого раздела). Добавить idempotency-key нужно будет одновременно
+   с самим методом.
+9. **(косметика) Переименование label `provider_issue_cost_usd`/`issue_cost_usd`** —
+   проверено, изменения не потребовалось: `CardProductForm` уже подписывает поле
+   «Стоимость выпуска карты, $», `CardForm` — «Себестоимость выпуска, $», оба явно
+   указывают валюту; `CardProductInfolist` использует `->money('USD')`, который сам
+   форматирует значение с валютой. Обозначение в долларах нигде не терялось.
