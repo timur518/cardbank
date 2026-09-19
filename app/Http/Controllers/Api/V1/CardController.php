@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\CardDetailResource;
 use App\Http\Resources\Api\V1\CardResource;
 use App\Models\Card;
 use Illuminate\Http\JsonResponse;
@@ -29,6 +30,6 @@ class CardController extends Controller
     {
         abort_if($card->user_id !== $request->user()->id, 403);
 
-        return (new CardResource($card->load('cardProduct')))->response();
+        return (new CardDetailResource($card->load('cardProduct')))->response();
     }
 }

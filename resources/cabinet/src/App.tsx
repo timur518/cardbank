@@ -7,6 +7,7 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { CardDetailPage } from './pages/cards/CardDetailPage';
 import { CardsPage } from './pages/cards/CardsPage';
 import { NewCardOrderPage } from './pages/orders/NewCardOrderPage';
 import { TransactionsPage } from './pages/transactions/TransactionsPage';
@@ -30,6 +31,7 @@ export function App() {
                             <Route path="/" element={<DashboardPage />} />
                             <Route path="/cards" element={<CardsPage />} />
                             <Route path="/cards/new" element={<NewCardOrderPage />} />
+                            <Route path="/cards/:id" element={<CardDetailPage />} />
                             <Route path="/transactions" element={<TransactionsPage />} />
                             <Route path="/partnership" element={<PartnershipPage />} />
                         </Route>

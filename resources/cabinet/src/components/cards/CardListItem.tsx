@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import type { Card } from '../../api/types';
 import { formatMoney } from '../../utils/format';
 import { CARD_STATUS_LABELS, CARD_STATUS_TONES } from '../../utils/labels';
@@ -14,7 +15,10 @@ interface CardListItemProps {
 // в заблуждение — вместо него выводится статус карты.
 export function CardListItem({ card }: CardListItemProps) {
     return (
-        <div className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-3 py-3">
+        <Link
+            to={`/cards/${card.id}`}
+            className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-3 py-3 transition hover:border-orange"
+        >
             <div className="flex items-center gap-3">
                 <CardThumbnail skin={card.card_product.skin} name={card.card_product.name} />
                 <span className="text-sm font-semibold tracking-wide text-ink">•••• {card.card_last4 ?? '••••'}</span>
@@ -27,6 +31,6 @@ export function CardListItem({ card }: CardListItemProps) {
                 )}
                 <p className="text-xs text-muted">{card.card_product.name}</p>
             </div>
-        </div>
+        </Link>
     );
 }

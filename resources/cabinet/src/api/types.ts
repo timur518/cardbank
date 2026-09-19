@@ -58,6 +58,23 @@ export interface Card {
     issued_at: string | null;
 }
 
+// Соответствует блоку `billing_address` в CardDetailResource — платёжный адрес карты
+// (AVS), скопированный с CardProduct при выпуске. Любое поле может быть null.
+export interface BillingAddress {
+    country: string | null;
+    city: string | null;
+    region: string | null;
+    address: string | null;
+    post_code: string | null;
+}
+
+// Соответствует CardDetailResource (ответ GET /cards/{card}) — всё, что есть в Card, плюс
+// стоимость выпуска и платёжный адрес — нужны только на странице одной карты.
+export interface CardDetail extends Card {
+    price_rub: string;
+    billing_address: BillingAddress;
+}
+
 export type CardTransactionType = 'purchase' | 'topup' | 'fee' | 'refund' | 'decline';
 export type CardTransactionStatus = 'pending' | 'success' | 'declined' | 'reversed';
 

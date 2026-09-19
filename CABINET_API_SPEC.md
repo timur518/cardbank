@@ -413,10 +413,37 @@ API не отдаются никогда — это PCI DSS зона прова�
 
 ### 16. `GET /api/v1/cards/{card}` — информация о карте с балансом
 
-`{card}` — id карты, доступ только если `card.user_id === auth()->id()` (иначе `403`).
+`{card}` — id карты, доступ только если `card.user_id === auth()->id()` (иначе `403`). Используется
+страницей одной карты в ЛК.
 
-**Ответ `200`:** тот же набор полей, что и элемент списка в п. 15, одним объектом
-(`{"data": {...}}`).
+**Ответ `200`:** тот же набор полей, что и элемент списка в п. 15 (`CardResource`), плюс два
+поля, нужных только странице одной карты (`CardDetailResource extends CardResource`):
+```json
+{
+  "data": {
+    "id": 42,
+    "card_product": { "key": "black", "name": "Black", "skin": "https://.../storage/card-skins/....png" },
+    "status": "active",
+    "currency": "USD",
+    "balance": "150.00",
+    "card_last4": "4242",
+    "expiry": "12/29",
+    "issued_at": "2026-09-01T10:00:00Z",
+    "price_rub": "990.00",
+    "billing_address": {
+      "country": "US",
+      "city": "New York",
+      "region": "NY",
+      "address": "228 Park Ave S",
+      "post_code": "10003"
+    }
+  }
+}
+```
+`price_rub` — стоимость выпуска этой конкретной карты (зафиксирована на `Card.price_rub` в момент
+выпуска, не меняется при изменении цены продукта). `billing_address` — платёжный
+адрес карты (AVS), скопированный с `CardProduct.billing_*` при создании карты в `OrderController::issue()`;
+любое поле может быть `null`, если админ не заполнил его в карточке продукта.
 
 ---
 
