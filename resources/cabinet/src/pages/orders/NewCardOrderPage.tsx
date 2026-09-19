@@ -1,0 +1,210 @@
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { fetchCardProducts, fetchPaymentMethods } from '../../api/catalog';
+import { extractErrorMessage } from '../../api/client';
+import { issueOrder } from '../../api/orders';
+import { fetchCurrencyRates } from '../../api/settings';
+import type { CardProduct, PaymentMethod } from '../../api/types';
+import { CardProductOption } from '../../components/orders/CardProductOption';
+import { PaymentMethodOption } from '../../components/orders/PaymentMethodOption';
+import { formatRub } from '../../utils/format';
+
+type AmountCurrency = 'USD' | 'RUB';
+
+/** "5 000,50" / "50.5" -> 5000.5. Нечисловой ввод игнорируется. */
+function parseAmount(value: string): number {
+    const normalized = value.replace(/[^\d.,]/g, '').replace(',', '.');
+    const parsed = parseFloat(normalized);
+
+    return Number.isFinite(parsed) ? parsed : 0;
+}
+
+// Оформление заявки на выпуск новой карты: выбор карточного продукта, способа
+// оплаты и суммы первого пополнения — реализует «Шаг 1» и «Шаг 2» из
+// CARD_ORDER_AND_ISSUANCE_FLOW.md через OrderController::issue().
+export function NewCardOrderPage() {
+    const navigate = useNavigate();
+    const idempotencyKey = useRef(crypto.randomUUID());
+
+    const [products, setProducts] = useState<CardProduct[]>([]);
+    const [methods, setMethods] = useState<PaymentMethod[]>([]);
+    const [usdRate, setUsdRate] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
+
+    const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
+    const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
+    const [currency, setCurrency] = useState<AmountCurrency>('USD');
+    const [amount, setAmount] = useState('');
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        Promise.all([fetchCardProducts(), fetchPaymentMethods(), fetchCurrencyRates()])
+            .then(([loadedProducts, loadedMethods, rates]) => {
+                setProducts(loadedProducts);
+                setMethods(loadedMethods);
+                setUsdRate(Number(rates.usd));
+                setSelectedProductId(loadedProducts.find((p) => !p.coming_soon)?.id ?? loadedProducts[0]?.id ?? null);
+                setSelectedMethodId(loadedMethods[0]?.id ?? null);
+            })
+            .catch((error) => setLoadError(extractErrorMessage(error, 'Не удалось загрузить каталог карт.')))
+            .finally(() => setIsLoading(false));
+    }, []);
+
+    const selectedProduct = useMemo(
+        () => products.find((product) => product.id === selectedProductId) ?? null,
+        [products, selectedProductId],
+    );
+
+    const totalRub = useMemo(() => {
+        if (!selectedProduct) {
+            return 0;
+        }
+
+        const raw = parseAmount(amount);
+        const topupRub = currency === 'USD' ? raw * usdRate : raw;
+
+        return Number(selectedProduct.price_rub) + topupRub;
+    }, [selectedProduct, amount, currency, usdRate]);
+
+    async function handleSubmit(event: FormEvent) {
+        event.preventDefault();
+        setSubmitError(null);
+
+        if (!selectedProduct || !selectedMethodId) {
+            return;
+        }
+
+        const raw = parseAmount(amount);
+
+        if (raw <= 0) {
+            setSubmitError('Введите сумму пополнения.');
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const result = await issueOrder({
+                card_product_id: selectedProduct.id,
+                topup_amount: raw,
+                topup_currency: currency,
+                payment_method_id: selectedMethodId,
+                idempotency_key: idempotencyKey.current,
+            });
+
+            if (result.payment_url) {
+                window.location.href = result.payment_url;
+                return;
+            }
+
+            navigate('/cards');
+        } catch (error) {
+            setSubmitError(extractErrorMessage(error));
+        } finally {
+            setIsSubmitting(false);
+        }
+    }
+
+    if (isLoading) {
+        return <p className="py-8 text-center text-sm text-muted">Загрузка…</p>;
+    }
+
+    if (loadError || products.length === 0 || methods.length === 0) {
+        return (
+            <p className="form-error-banner">
+                {loadError ?? 'Оформление карт временно недоступно: нет доступных продуктов или способов оплаты.'}
+            </p>
+        );
+    }
+
+    return (
+        <div className="flex flex-col gap-6">
+            <h1 className="text-2xl font-extrabold tracking-tight text-ink">Оформление карты</h1>
+
+            <div className="apply-panel grid lg:grid-cols-[1fr_2fr]">
+                <aside className="apply-sidebar">
+                    <div className="apply-card-list">
+                        {products.map((product) => (
+                            <CardProductOption
+                                key={product.id}
+                                product={product}
+                                selected={product.id === selectedProductId}
+                                onSelect={() => setSelectedProductId(product.id)}
+                            />
+                        ))}
+                    </div>
+                </aside>
+
+                <div className="apply-form-wrap">
+                    <form onSubmit={handleSubmit}>
+                        <div className="apply-field">
+                            <label>Способ оплаты</label>
+                            <div className="apply-pay-list">
+                                {methods.map((method) => (
+                                    <PaymentMethodOption
+                                        key={method.id}
+                                        method={method}
+                                        selected={method.id === selectedMethodId}
+                                        onSelect={() => setSelectedMethodId(method.id)}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="apply-field">
+                            <label>
+                                {currency === 'USD' ? 'Введите сколько зачислить на карту' : 'Введите сколько заплатить'}
+                            </label>
+                            <div className="apply-amount-row">
+                                <div className="apply-amount-input-group">
+                                    <div className="apply-currency-toggle">
+                                        <button
+                                            type="button"
+                                            className={currency === 'RUB' ? 'is-active' : ''}
+                                            onClick={() => setCurrency('RUB')}
+                                        >
+                                            ₽
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className={currency === 'USD' ? 'is-active' : ''}
+                                            onClick={() => setCurrency('USD')}
+                                        >
+                                            $
+                                        </button>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder={currency === 'USD' ? '50' : '5 000'}
+                                        value={amount}
+                                        onChange={(event) => setAmount(event.target.value)}
+                                    />
+                                </div>
+                                <p className="apply-amount-total">К оплате: {formatRub(totalRub)}</p>
+                            </div>
+                            {selectedProduct && (
+                                <p className="apply-hint">
+                                    Пополнение: от ${selectedProduct.topup_min_amount ?? '0'} до $
+                                    {selectedProduct.topup_max_amount ?? '—'} (плюс {formatRub(Number(selectedProduct.price_rub))}{' '}
+                                    за саму карту)
+                                </p>
+                            )}
+                        </div>
+
+                        {submitError && <p className="form-error-banner mt-5">{submitError}</p>}
+
+                        <button type="submit" className="btn btn-primary apply-submit" disabled={isSubmitting}>
+                            {isSubmitting ? 'Оформляем…' : 'Оплатить и выпустить карту'}
+                        </button>
+                        <p className="apply-hint mt-3 text-center">
+                            Оплата на защищённой странице банка. Карта пополнится в течение 3 минут после выпуска карты.
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+}

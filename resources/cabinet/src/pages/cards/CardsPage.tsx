@@ -1,10 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchCards } from '../../api/cards';
-import { API_ROOT } from '../../api/client';
 import type { Card } from '../../api/types';
 import { CardListItem } from '../../components/cards/CardListItem';
-
-const NEW_CARD_URL = `${API_ROOT}/#apply`;
 
 export function CardsPage() {
     const [cards, setCards] = useState<Card[]>([]);
@@ -28,9 +26,9 @@ export function CardsPage() {
                         <CardListItem key={card.id} card={card} />
                     ))}
 
-                    <a href={NEW_CARD_URL} className="add-card-slot">
+                    <Link to="/cards/new" className="add-card-slot">
                         + Новая карта
-                    </a>
+                    </Link>
                 </div>
             )}
         </div>

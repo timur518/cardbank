@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { fetchCards } from '../../api/cards';
 import { API_ROOT } from '../../api/client';
 import { fetchTransactions } from '../../api/transactions';
@@ -7,9 +8,10 @@ import { CardsSidebar } from '../../components/cards/CardsSidebar';
 import { TransactionsTable } from '../../components/transactions/TransactionsTable';
 import { formatMoney } from '../../utils/format';
 
-// Раздел «Заказать карту» лендинга — единственный сейчас существующий сценарий
-// выпуска/первого пополнения карты (полноценная форма в самом ЛК ещё не построена).
-const NEW_CARD_URL = `${API_ROOT}/#apply`;
+// Пополнение баланса уже активной карты пока не реализовано внутри ЛК — временно
+// ведём на раздел «Заказать карту» лендинга (единственный сейчас сценарий оплаты);
+// выпуск новой карты — внутренний маршрут /cards/new (NewCardOrderPage).
+const TOPUP_URL = `${API_ROOT}/#apply`;
 
 export function DashboardPage() {
     const [cards, setCards] = useState<Card[]>([]);
@@ -46,16 +48,16 @@ export function DashboardPage() {
 
     return (
         <div className="flex flex-col gap-8 lg:flex-row">
-            <CardsSidebar cards={cards} isLoading={cardsLoading} newCardHref={NEW_CARD_URL} />
+            <CardsSidebar cards={cards} isLoading={cardsLoading} />
 
             <div className="flex flex-1 flex-col gap-8">
                 <div className="flex flex-wrap gap-4">
-                    <a href={NEW_CARD_URL} className="stat-btn">
+                    <Link to="/cards/new" className="stat-btn">
                         <span className="stat-btn-icon">💳</span>
                         <span className="stat-btn-label">Выпустить новую карту</span>
-                    </a>
+                    </Link>
 
-                    <a href={NEW_CARD_URL} className="stat-btn">
+                    <a href={TOPUP_URL} className="stat-btn">
                         <span className="stat-btn-icon">➕</span>
                         <span className="stat-btn-label">Пополнить баланс</span>
                     </a>

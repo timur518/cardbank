@@ -8,6 +8,7 @@ import { RegisterPage } from './pages/auth/RegisterPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { CardsPage } from './pages/cards/CardsPage';
+import { NewCardOrderPage } from './pages/orders/NewCardOrderPage';
 import { TransactionsPage } from './pages/transactions/TransactionsPage';
 import { PartnershipPage } from './pages/partnership/PartnershipPage';
 
@@ -28,6 +29,7 @@ export function App() {
                         <Route element={<DashboardLayout />}>
                             <Route path="/" element={<DashboardPage />} />
                             <Route path="/cards" element={<CardsPage />} />
+                            <Route path="/cards/new" element={<NewCardOrderPage />} />
                             <Route path="/transactions" element={<TransactionsPage />} />
                             <Route path="/partnership" element={<PartnershipPage />} />
                         </Route>

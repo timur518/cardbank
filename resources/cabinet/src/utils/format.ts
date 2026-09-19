@@ -13,6 +13,12 @@ export function formatMoney(amount: string | number, currency: string): string {
     return `${value} ${symbol}`;
 }
 
+/** Целое число рублей с разделителем разрядов: 9550.4 -> "9 550 ₽". Используется там, где копейки
+ * не нужны (цена карты, итоговая сумма заказа «К оплате»), в отличие от formatMoney(). */
+export function formatRub(amount: number): string {
+    return `${Math.round(amount).toLocaleString('ru-RU')} ₽`;
+}
+
 /** "2026-09-10T12:00:00Z" -> "10.09.2026, 15:00". */
 export function formatDateTime(iso: string): string {
     return new Date(iso).toLocaleString('ru-RU', {

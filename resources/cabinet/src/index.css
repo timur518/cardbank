@@ -198,3 +198,152 @@ body {
     padding: 12px 16px;
     font-size: .85rem;
 }
+
+/*
+ * Форма оформления заказа (выпуск карты) — классы `apply-*` повторяют вид
+ * аналогичного блока на лендинге (resources/css/app.css, секция #apply), но здесь
+ * форма реально отправляет заказ в API, а не только играет анимацию шагов.
+ */
+.apply-panel {
+    overflow: hidden;
+    border-radius: 40px;
+    border: 1px solid var(--color-border);
+    box-shadow: 0 40px 100px rgba(243, 115, 56, .12);
+}
+.apply-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    background: #f7f5f2;
+    padding: 36px 28px;
+}
+.apply-form-wrap {
+    background: #fff;
+    padding: 44px 36px;
+}
+
+.apply-card-list { display: flex; flex-direction: column; gap: 6px; }
+.apply-card-option {
+    background: #fff;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 16px;
+    border-radius: 18px;
+    border: 1.5px solid var(--color-border);
+    cursor: pointer;
+    transition: .2s;
+}
+.apply-card-option:hover { background: #f9f9f9; }
+.apply-card-option.is-active {
+    background: #fff;
+    border-color: var(--color-orange);
+    box-shadow: 0 14px 34px rgba(20, 20, 19, .08);
+}
+.apply-card-disabled { opacity: .5; cursor: not-allowed; }
+.apply-card-thumb { flex-shrink: 0; width: 96px; border-radius: 8px; overflow: hidden; background: #e5e1dc; }
+.apply-card-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.apply-card-thumb-white { background: linear-gradient(135deg, #fff, #e7e3de); border: 1px solid var(--color-border); }
+.apply-card-info { min-width: 0; }
+.apply-card-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: .95rem;
+    letter-spacing: -.01em;
+}
+.apply-card-badge {
+    font-size: .65rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #ece8e4;
+    color: var(--color-muted);
+}
+.apply-card-desc { margin-top: 4px; font-size: .78rem; line-height: 1.45; color: var(--color-muted); }
+.apply-card-price { margin-top: 7px; display: block; font-size: .82rem; font-weight: 700; }
+
+.apply-field { display: flex; flex-direction: column; gap: 8px; margin-top: 22px; }
+.apply-field:first-child { margin-top: 0; }
+.apply-field label { font-size: .8rem; font-weight: 700; color: var(--color-muted); }
+.apply-field input {
+    border: 1.5px solid var(--color-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: .95rem;
+    font-family: inherit;
+    color: var(--color-ink);
+    background: #fff;
+    transition: border-color .2s;
+}
+.apply-field input:focus { outline: none; border-color: var(--color-orange); }
+.apply-hint { font-size: .75rem; color: var(--color-muted); }
+.apply-submit { margin-top: 26px; width: 100%; justify-content: center; }
+
+.apply-pay-list { display: flex; flex-direction: column; gap: 10px; }
+.apply-pay-option {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1.5px solid var(--color-border);
+    cursor: pointer;
+    transition: .2s;
+}
+.apply-pay-option:hover { border-color: #c9c5bf; }
+.apply-pay-option.is-active {
+    border-color: var(--color-orange);
+    background: #fff7f3;
+    box-shadow: 0 10px 26px rgba(243, 115, 56, .12);
+}
+.apply-pay-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f3f0ee;
+    color: var(--color-ink);
+    transition: .2s;
+}
+.apply-pay-option.is-active .apply-pay-icon { background: var(--color-orange); color: #fff; }
+.apply-pay-name { display: block; font-weight: 700; font-size: .92rem; }
+.apply-pay-desc { display: block; margin-top: 2px; font-size: .78rem; color: var(--color-muted); }
+
+.apply-amount-row { display: flex; flex-direction: column; gap: 10px; }
+.apply-amount-input-group { display: flex; align-items: stretch; }
+.apply-amount-total { margin: 0; display: flex; align-items: center; font-weight: 800; color: #101010; font-size: .95rem; }
+.apply-currency-toggle {
+    display: flex;
+    flex-shrink: 0;
+    background: #ece8e4;
+    border-radius: 14px 0 0 14px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+.apply-currency-toggle button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    padding: 0 18px;
+    font-size: .85rem;
+    font-weight: 800;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: .2s;
+}
+.apply-currency-toggle button.is-active { background: #151515; color: #fff; }
+.apply-field .apply-amount-input-group input { border-radius: 0 14px 14px 0; width: 100%; }
+
+@media (min-width: 640px) {
+    .apply-amount-row { flex-direction: row; align-items: stretch; gap: 14px; }
+    .apply-amount-input-group { flex: 1 1 50%; min-width: 0; }
+    .apply-amount-total { flex: 1 1 50%; padding-left: 4px; }
+}

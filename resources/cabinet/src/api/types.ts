@@ -45,14 +45,15 @@ export interface CardProductSummary {
 
 export type CardStatus = 'waiting' | 'pending' | 'active' | 'frozen' | 'closed' | 'cancelled' | 'failed';
 
-// Соответствует CardResource.
+// Соответствует CardResource. `card_last4` — null, пока карте ещё не присвоен
+// номер провайдером (статусы waiting/pending).
 export interface Card {
     id: number;
     card_product: CardProductSummary;
     status: CardStatus;
     currency: string;
     balance: string;
-    card_last4: string;
+    card_last4: string | null;
     expiry: string | null;
     issued_at: string | null;
 }
@@ -100,4 +101,62 @@ export interface ReferralSettings {
     referral_hold_days: string | null;
     referral_min_wallet_rub: string | null;
     referral_min_bank_rub: string | null;
+}
+
+// Соответствует ответу SettingsController::currencyRates() — курс продажи с
+// наценкой к курсу ЦБ РФ (CurrencyRateService::sellRates()).
+export type CurrencyCode = 'usd' | 'eur' | 'gbp';
+export type CurrencyRates = Record<CurrencyCode, string>;
+
+// Соответствует CardProductResource (полная версия для выбора продукта при
+// оформлении заявки, без себестоимостных полей продукта).
+export interface CardProduct {
+    id: number;
+    key: string;
+    name: string;
+    description: string | null;
+    skin: string | null;
+    currency: string;
+    price_rub: string;
+    provider_kyc_required: boolean;
+    apple_pay_enabled: boolean;
+    google_pay_enabled: boolean;
+    issue_min_amount: string | null;
+    issue_max_amount: string | null;
+    topup_min_amount: string | null;
+    topup_max_amount: string | null;
+    coming_soon: boolean;
+}
+
+export type PaymentMethodType = 'gateway' | 'crypto' | 'card' | 'wallet';
+
+// Соответствует PaymentMethodResource.
+export interface PaymentMethod {
+    id: number;
+    name: string;
+    type: PaymentMethodType;
+    currency: string;
+    min_amount: string;
+    max_amount: string;
+}
+
+export interface IssueOrderPayload {
+    card_product_id: number;
+    topup_amount: number;
+    topup_currency: 'USD' | 'RUB';
+    payment_method_id: number;
+    idempotency_key: string;
+}
+
+// Соответствует ответу OrderController::issue().
+export interface IssueOrderResult {
+    card_id: number;
+    status: CardStatus;
+    price_rub: string;
+    topup_usd: string;
+    topup_rub: string;
+    total_rub: string;
+    payment_transaction_id: string | null;
+    payment_url: string | null;
+    idempotency_key: string;
 }
