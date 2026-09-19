@@ -94,11 +94,12 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 .apply-pay-name{display:block;font-weight:700;font-size:.92rem}
 .apply-pay-desc{display:block;margin-top:2px;font-size:.78rem;color:var(--muted)}
 
-/* Форма пополнения баланса: сумма и переключатель ₽/$. */
-.apply-topup-amount-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.apply-currency-toggle{display:inline-flex;padding:3px;border-radius:999px;background:#ece8e4}
-.apply-currency-toggle button{border:0;background:transparent;padding:5px 14px;border-radius:999px;font-size:.76rem;font-weight:800;color:var(--muted);cursor:pointer;transition:.2s;white-space:nowrap}
+/* Форма пополнения баланса: сумма и переключатель ₽/$ в одной строке с полем ввода. */
+.apply-amount-row{display:flex;align-items:stretch}
+.apply-currency-toggle{display:flex;flex-shrink:0;background:#ece8e4;border-radius:14px 0 0 14px;overflow:hidden}
+.apply-currency-toggle button{display:flex;align-items:center;justify-content:center;border:0;background:transparent;padding:0 18px;font-size:.85rem;font-weight:800;color:var(--muted);cursor:pointer;transition:.2s}
 .apply-currency-toggle button.is-active{background:#151515;color:#fff}
+.apply-field .apply-amount-row input{border-radius:0 14px 14px 0}
 .apply-topup-note{margin-top:14px;text-align:center}
 .faq-plus{display:flex;height:42px;width:42px;flex-shrink:0;align-items:center;justify-content:center;border:1px solid rgba(20,20,19,.15);border-radius:50%;font-size:24px;font-weight:400;transition:.3s}.faq-item[data-open=true] .faq-plus{transform:rotate(45deg);background:#151515;color:#fff}.faq-answer{max-height:0;overflow:hidden;opacity:0;transition:max-height .4s ease,opacity .3s}.faq-item[data-open=true] .faq-answer{opacity:1}
 .footer-title{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.35}.footer-links{margin-top:16px;display:grid;gap:10px;font-size:.9rem;color:rgba(20,20,19,.62)}.footer-links a:hover{color:#151515}

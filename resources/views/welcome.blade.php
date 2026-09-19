@@ -388,14 +388,14 @@
                         </div>
 
                         <div class="apply-field">
-                            <div class="apply-topup-amount-head">
-                                <label for="apply-topup-amount" data-topup-amount-label>Введите сколько заплатить</label>
+                            <label for="apply-topup-amount" data-topup-amount-label>Введите сколько заплатить</label>
+                            <div class="apply-amount-row">
                                 <div class="apply-currency-toggle" data-currency-toggle>
-                                    <button type="button" class="is-active" data-currency="rub">₽ Руб</button>
-                                    <button type="button" data-currency="usd">$ USD</button>
+                                    <button type="button" class="is-active" data-currency="rub">₽</button>
+                                    <button type="button" data-currency="usd">$</button>
                                 </div>
+                                <input type="text" id="apply-topup-amount" name="amount" inputmode="numeric" data-topup-amount-input placeholder="5 000" required>
                             </div>
-                            <input type="text" id="apply-topup-amount" name="amount" inputmode="numeric" data-topup-amount-input placeholder="5 000" required>
                         </div>
 
                         <button type="submit" class="btn btn-hero-orange apply-submit">
