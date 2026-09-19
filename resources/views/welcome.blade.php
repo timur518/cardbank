@@ -323,8 +323,8 @@
                     </div>
                 </aside>
 
-                <div class="apply-form-wrap">
-                    <form data-apply-form novalidate>
+                <div class="apply-form-wrap" data-apply-wrap>
+                    <form data-apply-form novalidate class="apply-step is-current" data-apply-step="register">
                         <div class="apply-field">
                             <label for="apply-fio">Введите ваше ФИО</label>
                             <input type="text" id="apply-fio" name="fio" data-translit-input autocomplete="name" placeholder="Халяпов Тимур Рамилевич" required>
@@ -349,9 +349,59 @@
                             <span>Я даю согласие на обработку персональных данных и принимаю пользовательское соглашение</span>
                         </label>
                         <button type="submit" class="btn btn-hero-orange apply-submit">
-                            Зарегистрироваться и продолжить
+                            Зарегистрироваться и пополнить
                             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
                         </button>
+                    </form>
+
+                    <div class="apply-step apply-loading" data-apply-step="loading" role="status" aria-live="polite">
+                        <span class="apply-loading-spinner" aria-hidden="true"></span>
+                        <p class="apply-loading-title">Готовим форму пополнения баланса</p>
+                        <p class="apply-loading-text">Это займёт всего пару секунд…</p>
+                    </div>
+
+                    <form class="apply-step apply-topup" data-apply-step="topup" data-topup-form novalidate>
+                        <div class="apply-field">
+                            <label>Способ оплаты</label>
+                            <div class="apply-pay-list" data-pay-selector>
+                                <label class="apply-pay-option is-active">
+                                    <input type="radio" name="pay_method" value="sbp" class="sr-only" checked>
+                                    <span class="apply-pay-icon" aria-hidden="true">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.2"/><rect x="14" y="3" width="7" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="7" rx="1.2"/><path stroke-linecap="round" d="M14 14h3m4 0h0M14 17.5h7M17.5 14v7"/></svg>
+                                    </span>
+                                    <span class="apply-pay-info">
+                                        <span class="apply-pay-name">СБП</span>
+                                        <span class="apply-pay-desc">Рублями по QR с любого банка РФ</span>
+                                    </span>
+                                </label>
+                                <label class="apply-pay-option">
+                                    <input type="radio" name="pay_method" value="card" class="sr-only">
+                                    <span class="apply-pay-icon" aria-hidden="true">
+                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path stroke-linecap="round" d="M2.5 9.5h19"/><path stroke-linecap="round" d="M6 15h4"/></svg>
+                                    </span>
+                                    <span class="apply-pay-info">
+                                        <span class="apply-pay-name">Банковской картой</span>
+                                        <span class="apply-pay-desc">Рублями с любой карты РФ банка</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="apply-field">
+                            <div class="apply-topup-amount-head">
+                                <label for="apply-topup-amount" data-topup-amount-label>Введите сколько заплатить</label>
+                                <div class="apply-currency-toggle" data-currency-toggle>
+                                    <button type="button" class="is-active" data-currency="rub">₽ Руб</button>
+                                    <button type="button" data-currency="usd">$ USD</button>
+                                </div>
+                            </div>
+                            <input type="text" id="apply-topup-amount" name="amount" inputmode="numeric" data-topup-amount-input placeholder="5 000" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-hero-orange apply-submit">
+                            Оплатить и выпустить карту
+                        </button>
+                        <p class="apply-hint apply-topup-note">Оплата на защищённой странице банка. Карта пополнится в течение 3 минут после выпуска карты.</p>
                     </form>
                 </div>
             </div>

@@ -503,6 +503,87 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Форма оформления карты: переход между шагами «Заявка» → «Загрузка» →
+    // «Пополнение баланса». Чисто фронтенд, без отправки данных на бэкенд.
+    document.querySelectorAll('[data-apply-form]').forEach((form) => {
+        const wrap = form.closest('[data-apply-wrap]');
+
+        if (!wrap) {
+            return;
+        }
+
+        const loading = wrap.querySelector('[data-apply-step="loading"]');
+        const topup = wrap.querySelector('[data-apply-step="topup"]');
+
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            form.classList.remove('is-current');
+            loading?.classList.add('is-current');
+
+            setTimeout(() => {
+                loading?.classList.remove('is-current');
+                topup?.classList.add('is-current');
+            }, 1600);
+        });
+    });
+
+    // Форма пополнения баланса: отправка пока не подключена к платёжной системе —
+    // только гасим перезагрузку страницы по умолчанию.
+    document.querySelectorAll('[data-topup-form]').forEach((form) => {
+        form.addEventListener('submit', (event) => event.preventDefault());
+    });
+
+    // Форма пополнения баланса: селектор способа оплаты.
+    document.querySelectorAll('[data-pay-selector]').forEach((selector) => {
+        const options = [...selector.querySelectorAll('.apply-pay-option')];
+
+        options.forEach((option) => {
+            const input = option.querySelector('input[type="radio"]');
+
+            input?.addEventListener('change', () => {
+                options.forEach((other) => {
+                    other.classList.toggle('is-active', other === option);
+                });
+            });
+        });
+    });
+
+    // Форма пополнения баланса: переключатель валюты суммы (₽ / $) меняет подпись поля.
+    document.querySelectorAll('[data-currency-toggle]').forEach((toggle) => {
+        const buttons = [...toggle.querySelectorAll('button')];
+        const field = toggle.closest('.apply-field');
+        const label = field?.querySelector('[data-topup-amount-label]');
+        const input = field?.querySelector('[data-topup-amount-input]');
+
+        const labels = {
+            rub: 'Введите сколько заплатить',
+            usd: 'Введите сколько зачислить на карту',
+        };
+
+        const placeholders = {
+            rub: '5 000',
+            usd: '50',
+        };
+
+        buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+                buttons.forEach((other) => other.classList.toggle('is-active', other === button));
+
+                const currency = button.dataset.currency;
+
+                if (label && labels[currency]) {
+                    label.textContent = labels[currency];
+                }
+
+                if (input && placeholders[currency]) {
+                    input.placeholder = placeholders[currency];
+                    input.value = '';
+                }
+            });
+        });
+    });
+
     // Ротация подсказок внизу сайдбара формы оформления карты.
     document.querySelectorAll('[data-rotating-tip]').forEach((tip) => {
         const items = [...tip.querySelectorAll('[data-tip]')];

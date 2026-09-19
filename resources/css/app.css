@@ -71,6 +71,35 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 .apply-consent input{margin-top:3px;flex-shrink:0;width:18px;height:18px;accent-color:#141413}
 .apply-submit{margin-top:26px;width:100%;justify-content:center}
 @media(min-width:640px){.apply-grid-2{grid-template-columns:1fr 1fr}}
+
+/* Шаги оформления: заявка → загрузка → пополнение баланса. */
+.apply-step{display:none}
+.apply-form-wrap form.apply-step{width:100%}
+.apply-step.is-current{display:block}
+.apply-loading.is-current{display:flex}
+.apply-loading{width:100%;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:70px 20px;text-align:center;animation:apply-fade-in .45s ease}
+.apply-loading-spinner{width:56px;height:56px;border-radius:50%;border:4px solid #ece8e4;border-top-color:var(--orange);animation:apply-spin .9s linear infinite}
+.apply-loading-title{font-size:1.05rem;font-weight:800;letter-spacing:-.01em}
+.apply-loading-text{font-size:.85rem;color:var(--muted)}
+@keyframes apply-spin{to{transform:rotate(360deg)}}
+@keyframes apply-fade-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Форма пополнения баланса: способ оплаты. */
+.apply-pay-list{display:flex;flex-direction:column;gap:10px}
+.apply-pay-option{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:16px;border:1.5px solid var(--border);cursor:pointer;transition:.2s}
+.apply-pay-option:hover{border-color:#c9c5bf}
+.apply-pay-option.is-active{border-color:var(--orange);background:#fff7f3;box-shadow:0 10px 26px rgba(243,115,56,.12)}
+.apply-pay-icon{display:flex;flex-shrink:0;align-items:center;justify-content:center;width:44px;height:44px;border-radius:12px;background:#f3f0ee;color:var(--ink);transition:.2s}
+.apply-pay-option.is-active .apply-pay-icon{background:var(--orange);color:#fff}
+.apply-pay-name{display:block;font-weight:700;font-size:.92rem}
+.apply-pay-desc{display:block;margin-top:2px;font-size:.78rem;color:var(--muted)}
+
+/* Форма пополнения баланса: сумма и переключатель ₽/$. */
+.apply-topup-amount-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.apply-currency-toggle{display:inline-flex;padding:3px;border-radius:999px;background:#ece8e4}
+.apply-currency-toggle button{border:0;background:transparent;padding:5px 14px;border-radius:999px;font-size:.76rem;font-weight:800;color:var(--muted);cursor:pointer;transition:.2s;white-space:nowrap}
+.apply-currency-toggle button.is-active{background:#151515;color:#fff}
+.apply-topup-note{margin-top:14px;text-align:center}
 .faq-plus{display:flex;height:42px;width:42px;flex-shrink:0;align-items:center;justify-content:center;border:1px solid rgba(20,20,19,.15);border-radius:50%;font-size:24px;font-weight:400;transition:.3s}.faq-item[data-open=true] .faq-plus{transform:rotate(45deg);background:#151515;color:#fff}.faq-answer{max-height:0;overflow:hidden;opacity:0;transition:max-height .4s ease,opacity .3s}.faq-item[data-open=true] .faq-answer{opacity:1}
 .footer-title{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.35}.footer-links{margin-top:16px;display:grid;gap:10px;font-size:.9rem;color:rgba(20,20,19,.62)}.footer-links a:hover{color:#151515}
 
