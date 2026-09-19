@@ -25,7 +25,7 @@ interface CardProviderIntegration
     /**
      * Актуальные баланс и статус одной карты у провайдера.
      *
-     * @return array{balance: float, status: CardStatus, currency: string, card_number: ?string, expiry: ?string}
+     * @return array{balance: float, status: CardStatus, currency: string, card_number: ?string, cvv: ?string, expiry: ?string}
      */
     public function fetchCardSnapshot(string $providerCardId): array;
 

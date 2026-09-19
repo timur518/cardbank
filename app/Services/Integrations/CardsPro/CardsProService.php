@@ -344,6 +344,7 @@ class CardsProService implements CardProviderIntegration
             'status' => self::mapCardStatus((string) ($details['status'] ?? '')),
             'currency' => (string) ($details['currency'] ?? ''),
             'card_number' => $details['cardNumber'] ?? null,
+            'cvv' => $details['cvv'] ?? null,
             'expiry' => self::formatExpiry($details),
         ];
     }

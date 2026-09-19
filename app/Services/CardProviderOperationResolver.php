@@ -95,6 +95,7 @@ class CardProviderOperationResolver
         $card->update([
             'provider_card_id' => $san,
             'card_number' => $snapshot['card_number'],
+            'cvv' => $snapshot['cvv'],
             'expiry' => $snapshot['expiry'],
             'currency' => $snapshot['currency'] ?: $card->currency, // не затирать снепшот с продукта, если провайдер не прислал
             'balance' => $snapshot['balance'],

@@ -48,6 +48,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Раздел 4. Карты и история операций.
         Route::get('/cards', [CardController::class, 'index'])->name('cards.index');
         Route::get('/cards/{card}', [CardController::class, 'show'])->name('cards.show');
+        Route::get('/cards/{card}/requisites', [CardController::class, 'requisites'])->name('cards.requisites');
         Route::get('/cards/{card}/transactions', [TransactionController::class, 'forCard'])->name('cards.transactions');
         Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     });

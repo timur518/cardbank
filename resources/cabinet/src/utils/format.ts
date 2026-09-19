@@ -13,6 +13,23 @@ export function formatMoney(amount: string | number, currency: string): string {
     return `${value} ${symbol}`;
 }
 
+/**
+ * Большой баланс карты на странице одной карты: символ перед числом и запятая в
+ * качестве разделителя дробной части ("$10,00"), в отличие от formatMoney() ("10.00 $"),
+ * которая используется в таблицах/списках.
+ */
+export function formatBalanceHero(amount: string | number, currency: string): string {
+    const value = Number(amount).toFixed(2).replace('.', ',');
+
+    if (currency === 'RUB') {
+        return `${value} ₽`;
+    }
+
+    const symbol = CURRENCY_SYMBOLS[currency] ?? currency;
+
+    return `${symbol}${value}`;
+}
+
 /** Целое число рублей с разделителем разрядов: 9550.4 -> "9 550 ₽". Используется там, где копейки
  * не нужны (цена карты, итоговая сумма заказа «К оплате»), в отличие от formatMoney(). */
 export function formatRub(amount: number): string {

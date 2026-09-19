@@ -1,36 +1,33 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { fetchCard, fetchCards } from '../../api/cards';
+import { fetchCard, fetchCardRequisites, fetchCards } from '../../api/cards';
 import { extractErrorMessage } from '../../api/client';
 import { fetchCardTransactions } from '../../api/transactions';
-import type { Card, CardDetail, CardTransaction, PaginationMeta } from '../../api/types';
-import { CardArtwork } from '../../components/cards/CardArtwork';
+import type { Card, CardDetail, CardRequisites, CardTransaction } from '../../api/types';
+import { BalancePanel } from '../../components/cards/BalancePanel';
+import { CardFace, type CardSide } from '../../components/cards/CardFace';
+import { CardTabsSection, type CardTabKey } from '../../components/cards/CardTabsSection';
 import { CardsSidebar } from '../../components/cards/CardsSidebar';
-import { StatusPill } from '../../components/common/StatusPill';
-import { TransactionsTable } from '../../components/transactions/TransactionsTable';
-import { CARD_STATUS_LABELS, CARD_STATUS_TONES } from '../../utils/labels';
-import { formatMoney, formatRub, formatDateTime } from '../../utils/format';
+import { RequisitesPanel } from '../../components/cards/RequisitesPanel';
+import { TopupModal } from '../../components/cards/TopupModal';
+import { useAuth } from '../../context/AuthContext';
+import { transliterateFio } from '../../utils/masks';
 
-const TRANSACTIONS_PER_PAGE = 15;
+/** Первый день текущего месяца в формате YYYY-MM-DD — для фильтра date_from. */
+function startOfMonth(): string {
+    const date = new Date();
+    date.setDate(1);
 
-interface InfoRowProps {
-    label: string;
-    value: string;
+    return date.toISOString().slice(0, 10);
 }
 
-function InfoRow({ label, value }: InfoRowProps) {
-    return (
-        <div className="flex items-center justify-between gap-4 border-t border-border py-3 first:border-t-0 first:pt-0">
-            <span className="text-sm text-muted">{label}</span>
-            <span className="text-sm font-semibold text-ink">{value}</span>
-        </div>
-    );
-}
-
-// Полная информация об одной карте: реквизиты, платёжный адрес и история операций
-// по ней. Левый сайдбар «Мои карты» — тот же список, что и на главной странице.
+// Полная информация об одной карте: слева — визуал карты с переключателем
+// лицевой/оборотной стороны и виджет баланса, справа — реквизиты для оплаты и
+// платёжный адрес, ниже — вкладки с историей операций/расходов/лимитов. Левый
+// сайдбар «Мои карты» — тот же список, что и на главной странице.
 export function CardDetailPage() {
     const { id } = useParams<{ id: string }>();
+    const { profile } = useAuth();
 
     const [cards, setCards] = useState<Card[]>([]);
     const [cardsLoading, setCardsLoading] = useState(true);
@@ -39,10 +36,16 @@ export function CardDetailPage() {
     const [cardLoading, setCardLoading] = useState(true);
     const [cardError, setCardError] = useState<string | null>(null);
 
-    const [transactions, setTransactions] = useState<CardTransaction[]>([]);
-    const [transactionsLoading, setTransactionsLoading] = useState(true);
-    const [meta, setMeta] = useState<PaginationMeta | null>(null);
-    const [page, setPage] = useState(1);
+    const [cardSide, setCardSide] = useState<CardSide>('front');
+    const [requisites, setRequisites] = useState<CardRequisites | null>(null);
+    const [requisitesLoading, setRequisitesLoading] = useState(false);
+    const [requisitesError, setRequisitesError] = useState<string | null>(null);
+    const [revealed, setRevealed] = useState(false);
+    const [showCvv, setShowCvv] = useState(false);
+
+    const [monthPurchases, setMonthPurchases] = useState<CardTransaction[] | null>(null);
+    const [activeTab, setActiveTab] = useState<CardTabKey>('transactions');
+    const [topupModalOpen, setTopupModalOpen] = useState(false);
 
     useEffect(() => {
         fetchCards()
@@ -57,6 +60,12 @@ export function CardDetailPage() {
 
         setCardLoading(true);
         setCardError(null);
+        setRequisites(null);
+        setRevealed(false);
+        setShowCvv(false);
+        setCardSide('front');
+        setMonthPurchases(null);
+        setActiveTab('transactions');
 
         fetchCard(id)
             .then(setCard)
@@ -65,29 +74,86 @@ export function CardDetailPage() {
     }, [id]);
 
     useEffect(() => {
-        setPage(1);
-    }, [id]);
-
-    useEffect(() => {
-        if (!id) {
+        if (!id || !card || card.status !== 'active') {
             return;
         }
 
-        setTransactionsLoading(true);
+        fetchCardTransactions(id, { type: 'purchase', date_from: startOfMonth(), per_page: 100 })
+            .then((response) => setMonthPurchases(response.data))
+            .catch(() => setMonthPurchases([]));
+    }, [id, card?.status]);
 
-        fetchCardTransactions(id, { page, per_page: TRANSACTIONS_PER_PAGE })
-            .then((response) => {
-                setTransactions(response.data);
-                setMeta(response.meta);
-            })
-            .finally(() => setTransactionsLoading(false));
-    }, [id, page]);
+    // В сумму трат входят только успешные покупки — отклонённые попытки не списывают деньги
+    // с карты, хотя и попадают в выборку за месяц на вкладке «Расходы».
+    const monthTotal = useMemo(
+        () =>
+            monthPurchases
+                ? monthPurchases
+                      .filter((tx) => tx.status === 'success')
+                      .reduce((sum, tx) => sum + Math.abs(Number(tx.amount)), 0)
+                : null,
+        [monthPurchases],
+    );
+
+    const cardholderName = useMemo(() => {
+        if (!profile) {
+            return '';
+        }
+
+        return transliterateFio(`${profile.first_name} ${profile.last_name}`).toUpperCase();
+    }, [profile]);
+
+    async function ensureRequisites(): Promise<CardRequisites | null> {
+        if (requisites) {
+            return requisites;
+        }
+
+        if (!id) {
+            return null;
+        }
+
+        setRequisitesLoading(true);
+        setRequisitesError(null);
+
+        try {
+            const data = await fetchCardRequisites(id);
+            setRequisites(data);
+            return data;
+        } catch (error) {
+            setRequisitesError(extractErrorMessage(error, 'Не удалось загрузить реквизиты карты.'));
+            return null;
+        } finally {
+            setRequisitesLoading(false);
+        }
+    }
+
+    async function handleToggleReveal() {
+        if (revealed) {
+            setRevealed(false);
+            return;
+        }
+
+        if (await ensureRequisites()) {
+            setRevealed(true);
+        }
+    }
+
+    async function handleShowCvv() {
+        if (await ensureRequisites()) {
+            setShowCvv(true);
+        }
+    }
+
+    function handleShowExpenses() {
+        setActiveTab('expenses');
+        document.getElementById('card-tabs-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     return (
         <div className="flex flex-col gap-8 lg:flex-row">
             <CardsSidebar cards={cards} isLoading={cardsLoading} />
 
-            <div className="flex flex-1 flex-col gap-8">
+            <div className="flex flex-1 flex-col gap-6">
                 <div>
                     <Link to="/cards" className="text-sm font-semibold text-muted hover:text-ink">
                         ← Мои карты
@@ -100,83 +166,70 @@ export function CardDetailPage() {
 
                 {!cardLoading && card && (
                     <>
-                        <div className="auth-panel flex flex-col gap-6 p-6 sm:flex-row sm:items-start">
-                            <CardArtwork
-                                skin={card.card_product.skin}
-                                productName={card.card_product.name}
-                                last4={card.card_last4}
-                            />
-
-                            <div className="flex-1">
-                                <div className="mb-4 flex flex-wrap items-center gap-3">
-                                    <h1 className="text-xl font-extrabold tracking-tight text-ink">
-                                        Карта {card.card_product.name}
-                                    </h1>
-                                    <StatusPill label={CARD_STATUS_LABELS[card.status]} tone={CARD_STATUS_TONES[card.status]} />
-                                </div>
-
-                                <InfoRow label="Номер карты" value={`•••• •••• •••• ${card.card_last4 ?? '••••'}`} />
-                                <InfoRow label="Срок действия" value={card.expiry ?? '—'} />
-                                <InfoRow label="Валюта" value={card.currency} />
-                                <InfoRow label="Баланс" value={formatMoney(card.balance, card.currency)} />
-                                <InfoRow label="Стоимость выпуска" value={formatRub(Number(card.price_rub))} />
-                                <InfoRow
-                                    label="Дата выпуска"
-                                    value={card.issued_at ? formatDateTime(card.issued_at) : '—'}
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            <div className="flex flex-col gap-4">
+                                <CardFace
+                                    side={cardSide}
+                                    productName={card.card_product.name}
+                                    subtitle={null}
+                                    maskedNumber={`•••• •••• •••• ${card.card_last4 ?? '••••'}`}
+                                    fullNumber={requisites?.card_number ?? null}
+                                    revealed={revealed}
+                                    expiry={card.expiry}
+                                    cardholderName={cardholderName}
+                                    cvv={requisites?.cvv ?? null}
+                                    showCvv={showCvv}
                                 />
 
-                                {(card.billing_address.country ||
-                                    card.billing_address.city ||
-                                    card.billing_address.address) && (
-                                    <>
-                                        <h2 className="mt-6 mb-2 text-sm font-extrabold uppercase tracking-wide text-muted">
-                                            Платёжный адрес
-                                        </h2>
-                                        <InfoRow label="Страна" value={card.billing_address.country ?? '—'} />
-                                        <InfoRow label="Регион" value={card.billing_address.region ?? '—'} />
-                                        <InfoRow label="Город" value={card.billing_address.city ?? '—'} />
-                                        <InfoRow label="Адрес" value={card.billing_address.address ?? '—'} />
-                                        <InfoRow label="Индекс" value={card.billing_address.post_code ?? '—'} />
-                                    </>
-                                )}
+                                <div className="flex justify-center gap-2">
+                                    <button
+                                        type="button"
+                                        className={`btn ${cardSide === 'front' ? 'btn-primary' : ''}`}
+                                        onClick={() => setCardSide('front')}
+                                    >
+                                        Лицевая
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`btn ${cardSide === 'back' ? 'btn-primary' : ''}`}
+                                        onClick={() => setCardSide('back')}
+                                    >
+                                        Оборот · CVV
+                                    </button>
+                                </div>
+
+                                <BalancePanel
+                                    card={card}
+                                    monthTotal={monthTotal}
+                                    onShowExpenses={handleShowExpenses}
+                                    onTopupClick={() => setTopupModalOpen(true)}
+                                />
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <RequisitesPanel
+                                    card={card}
+                                    cardholderName={cardholderName}
+                                    requisites={requisites}
+                                    requisitesLoading={requisitesLoading}
+                                    revealed={revealed}
+                                    showCvv={showCvv}
+                                    onToggleReveal={handleToggleReveal}
+                                    onShowCvv={handleShowCvv}
+                                />
+                                {requisitesError && <p className="form-error-banner">{requisitesError}</p>}
                             </div>
                         </div>
 
-                        <div className="auth-panel p-6">
-                            <h2 className="mb-4 text-sm font-extrabold uppercase tracking-wide text-muted">
-                                История операций по карте
-                            </h2>
+                        <CardTabsSection
+                            card={card}
+                            activeTab={activeTab}
+                            onTabChange={setActiveTab}
+                            monthPurchases={monthPurchases}
+                            monthTotal={monthTotal}
+                        />
 
-                            {transactionsLoading ? (
-                                <p className="py-8 text-center text-sm text-muted">Загрузка…</p>
-                            ) : (
-                                <TransactionsTable transactions={transactions} />
-                            )}
-
-                            {meta && meta.last_page > 1 && (
-                                <div className="mt-4 flex items-center justify-center gap-4">
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        disabled={page <= 1}
-                                        onClick={() => setPage((value) => value - 1)}
-                                    >
-                                        Назад
-                                    </button>
-                                    <span className="text-sm text-muted">
-                                        Страница {meta.current_page} из {meta.last_page}
-                                    </span>
-                                    <button
-                                        type="button"
-                                        className="btn btn-primary"
-                                        disabled={page >= meta.last_page}
-                                        onClick={() => setPage((value) => value + 1)}
-                                    >
-                                        Далее
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                        {topupModalOpen && <TopupModal card={card} onClose={() => setTopupModalOpen(false)} />}
                     </>
                 )}
             </div>

@@ -36,11 +36,15 @@ export interface RegisterPayload {
 }
 
 // Соответствует CardProductResource (только поля, нужные для отображения карты
-// клиента, без себестоимостных полей продукта).
+// клиента, без себестоимостных полей продукта). `topup_min_amount`/`topup_max_amount`
+// заполнены только в CardDetailResource (вкладка «Лимиты» на странице карты), в списке карт
+// (CardResource) их нет.
 export interface CardProductSummary {
     key: string;
     name: string;
     skin: string | null;
+    topup_min_amount?: string;
+    topup_max_amount?: string;
 }
 
 export type CardStatus = 'waiting' | 'pending' | 'active' | 'frozen' | 'closed' | 'cancelled' | 'failed';
@@ -73,6 +77,14 @@ export interface BillingAddress {
 export interface CardDetail extends Card {
     price_rub: string;
     billing_address: BillingAddress;
+}
+
+// Соответствует CardRequisitesResource (ответ GET /cards/{card}/requisites) — полный
+// номер и CVV, запрашиваются только по явному действию пользователя («Показать реквизиты»).
+export interface CardRequisites {
+    card_number: string;
+    expiry: string | null;
+    cvv: string;
 }
 
 export type CardTransactionType = 'purchase' | 'topup' | 'fee' | 'refund' | 'decline';
@@ -170,6 +182,25 @@ export interface IssueOrderResult {
     card_id: number;
     status: CardStatus;
     price_rub: string;
+    topup_usd: string;
+    topup_rub: string;
+    total_rub: string;
+    payment_transaction_id: string | null;
+    payment_url: string | null;
+    idempotency_key: string;
+}
+
+export interface TopupOrderPayload {
+    card_id: number;
+    amount: number;
+    currency: 'USD' | 'RUB';
+    payment_method_id: number;
+    idempotency_key: string;
+}
+
+// Соответствует ответу OrderController::topup().
+export interface TopupOrderResult {
+    card_id: number;
     topup_usd: string;
     topup_rub: string;
     total_rub: string;

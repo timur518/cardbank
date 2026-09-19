@@ -6,6 +6,8 @@ export interface TransactionsQuery {
     per_page?: number;
     type?: string;
     card_id?: number;
+    date_from?: string;
+    date_to?: string;
 }
 
 export async function fetchTransactions(query: TransactionsQuery = {}): Promise<Paginated<CardTransaction>> {
