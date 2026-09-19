@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Cards\Tables;
 
 use App\Enums\CardStatus;
+use App\Enums\IncomePaymentStatus;
 use App\Models\Card;
 use App\Models\CardStatusHistory;
 use Filament\Actions\Action;
@@ -44,6 +45,19 @@ class CardsTable
                     ->label('Баланс')
                     ->money(fn (Card $record) => $record->currency)
                     ->sortable(),
+                TextColumn::make('paid_income_usd')
+                    ->label('Поступления')
+                    ->state(fn (Card $record) => self::paidIncomeUsd($record))
+                    ->money('USD')
+                    ->description(fn (Card $record) => number_format(self::paidIncomeRub($record), 2, ',', ' ') . ' ₽')
+                    ->alignEnd(),
+                TextColumn::make('profit_usd')
+                    ->label('Прибыль')
+                    ->state(fn (Card $record) => self::paidIncomeUsd($record) - self::expenseUsd($record))
+                    ->money('USD')
+                    ->description(fn (Card $record) => number_format(self::paidIncomeRub($record) - self::expenseRub($record), 2, ',', ' ') . ' ₽')
+                    ->color(fn (Card $record) => (self::paidIncomeUsd($record) - self::expenseUsd($record)) >= 0 ? 'success' : 'danger')
+                    ->alignEnd(),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge(),
@@ -166,6 +180,48 @@ class CardsTable
                     DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    /**
+     * Сумма оплаченных (`payment_status = Paid`) поступлений по карте в долларах —
+     * выпуск + пополнения, то же поле `amount_usd`, которое участвует в `ProfitStatsWidget::grossProfitStat()`.
+     */
+    protected static function paidIncomeUsd(Card $record): float
+    {
+        return (float) $record->incomes()
+            ->where('payment_status', IncomePaymentStatus::Paid)
+            ->sum('amount_usd');
+    }
+
+    /**
+     * Та же сумма, но в рублях — для описания под основным долларовым числом. Считаем
+     * только рублёвые `Income` (как в `ProfitStatsWidget::receiptsStat()`) — клиент всегда платит
+     * через СБП в рублях.
+     */
+    protected static function paidIncomeRub(Card $record): float
+    {
+        return (float) $record->incomes()
+            ->where('payment_status', IncomePaymentStatus::Paid)
+            ->where('currency', 'RUB')
+            ->sum('amount');
+    }
+
+    /**
+     * Все расходы по карте (себестоимость выпуска, комиссия за пополнения и т.д.), в долларах.
+     * Без фильтра по категории — все `Expense` с этой `card_id` относятся к себестоимости именно этой карты.
+     */
+    protected static function expenseUsd(Card $record): float
+    {
+        return (float) $record->expenses()->sum('amount_usd');
+    }
+
+    /**
+     * Та же сумма расходов, но в рублях (`Expense.amount` всегда в рублях, валюта
+     * отдельно не хранится).
+     */
+    protected static function expenseRub(Card $record): float
+    {
+        return (float) $record->expenses()->sum('amount');
     }
 
     protected static function changeStatus(Card $record, CardStatus $newStatus, ?string $reason = null): void
