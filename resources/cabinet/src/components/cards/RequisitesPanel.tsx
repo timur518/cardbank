@@ -103,38 +103,30 @@ export function RequisitesPanel({ card, cardholderName, requisites, requisitesLo
 
     return (
         <div className="auth-panel p-6">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f3f0ee] text-ink">
-                        {displayedMode === 'card' ? (
-                            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                                <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
-                                <path strokeLinecap="round" d="M2.5 9.5h19" />
-                            </svg>
-                        ) : (
-                            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                                <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z" />
-                                <circle cx="12" cy="10" r="2.5" />
-                            </svg>
-                        )}
-                    </span>
-                    <div>
-                        <h2 className="text-base font-extrabold tracking-tight text-ink">
-                            {displayedMode === 'card' ? 'Данные для оплаты' : 'Платёжный адрес'}
-                        </h2>
-                        <p className="text-xs text-muted">
-                            {displayedMode === 'card'
-                                ? 'Имя, номер, срок и CVV'
-                                : 'Вводите на сайте именно его, латиницей — не свой домашний'}
-                        </p>
-                    </div>
+            <div className="mb-2 flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f3f0ee] text-ink">
+                    {displayedMode === 'card' ? (
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                            <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+                            <path strokeLinecap="round" d="M2.5 9.5h19" />
+                        </svg>
+                    ) : (
+                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                            <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z" />
+                            <circle cx="12" cy="10" r="2.5" />
+                        </svg>
+                    )}
+                </span>
+                <div>
+                    <h2 className="text-base font-extrabold tracking-tight text-ink">
+                        {displayedMode === 'card' ? 'Данные для оплаты' : 'Платёжный адрес'}
+                    </h2>
+                    <p className="text-xs text-muted">
+                        {displayedMode === 'card'
+                            ? 'Имя, номер, срок и CVV'
+                            : 'Вводите на сайте именно его, латиницей — не свой домашний'}
+                    </p>
                 </div>
-
-                {showAddressToggle && (
-                    <button type="button" className="btn" onClick={() => switchMode(mode === 'card' ? 'address' : 'card')}>
-                        {mode === 'card' ? 'Показать платёжный адрес' : 'Показать данные карты'}
-                    </button>
-                )}
             </div>
 
             <div ref={wrapperRef} className="auth-transition-wrapper">
@@ -171,6 +163,16 @@ export function RequisitesPanel({ card, cardholderName, requisites, requisitesLo
                     )}
                 </div>
             </div>
+
+            {showAddressToggle && (
+                <button
+                    type="button"
+                    className="btn w-full mt-5"
+                    onClick={() => switchMode(mode === 'card' ? 'address' : 'card')}
+                >
+                    {mode === 'card' ? 'Показать платёжный адрес' : 'Показать данные карты'}
+                </button>
+            )}
         </div>
     );
 }
