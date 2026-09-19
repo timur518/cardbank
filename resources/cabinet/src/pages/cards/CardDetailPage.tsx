@@ -5,7 +5,7 @@ import { extractErrorMessage } from '../../api/client';
 import { fetchCardTransactions } from '../../api/transactions';
 import type { Card, CardDetail, CardRequisites, CardTransaction } from '../../api/types';
 import { BalancePanel } from '../../components/cards/BalancePanel';
-import { CardFace, type CardSide } from '../../components/cards/CardFace';
+import { CardFace } from '../../components/cards/CardFace';
 import { CardTabsSection, type CardTabKey } from '../../components/cards/CardTabsSection';
 import { CardsSidebar } from '../../components/cards/CardsSidebar';
 import { RequisitesPanel } from '../../components/cards/RequisitesPanel';
@@ -36,7 +36,7 @@ export function CardDetailPage() {
     const [cardLoading, setCardLoading] = useState(true);
     const [cardError, setCardError] = useState<string | null>(null);
 
-    const [cardSide, setCardSide] = useState<CardSide>('front');
+    const [flipped, setFlipped] = useState(false);
     const [requisites, setRequisites] = useState<CardRequisites | null>(null);
     const [requisitesLoading, setRequisitesLoading] = useState(false);
     const [requisitesError, setRequisitesError] = useState<string | null>(null);
@@ -61,7 +61,7 @@ export function CardDetailPage() {
         setCardError(null);
         setRequisites(null);
         setShowCvv(false);
-        setCardSide('front');
+        setFlipped(false);
         setMonthPurchases(null);
         setActiveTab('transactions');
 
@@ -166,7 +166,8 @@ export function CardDetailPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             <div className="flex flex-col gap-4">
                                 <CardFace
-                                    side={cardSide}
+                                    flipped={flipped}
+                                    onFlip={() => setFlipped((value) => !value)}
                                     productName={card.card_product.name}
                                     subtitle={null}
                                     maskedNumber={`•••• •••• •••• ${card.card_last4 ?? '••••'}`}
@@ -176,23 +177,6 @@ export function CardDetailPage() {
                                     cvv={requisites?.cvv ?? null}
                                     showCvv={showCvv}
                                 />
-
-                                <div className="flex justify-center gap-2">
-                                    <button
-                                        type="button"
-                                        className={`btn ${cardSide === 'front' ? 'btn-primary' : ''}`}
-                                        onClick={() => setCardSide('front')}
-                                    >
-                                        Лицевая
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`btn ${cardSide === 'back' ? 'btn-primary' : ''}`}
-                                        onClick={() => setCardSide('back')}
-                                    >
-                                        Оборот · CVV
-                                    </button>
-                                </div>
 
                                 <BalancePanel
                                     card={card}

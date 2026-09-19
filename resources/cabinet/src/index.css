@@ -91,6 +91,31 @@ body {
     transform: translateY(0);
 }
 
+/* Анимированный 3D-переворот карты (CardFace) — лицевая и оборотная стороны
+   существуют в DOM одновременно и развернуты в 3D относительно друг друга; переключение
+   класса is-flipped вращает внутренний контейнер на 180°, выглядит как вращение
+   настоящей карты, а не смена картинки. */
+.card-flip-scene {
+    perspective: 1600px;
+}
+.card-flip-inner {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 700ms cubic-bezier(.4, .2, .2, 1);
+}
+.card-flip-inner.is-flipped {
+    transform: rotateY(180deg);
+}
+.card-flip-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
+.card-flip-face-back {
+    transform: rotateY(180deg);
+}
+
 .dashboard-nav-link {
     font-size: .9rem;
     font-weight: 700;
