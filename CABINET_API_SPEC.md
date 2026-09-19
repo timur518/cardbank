@@ -35,9 +35,12 @@ Filament-админки, ходит в общий Laravel-бэкенд по REST
 
 **Запрос:**
 ```json
-{ "login": "+79991234567", "password": "..." }
+{ "login": "+7(999)123-45-67", "password": "..." }
 ```
-`login` — телефон (`users.phone`) или email (`users.email`), определяется по формату.
+`login` — телефон (`users.phone`) или email (`users.email`), определяется по формату. Фронт присылает телефон с маской ввода
+(`+7(999)123-45-67`) — сервер нормализует его перед поиском по `users.phone` (убирает
+всё, кроме цифр и ведущего `+`, т.е. приводит к `+79991234567`) — в `users.phone` хранится
+и ищется только нормализованный вид.
 
 **Ответ `200`:** `{"data": {...профиль, см. п.3...}}`, сессионная кука выставляется.
 
@@ -56,23 +59,30 @@ Filament-админки, ходит в общий Laravel-бэкенд по REST
   "first_name": "Тимур",
   "last_name": "Халяпов",
   "middle_name": "Рамилевич",
-  "phone": "+79991234567",
+  "phone": "+7(999)123-45-67",
   "email": "you@example.com",
-  "date_of_birth": "1990-01-01",
+  "date_of_birth": "01.01.1990",
   "password": "...",
   "password_confirmation": "...",
   "personal_data_consent": true,
+  "referral_code": "AB12CD",
   "utm_source": "yandex",
   "utm_medium": "cpc",
   "utm_campaign": "spring2026",
   "utm_content": "banner1"
 }
 ```
-`personal_data_consent` — обязательно `true`, иначе `422`. `utm_*` — необязательные.
+`personal_data_consent` — обязательно `true`, иначе `422`. `phone` приходит с маски
+(`+7(999)123-45-67`) — нормализуется так же, как в п. 1 (только цифры и ведущий `+`). `date_of_birth`
+приходит с маски в формате `дд.мм.гггг` (`01.01.1990`) — сервер парсит её и хранит
+в `users.date_of_birth` как `Y-m-d`. `referral_code` — необязательный, код партнёра, по которому
+пришёл клиент — пишется как есть в `users.referral_code` (поле уже есть, используется
+в `ProfitStatsWidget` для расчёта LTV рефералов — без валидации против `Partner.code`, так же, как
+сейчас реализовано в `UserForm` в админке, чтобы опечатка в коде не блокировала регистрацию).
 
 **Побочный эффект:** создаётся `User` (`kyc_status = KycStatus::NotStarted`,
-`is_blocked = false`, `personal_data_consent_at = now()`), поля `utm_*` копируются как
-есть на модель.
+`is_blocked = false`, `personal_data_consent_at = now()`), поля `utm_*` и `referral_code`
+копируются как есть на модель.
 
 **Ответ `201`:** `{"data": {...профиль...}}`, сессионная кука выставляется (автологин
 после регистрации).
@@ -87,7 +97,7 @@ Filament-админки, ходит в общий Laravel-бэкенд по REST
 ```json
 {
   "data": {
-    "id": 1,
+    "id": "018f2c9e-3d7a-7b52-9c76-1a2b3c4d5e6f",
     "first_name": "Тимур",
     "last_name": "Халяпов",
     "middle_name": "Рамилевич",
@@ -101,6 +111,11 @@ Filament-админки, ходит в общий Laravel-бэкенд по REST
   }
 }
 ```
+`id` — это `users.uuid`, не сквозной автоинкрементный `users.id`: сквозной PK по API нигде не
+отдаётся (чтобы по номеру нельзя было оценить общее число пользователей и не было соблазна перебирать
+чужие аккаунты подстановкой соседнего id). `users.uuid` генерируется автоматически
+при создании `User` (`User::booted()`).
+
 Поля `password`, `is_blocked`, `block_reason` (модерационные) в ответ не включаются.
 
 ---
@@ -195,24 +210,27 @@ Filament-админке (`BrandSettings`, `ReferralSettings`, `CurrencySettings`
 
 ---
 
-### 10. `GET /api/v1/settings/currency-rates` — курсы валют с наценкой
+### 10. `GET /api/v1/settings/currency-rates` — курсы продажи валют
 
-Курс продажи клиенту — тот же расчёт, что и в `CurrencySettings::costHelperText()`
-(`sell_rate = rate * (1 + markup_percent / 100)`). Используется на фронте для
-калькулятора суммы пополнения (₽ ⇄ $) и цены выпуска.
+Отдаётся только итоговый курс продажи (с нашей наценкой) — сырой курс ЦБ и процент
+наценки клиенту не нужны (на фронте используется только итоговая цифра для калькулятора
+суммы пополнения ₽ ⇄ $ и цены выпуска, а сама наценка — внутренняя экономика, как и
+`provider_issue_cost_usd`/`fee_percent` в п. 11–12). Расчёт на бэкенде остаётся тем же, что и в
+`CurrencySettings::costHelperText()` (`sell_rate = rate * (1 + markup_percent / 100)`),
+просто в ответ попадает только итоговое число.
 
 **Ответ `200`:**
 ```json
 {
   "data": {
-    "usd": { "rate": "92.72", "markup_percent": "3.00", "sell_rate": "95.50" },
-    "eur": { "rate": "100.10", "markup_percent": "3.00", "sell_rate": "103.10" },
-    "gbp": { "rate": "118.40", "markup_percent": "3.00", "sell_rate": "121.95" }
+    "usd": "95.50",
+    "eur": "103.10",
+    "gbp": "121.95"
   }
 }
 ```
-Источник — `Setting::getMany(['currency_rate_usd', 'currency_markup_usd_percent', ...])`
-для всех трёх валют.
+Источник — `Setting::getMany(['currency_rate_usd', 'currency_markup_usd_percent', ...])` для
+всех трёх валют, но в ответ попадает только вычисленный `sell_rate`.
 
 ---
 
@@ -225,6 +243,10 @@ Filament-админке (`BrandSettings`, `ReferralSettings`, `CurrencySettings`
 `provider_id`, `provider_product_code`, `billing_*`) клиенту не отдаются — это
 внутренняя себестоимость, не имеет отношения к ЛК.
 
+`skin` хранится как относительный путь на диске `public` (загружается через
+`FileUpload` в `CardProductForm`, директория `card-skins`) — в ответе отдаётся полным
+URL (`Storage::disk('public')->url($path)`), аналогично `brand_logo` в п. 8.
+
 **Ответ `200`:**
 ```json
 {
@@ -234,7 +256,7 @@ Filament-админке (`BrandSettings`, `ReferralSettings`, `CurrencySettings`
       "key": "black",
       "name": "Black",
       "description": "Для онлайн платежей, подписок и сервисов.",
-      "skin": "blackcard.png",
+      "skin": "https://.../storage/card-skins/....png",
       "currency": "USD",
       "price_rub": "990.00",
       "provider_kyc_required": false,
@@ -366,7 +388,7 @@ USD) — в границах `CardProduct.topup_min_amount`/`topup_max_amount` �
   "data": [
     {
       "id": 42,
-      "card_product": { "key": "black", "name": "Black", "skin": "blackcard.png" },
+      "card_product": { "key": "black", "name": "Black", "skin": "https://.../storage/card-skins/....png" },
       "status": "active",
       "currency": "USD",
       "balance": "150.00",

@@ -27,9 +27,12 @@ class CardProductForm
                             ->label('Название')
                             ->required()
                             ->maxLength(255),
-                        TextInput::make('skin')
-                            ->label('Оформление карты')
-                            ->maxLength(255),
+                        FileUpload::make('skin')
+                            ->label('Оформление карты (изображение)')
+                            ->image()
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('card-skins'),
                         TextInput::make('currency')
                             ->label('Валюта')
                             ->required()
