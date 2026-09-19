@@ -39,7 +39,7 @@ export function PartnershipPage() {
                 {referralLink ? (
                     <div className="flex flex-wrap items-center gap-3">
                         <code className="rounded-xl border border-border bg-bg px-4 py-2 text-sm">{referralLink}</code>
-                        <button type="button" className="btn btn-primary" onClick={copyLink}>
+                        <button type="button" className="btn" onClick={copyLink}>
                             {copied ? 'Скопировано' : 'Скопировать'}
                         </button>
                     </div>

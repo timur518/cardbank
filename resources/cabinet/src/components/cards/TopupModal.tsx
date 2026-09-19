@@ -3,6 +3,7 @@ import { fetchPaymentMethods } from '../../api/catalog';
 import { extractErrorMessage } from '../../api/client';
 import { topupOrder } from '../../api/orders';
 import type { CardDetail, PaymentMethod } from '../../api/types';
+import { Modal } from '../common/Modal';
 import { PaymentMethodOption } from '../orders/PaymentMethodOption';
 
 interface TopupModalProps {
@@ -82,22 +83,11 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
-            <div
-                className="auth-panel w-full max-w-md p-6 sm:p-7"
-                onClick={(event) => event.stopPropagation()}
-            >
-                <div className="mb-5 flex items-center justify-between">
-                    <h2 className="text-lg font-extrabold tracking-tight text-ink">Пополнить карту</h2>
-                    <button type="button" className="text-2xl leading-none text-muted hover:text-ink" onClick={onClose}>
-                        ×
-                    </button>
-                </div>
-
-                {isLoading ? (
-                    <p className="py-6 text-center text-sm text-muted">Загрузка…</p>
-                ) : (
-                    <form onSubmit={handleSubmit}>
+        <Modal title="Пополнить карту" onClose={onClose}>
+            {isLoading ? (
+                <p className="py-6 text-center text-sm text-muted">Загрузка…</p>
+            ) : (
+                <form onSubmit={handleSubmit}>
                         <div className="apply-field !mt-0">
                             <label>Способ оплаты</label>
                             <div className="apply-pay-list">
@@ -148,12 +138,11 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
 
                         {error && <p className="form-error-banner mt-5">{error}</p>}
 
-                        <button type="submit" className="btn btn-primary apply-submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Оформляем…' : 'Оплатить'}
-                        </button>
-                    </form>
-                )}
-            </div>
-        </div>
+                    <button type="submit" className="btn btn-primary apply-submit" disabled={isSubmitting}>
+                        {isSubmitting ? 'Оформляем…' : 'Оплатить'}
+                    </button>
+                </form>
+            )}
+        </Modal>
     );
 }

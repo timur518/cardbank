@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { fetchCard, fetchCardRequisites, fetchCards } from '../../api/cards';
 import { extractErrorMessage } from '../../api/client';
 import { fetchCardTransactions } from '../../api/transactions';
@@ -21,6 +21,7 @@ import { transliterateFio } from '../../utils/masks';
 export function CardDetailPage() {
     const { id } = useParams<{ id: string }>();
     const { profile } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [cards, setCards] = useState<Card[]>([]);
     const [cardsLoading, setCardsLoading] = useState(true);
@@ -63,6 +64,20 @@ export function CardDetailPage() {
             .catch((error) => setCardError(extractErrorMessage(error, 'Не удалось загрузить карту.')))
             .finally(() => setCardLoading(false));
     }, [id]);
+
+    // Ссылка с ?topup=1 (нижнее меню «Пополнить» → TopupEntryPage) — автоматически
+    // открывает модалку пополнения, как только карта загружена и активна, и сразу
+    // убирает параметр из URL, чтобы он не открывался повторно при обновлении страницы.
+    useEffect(() => {
+        if (card?.status === 'active' && searchParams.get('topup') === '1') {
+            setTopupModalOpen(true);
+            setSearchParams((params) => {
+                params.delete('topup');
+                return params;
+            }, { replace: true });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [card?.status, card?.id]);
 
     // Полный номер подгружается автоматически при открытии страницы — без отдельной кнопки-гейта,
     // так как он нужен для оплаты в интернете. CVV остаётся под отдельным затвором —

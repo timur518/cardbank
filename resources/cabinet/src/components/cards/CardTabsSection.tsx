@@ -98,7 +98,7 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                             <div className="mt-4 flex items-center justify-center gap-4">
                                 <button
                                     type="button"
-                                    className="btn btn-primary"
+                                    className="btn"
                                     disabled={page <= 1}
                                     onClick={() => setPage((value) => value - 1)}
                                 >
@@ -109,7 +109,7 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                                 </span>
                                 <button
                                     type="button"
-                                    className="btn btn-primary"
+                                    className="btn"
                                     disabled={page >= meta.last_page}
                                     onClick={() => setPage((value) => value + 1)}
                                 >

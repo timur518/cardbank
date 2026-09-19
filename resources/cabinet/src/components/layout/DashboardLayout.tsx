@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { fetchBrandSettings } from '../../api/settings';
+import { MobileTabBar } from './MobileTabBar';
 
 const NAV_ITEMS = [
     { to: '/', label: 'Главная', end: true },
@@ -30,48 +31,70 @@ function BrandLogo() {
     }, []);
 
     if (logo) {
-        return <img src={logo} alt={siteName} className="h-9 w-auto" />;
+        return <img src={logo} alt={siteName} className="h-8 w-auto" />;
     }
 
-    return <span className="text-xl font-extrabold tracking-tight text-ink">{siteName}</span>;
+    return <span className="text-lg font-extrabold tracking-tight text-ink">{siteName}</span>;
 }
 
-/** Общая шапка (логотип, имя пользователя, выход, горизонтальное меню) и обёртка
- * контента для всех страниц личного кабинета, доступных после входа. */
+function LogoutIcon() {
+    return (
+        <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 17.5v1a2.5 2.5 0 0 1-2.5 2.5h-6A2.5 2.5 0 0 1 4 18.5v-13A2.5 2.5 0 0 1 6.5 3h6A2.5 2.5 0 0 1 15 5.5v1" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h11m0 0-3.5-3.5M20 12l-3.5 3.5" />
+        </svg>
+    );
+}
+
+/**
+ * Общая шапка и обёртка контента для всех страниц ЛК, доступных после входа.
+ * На widescreen — горизонтальное меню в шапке и компактная кнопка-иконка
+ * выхода справа (вместо текстовой "Выйти"). На мобильных экранах шапка
+ * упрощена до логотипа и иконки выхода — навигация переезжает в нижнее меню
+ * приложения (MobileTabBar), поэтому под контентом добавлен отступ, чтобы его
+ * не перекрывала фиксированная панель.
+ */
 export function DashboardLayout() {
     const { profile, logout } = useAuth();
 
     return (
         <div className="min-h-screen">
-            <header className="border-b border-border bg-surface">
-                <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 py-4 lg:px-8">
-                    <BrandLogo />
-                    <div className="flex items-center gap-4">
-                        <NavLink to="/profile" className="text-sm font-semibold text-ink hover:text-orange-dark">
+            <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur">
+                <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 py-3 lg:px-8">
+                    <div className="flex items-center gap-8">
+                        <BrandLogo />
+                        <nav className="hidden items-center gap-6 md:flex">
+                            {NAV_ITEMS.map((item) => (
+                                <NavLink
+                                    key={item.to}
+                                    to={item.to}
+                                    end={item.end}
+                                    className={({ isActive }) => `dashboard-nav-link ${isActive ? 'is-active' : ''}`}
+                                >
+                                    {item.label}
+                                </NavLink>
+                            ))}
+                        </nav>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <NavLink
+                            to="/profile"
+                            className="hidden text-sm font-semibold text-ink hover:text-orange-dark sm:inline"
+                        >
                             {profile?.first_name} {profile?.last_name}
                         </NavLink>
-                        <button type="button" className="btn btn-primary" onClick={() => logout()}>
-                            Выйти
+                        <button type="button" className="icon-btn" title="Выйти" aria-label="Выйти" onClick={() => logout()}>
+                            <LogoutIcon />
                         </button>
                     </div>
                 </div>
-                <nav className="mx-auto flex max-w-[1200px] gap-7 px-4 pb-4 lg:px-8">
-                    {NAV_ITEMS.map((item) => (
-                        <NavLink
-                            key={item.to}
-                            to={item.to}
-                            end={item.end}
-                            className={({ isActive }) => `dashboard-nav-link ${isActive ? 'is-active' : ''}`}
-                        >
-                            {item.label}
-                        </NavLink>
-                    ))}
-                </nav>
             </header>
 
-            <main className="mx-auto max-w-[1200px] px-4 py-8 lg:px-8">
+            <main className="mx-auto max-w-[1200px] px-4 py-6 pb-28 lg:px-8 lg:py-8 lg:pb-8">
                 <Outlet />
             </main>
+
+            <MobileTabBar />
         </div>
     );
 }

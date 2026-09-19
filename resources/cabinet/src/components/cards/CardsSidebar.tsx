@@ -7,10 +7,11 @@ interface CardsSidebarProps {
     isLoading: boolean;
 }
 
-// Левый сайдбар «Мои карты»: список карт пользователя + слот для заказа новой.
+// Левый сайдбар «Мои карты»: список карт пользователя + слот для заказа новой. Скрыт на
+// мобильных экранах — там список карт дублирует пункт «Карты» нижнего меню (MobileTabBar).
 export function CardsSidebar({ cards, isLoading }: CardsSidebarProps) {
     return (
-        <aside className="flex w-full flex-col gap-3 lg:w-[280px] lg:shrink-0">
+        <aside className="hidden flex-col gap-3 lg:flex lg:w-[280px] lg:shrink-0">
             <h2 className="text-sm font-extrabold uppercase tracking-wide text-muted">Мои карты</h2>
 
             {isLoading && <p className="text-sm text-muted">Загрузка…</p>}

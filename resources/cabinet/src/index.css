@@ -24,28 +24,58 @@ body {
     font-weight: 450;
 }
 
+/*
+ * Кнопки ЛК (личный кабинет) — отдельная, более сдержанная система по сравнению с
+ * маркетинговыми CTA лендинга: базовый `.btn` — нейтральная второстепенная кнопка
+ * (обводка, без заливки), а не гигантская чёрная таблетка. `.btn-primary`/`.btn-orange`
+ * применяются точечно — только на единственное основное действие экрана (Войти,
+ * Оплатить, Сохранить и т.п.), а не на каждую кнопку подряд (пагинация, копирование,
+ * обновление списка и т.д. используют нейтральный `.btn`).
+ */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: .5rem;
-    border-radius: 999px;
-    border: 1.5px solid transparent;
-    padding: 1rem 1.7rem;
-    font-size: .95rem;
-    font-weight: 700;
+    border-radius: 12px;
+    border: 1.5px solid var(--color-border);
+    background: #fff;
+    padding: .7rem 1.1rem;
+    font-size: .85rem;
+    font-weight: 600;
     letter-spacing: -.01em;
+    color: var(--color-ink);
     white-space: nowrap;
     cursor: pointer;
-    transition: transform .25s cubic-bezier(.16,1,.3,1), background .2s, border-color .2s, color .2s;
+    transition: background .15s ease, border-color .15s ease, color .15s ease, transform .1s ease;
 }
-.btn:hover { transform: translateY(-2px); }
-.btn:disabled { opacity: .55; pointer-events: none; transform: none; }
+.btn:hover { background: #f7f5f2; border-color: #c9c5bf; }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .5; pointer-events: none; }
 .btn-block { width: 100%; }
 .btn-primary { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
-.btn-primary:hover { background: var(--color-orange); border-color: var(--color-orange); color: #fff; }
+.btn-primary:hover { background: #2b2a28; border-color: #2b2a28; color: #fff; }
 .btn-orange { background: var(--color-orange); border-color: var(--color-orange); color: #fff; }
 .btn-orange:hover { background: var(--color-orange-dark); border-color: var(--color-orange-dark); color: #fff; }
+
+/* Круглая кнопка-иконка (выход из аккаунта в шапке, переворот карты и т.п.) — вместо
+   подписанной кнопки на всю ширину. */
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-border);
+    background: #fff;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease, transform .1s ease;
+}
+.icon-btn:hover { background: #fdecea; color: var(--color-orange-dark); border-color: #f3b8ac; }
+.icon-btn:active { transform: scale(.92); }
 
 .cards-search {
     display: flex;
@@ -131,10 +161,10 @@ body {
 }
 
 .auth-panel {
-    border-radius: 40px;
+    border-radius: 24px;
     border: 1px solid var(--color-border);
     background: var(--color-surface);
-    box-shadow: 0 40px 100px rgba(243, 115, 56, .12);
+    box-shadow: 0 16px 40px rgba(15, 15, 15, .06);
 }
 
 .auth-transition-wrapper {
@@ -299,9 +329,9 @@ body {
  */
 .apply-panel {
     overflow: hidden;
-    border-radius: 40px;
+    border-radius: 24px;
     border: 1px solid var(--color-border);
-    box-shadow: 0 40px 100px rgba(243, 115, 56, .12);
+    box-shadow: 0 16px 40px rgba(15, 15, 15, .06);
 }
 .apply-sidebar {
     display: flex;
@@ -439,4 +469,137 @@ body {
     .apply-amount-row { flex-direction: row; align-items: stretch; gap: 14px; }
     .apply-amount-input-group { flex: 1 1 50%; min-width: 0; }
     .apply-amount-total { flex: 1 1 50%; padding-left: 4px; }
+}
+
+/*
+ * Модальное окно с адаптивным поведением под платформу (компонент Modal) — на
+ * мобильных экранах (< 640px) выезжает снизу вверх как нижний лист (bottom sheet)
+ * с ручкой-индикатором сверху, на широких — обычное центрированное диалоговое окно.
+ */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(15, 15, 15, 0);
+    transition: background .28s ease;
+}
+.modal-overlay.is-visible { background: rgba(15, 15, 15, .45); }
+
+.modal-sheet {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-height: 92vh;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -20px 60px rgba(15, 15, 15, .18);
+    transform: translateY(100%);
+    transition: transform .32s cubic-bezier(.16,1,.3,1);
+}
+.modal-sheet.is-visible { transform: translateY(0); }
+
+.modal-sheet-handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--color-border);
+    margin: 12px auto 4px;
+    flex-shrink: 0;
+}
+.modal-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px 4px;
+    flex-shrink: 0;
+}
+.modal-sheet-body {
+    overflow-y: auto;
+    padding: 12px 20px calc(20px + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+    .modal-overlay { align-items: center; padding: 24px; }
+    .modal-sheet {
+        max-width: 440px;
+        border-radius: 24px;
+        box-shadow: 0 30px 80px rgba(15, 15, 15, .16);
+        transform: translateY(16px) scale(.98);
+        opacity: 0;
+        transition: transform .28s cubic-bezier(.16,1,.3,1), opacity .28s ease;
+    }
+    .modal-sheet.is-visible { transform: translateY(0) scale(1); opacity: 1; }
+    .modal-sheet-handle { display: none; }
+    .modal-sheet-header { padding: 20px 24px 4px; }
+    .modal-sheet-body { padding: 12px 24px 24px; }
+}
+
+/*
+ * Нижнее меню на мобильных экранах (как в нативном приложении) — фон повторяет шапку
+ * лендинга (resources/css/app.css, .nav-pill): полупрозрачный белый + блюр. Центральный
+ * пункт «Пополнить» — приподнятая кнопка (FAB), как в большинстве банковских приложений.
+ */
+.mobile-tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, .78);
+    backdrop-filter: blur(14px) saturate(160%);
+    -webkit-backdrop-filter: blur(14px) saturate(160%);
+    border-top: 1px solid rgba(222, 219, 214, .6);
+    box-shadow: 0 -10px 30px rgba(15, 15, 15, .05);
+}
+.mobile-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    min-width: 54px;
+    padding: 4px 6px;
+    font-size: .64rem;
+    font-weight: 700;
+    color: var(--color-muted);
+}
+.mobile-tab svg { width: 22px; height: 22px; }
+.mobile-tab.is-active { color: var(--color-orange-dark); }
+
+.mobile-tabbar-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    min-width: 54px;
+}
+.mobile-tabbar-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    border: none;
+    background: var(--color-orange);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(243, 115, 56, .4);
+    transform: translateY(-14px);
+    transition: transform .15s ease, background .15s ease;
+}
+.mobile-tabbar-fab svg { width: 22px; height: 22px; }
+.mobile-tabbar-fab:active { transform: translateY(-14px) scale(.92); }
+.mobile-tabbar-fab-label {
+    margin-top: -10px;
+    font-size: .64rem;
+    font-weight: 700;
+    color: var(--color-orange-dark);
 }

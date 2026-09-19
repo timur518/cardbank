@@ -13,6 +13,7 @@ import { NewCardOrderPage } from './pages/orders/NewCardOrderPage';
 import { TransactionsPage } from './pages/transactions/TransactionsPage';
 import { PartnershipPage } from './pages/partnership/PartnershipPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
+import { TopupEntryPage } from './pages/topup/TopupEntryPage';
 
 export function App() {
     return (
@@ -36,6 +37,7 @@ export function App() {
                             <Route path="/transactions" element={<TransactionsPage />} />
                             <Route path="/partnership" element={<PartnershipPage />} />
                             <Route path="/profile" element={<ProfilePage />} />
+                            <Route path="/topup" element={<TopupEntryPage />} />
                         </Route>
                     </Route>
                 </Routes>
