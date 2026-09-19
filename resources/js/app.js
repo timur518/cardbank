@@ -584,6 +584,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Форма пополнения баланса: итоговая сумма «К оплате» в рублях.
+    // Сумма в $ пересчитывается в ₽ по курсу из data-usd-rate (передан из Setting в blade).
+    document.querySelectorAll('[data-topup-form]').forEach((form) => {
+        const amountInput = form.querySelector('[data-topup-amount-input]');
+        const totalEl = form.querySelector('[data-topup-total]');
+        const toggle = form.querySelector('[data-currency-toggle]');
+        const usdRate = parseFloat(form.dataset.usdRate) || 0;
+
+        if (!amountInput || !totalEl) {
+            return;
+        }
+
+        const formatRub = (value) => `${Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽`;
+
+        const updateTotal = () => {
+            const currency = toggle?.querySelector('button.is-active')?.dataset.currency ?? 'usd';
+            const raw = parseFloat(amountInput.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+            const rubAmount = currency === 'usd' ? raw * usdRate : raw;
+
+            totalEl.textContent = `К оплате: ${formatRub(rubAmount)}`;
+        };
+
+        amountInput.addEventListener('input', updateTotal);
+        toggle?.querySelectorAll('button').forEach((button) => button.addEventListener('click', updateTotal));
+
+        updateTotal();
+    });
+
     // Ротация подсказок внизу сайдбара формы оформления карты.
     document.querySelectorAll('[data-rotating-tip]').forEach((tip) => {
         const items = [...tip.querySelectorAll('[data-tip]')];

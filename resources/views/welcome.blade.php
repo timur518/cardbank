@@ -288,6 +288,14 @@
                     ['Карты с ApplePay / GooglePay', 'Оплачивайте покупки телефоном или смарт-часами'],
                     ['Пополнение баланса из России', 'Мгновенное пополнение баланса российскими картами или через СБП.'],
                 ];
+
+                // Курс USD -> RUB с нашей наценкой (та же формула, что и в админке,
+                // см. resources/views/filament/admin/partials/currency-rate-badges.blade.php)
+                // — нужен, чтобы на фронте пересчитывать сумму в $ в рубли для "К оплате".
+                $currencySettings = \App\Models\Setting::getMany(['currency_rate_usd', 'currency_markup_usd_percent']);
+                $usdToRub = $currencySettings['currency_rate_usd'] !== null
+                    ? ((float) $currencySettings['currency_rate_usd']) * (1 + ((float) ($currencySettings['currency_markup_usd_percent'] ?? 0)) / 100)
+                    : 100.0;
             @endphp
 
             <div data-reveal class="apply-panel mt-16 grid lg:grid-cols-[1fr_2fr] lg:mt-16">
@@ -360,7 +368,7 @@
                         <p class="apply-loading-text">Это займёт всего пару секунд…</p>
                     </div>
 
-                    <form class="apply-step apply-topup" data-apply-step="topup" data-topup-form novalidate>
+                    <form class="apply-step apply-topup" data-apply-step="topup" data-topup-form data-usd-rate="{{ $usdToRub }}" novalidate>
                         <div class="apply-field">
                             <label>Способ оплаты</label>
                             <div class="apply-pay-list" data-pay-selector>
@@ -397,11 +405,13 @@
                                     </div>
                                     <input type="text" id="apply-topup-amount" name="amount" inputmode="numeric" data-topup-amount-input placeholder="50" required>
                                 </div>
-                                <button type="submit" class="btn btn-hero-orange apply-submit">
-                                    Оплатить и выпустить карту
-                                </button>
+                                <p class="apply-amount-total" data-topup-total>К оплате: 0 ₽</p>
                             </div>
                         </div>
+
+                        <button type="submit" class="btn btn-hero-orange apply-submit">
+                            Оплатить и выпустить карту
+                        </button>
                         <p class="apply-hint apply-topup-note">Оплата на защищённой странице банка. Карта пополнится в течение 3 минут после выпуска карты.</p>
                     </form>
                 </div>

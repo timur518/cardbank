@@ -94,15 +94,16 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 .apply-pay-name{display:block;font-weight:700;font-size:.92rem}
 .apply-pay-desc{display:block;margin-top:2px;font-size:.78rem;color:var(--muted)}
 
-/* Форма пополнения баланса: сумма (переключатель ₽/$ + поле) и кнопка оплаты в одной строке,
-   каждый по 50%; на мобилке — друг под другом во всю ширину. */
-.apply-amount-row{display:flex;flex-direction:column;gap:14px}
+/* Форма пополнения баланса: сумма (переключатель ₽/$ + поле) и итоговая сумма «К оплате»
+   в одной строке, каждый по 50%; кнопка оплаты — отдельно, во всю ширину; на мобилке
+   сумма и итоговая строка идут друг под другом во всю ширину. */
+.apply-amount-row{display:flex;flex-direction:column;gap:10px}
 .apply-amount-input-group{display:flex;align-items:stretch}
-.apply-amount-row .apply-submit{margin-top:0;width:100%}
+.apply-amount-total{margin:0;display:flex;align-items:center;font-weight:800;color:#101010;font-size:.95rem}
 @media(min-width:640px){
-    .apply-amount-row{flex-direction:row;align-items:stretch}
+    .apply-amount-row{flex-direction:row;align-items:stretch;gap:14px}
     .apply-amount-input-group{flex:1 1 50%;min-width:0}
-    .apply-amount-row .apply-submit{flex:1 1 50%;width:auto}
+    .apply-amount-total{flex:1 1 50%;padding-left:4px}
 }
 .apply-currency-toggle{display:flex;flex-shrink:0;background:#ece8e4;border-radius:14px 0 0 14px;overflow:hidden;border:1px solid var(--border)}
 .apply-currency-toggle button{display:flex;align-items:center;justify-content:center;border:0;background:transparent;padding:0 18px;font-size:.85rem;font-weight:800;color:var(--muted);cursor:pointer;transition:.2s}
