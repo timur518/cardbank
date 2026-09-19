@@ -1,14 +1,12 @@
 import { useEffect, useState } from 'react';
 import { fetchCardTransactions } from '../../api/transactions';
 import type { CardDetail, CardTransaction, PaginationMeta } from '../../api/types';
-import { formatMoney } from '../../utils/format';
 import { TransactionsTable } from '../transactions/TransactionsTable';
 
-export type CardTabKey = 'transactions' | 'expenses' | 'limits' | 'codes';
+export type CardTabKey = 'transactions' | 'limits' | 'codes';
 
 const TABS: { key: CardTabKey; label: string; disabled?: boolean }[] = [
     { key: 'transactions', label: 'Транзакции' },
-    { key: 'expenses', label: 'Расходы' },
     { key: 'codes', label: 'Коды', disabled: true },
     { key: 'limits', label: 'Лимиты' },
 ];
@@ -19,20 +17,17 @@ interface CardTabsSectionProps {
     card: CardDetail;
     activeTab: CardTabKey;
     onTabChange: (tab: CardTabKey) => void;
-    monthPurchases: CardTransaction[] | null;
-    monthTotal: number | null;
 }
 
 /**
  * Нижний блок страницы карты: переключатель вкладок и их содержимое.
  * «Транзакции» — полная история операций по карте с пагинацией (реальные данные,
- * GET /cards/{card}/transactions). «Расходы» — покупки с начала месяца (те же
- * данные, что и в BalancePanel, без повторного запроса). «Лимиты» — границы
- * пополнения из карточки продукта (CardProduct.topup_min/max_amount). «Коды» —
- * пересылка одноразовых кодов подтверждения от продавцов пока не реализована,
- * вкладка оставлена неактивной, а не заполнена придуманными данными.
+ * GET /cards/{card}/transactions). «Лимиты» — границы пополнения из карточки
+ * продукта (CardProduct.topup_min/max_amount). «Коды» — пересылка одноразовых
+ * кодов подтверждения от продавцов пока не реализована, вкладка оставлена
+ * неактивной, а не заполнена придуманными данными.
  */
-export function CardTabsSection({ card, activeTab, onTabChange, monthPurchases, monthTotal }: CardTabsSectionProps) {
+export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectionProps) {
     const [transactions, setTransactions] = useState<CardTransaction[]>([]);
     const [meta, setMeta] = useState<PaginationMeta | null>(null);
     const [page, setPage] = useState(1);
@@ -121,25 +116,6 @@ export function CardTabsSection({ card, activeTab, onTabChange, monthPurchases, 
                                     Далее
                                 </button>
                             </div>
-                        )}
-                    </>
-                )}
-
-                {activeTab === 'expenses' && (
-                    <>
-                        <div className="mb-4 flex items-center justify-between">
-                            <h2 className="text-sm font-extrabold uppercase tracking-wide text-muted">
-                                Покупки с начала месяца
-                            </h2>
-                            <p className="text-lg font-extrabold text-ink">
-                                {monthTotal === null ? '…' : formatMoney(monthTotal, card.currency)}
-                            </p>
-                        </div>
-
-                        {monthPurchases === null ? (
-                            <p className="py-8 text-center text-sm text-muted">Загрузка…</p>
-                        ) : (
-                            <TransactionsTable transactions={monthPurchases} emptyMessage="В этом месяце покупок ещё не было." />
                         )}
                     </>
                 )}

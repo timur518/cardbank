@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { CardDetail, CardRequisites } from '../../api/types';
 import { CopyButton } from '../common/CopyButton';
 
@@ -7,9 +7,7 @@ interface RequisitesPanelProps {
     cardholderName: string;
     requisites: CardRequisites | null;
     requisitesLoading: boolean;
-    revealed: boolean;
     showCvv: boolean;
-    onToggleReveal: () => void;
     onShowCvv: () => void;
 }
 
@@ -39,60 +37,38 @@ const HAS_ADDRESS = (card: CardDetail) =>
     Boolean(card.billing_address.country || card.billing_address.city || card.billing_address.address);
 
 function formatAddress(card: CardDetail): string {
-    return [card.billing_address.address, card.billing_address.city, card.billing_address.post_code, card.billing_address.country]
+    return [card.billing_address.country, card.billing_address.city, card.billing_address.address, card.billing_address.post_code]
         .filter(Boolean)
         .join(', ');
 }
 
-// Правая колонка страницы карты: реквизиты для оплаты (номер/срок/CVV/имя) и
-// платёжный адрес (AVS), с копированием каждого поля и общим переключателем
-// показа/скрытия чувствительных данных. Полные номер/CVV подгружаются лениво —
-// только когда пользователь впервые нажимает «Показать реквизиты»/«Показать CVV».
-export function RequisitesPanel({
-    card,
-    cardholderName,
-    requisites,
-    requisitesLoading,
-    revealed,
-    showCvv,
-    onToggleReveal,
-    onShowCvv,
-}: RequisitesPanelProps) {
-    const maskedNumber = `•••• •••• •••• ${card.card_last4 ?? '••••'}`;
-    const numberValue = revealed && requisites ? requisites.card_number : maskedNumber;
-    const cvvValue = showCvv && requisites ? requisites.cvv : '•••';
+// Правая колонка страницы карты: реквизиты для оплаты (имя/номер/срок/CVV) и
+// платёжный адрес (AVS). Полный номер подгружается автоматически (CardDetailPage),
+// CVV — только по кнопке «Показать CVV», адрес — только по кнопке «Показать
+// платёжный адрес», с анимированным раскрытием (CSS grid-template-rows 0fr → 1fr).
+export function RequisitesPanel({ card, cardholderName, requisites, requisitesLoading, showCvv, onShowCvv }: RequisitesPanelProps) {
+    const [showAddress, setShowAddress] = useState(false);
 
-    const fullText = [
-        `Номер карты: ${requisites?.card_number ?? maskedNumber}`,
-        `Срок действия: ${card.expiry ?? '—'}`,
-        requisites ? `CVV: ${requisites.cvv}` : null,
-        `Имя на карте: ${cardholderName}`,
-        HAS_ADDRESS(card) ? `Платёжный адрес: ${formatAddress(card)}` : null,
-    ]
-        .filter(Boolean)
-        .join('\n');
+    const maskedNumber = `•••• •••• •••• ${card.card_last4 ?? '••••'}`;
+    const numberValue = requisites?.card_number ?? maskedNumber;
+    const cvvValue = showCvv && requisites ? requisites.cvv : '•••';
 
     return (
         <div className="auth-panel p-6">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f3f0ee] text-ink">
-                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                            <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
-                            <path strokeLinecap="round" d="M2.5 9.5h19" />
-                        </svg>
-                    </span>
-                    <div>
-                        <h2 className="text-base font-extrabold tracking-tight text-ink">Данные для оплаты</h2>
-                        <p className="text-xs text-muted">Номер, срок, CVV и платёжный адрес</p>
-                    </div>
+            <div className="mb-2 flex items-center gap-3">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f3f0ee] text-ink">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                        <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
+                        <path strokeLinecap="round" d="M2.5 9.5h19" />
+                    </svg>
+                </span>
+                <div>
+                    <h2 className="text-base font-extrabold tracking-tight text-ink">Данные для оплаты</h2>
+                    <p className="text-xs text-muted">Имя, номер, срок, CVV и платёжный адрес</p>
                 </div>
-
-                <button type="button" className="btn" disabled={requisitesLoading} onClick={onToggleReveal}>
-                    {revealed ? 'Скрыть реквизиты' : 'Показать реквизиты'}
-                </button>
             </div>
 
+            <RequisiteRow label="Имя на карте" value={cardholderName} copyValue={cardholderName} />
             <RequisiteRow label="Номер карты" value={numberValue} copyValue={requisites?.card_number ?? null} />
             <RequisiteRow label="Срок действия" value={card.expiry ?? '—'} copyValue={card.expiry} />
             <RequisiteRow
@@ -107,7 +83,6 @@ export function RequisitesPanel({
                     )
                 }
             />
-            <RequisiteRow label="Имя на карте" value={cardholderName} copyValue={cardholderName} />
 
             {HAS_ADDRESS(card) && (
                 <div className="mt-5 rounded-2xl border border-border bg-[#fdfaf6] p-5">
@@ -119,23 +94,33 @@ export function RequisitesPanel({
                             </svg>
                             Платёжный адрес
                         </h3>
-                        <CopyButton value={formatAddress(card)} label="Скопировать адрес" />
+                        {showAddress && <CopyButton value={formatAddress(card)} label="Скопировать адрес" />}
                     </div>
                     <p className="mb-4 text-xs text-muted">
                         Вводите на сайте именно его, латиницей — не свой домашний. Из-за чужого адреса магазины
                         отклоняют оплату чаще всего.
                     </p>
 
-                    <RequisiteRow label="Адрес (Address)" value={card.billing_address.address ?? '—'} copyValue={card.billing_address.address} />
-                    <RequisiteRow label="Город (City)" value={card.billing_address.city ?? '—'} copyValue={card.billing_address.city} />
-                    <RequisiteRow label="Индекс (ZIP)" value={card.billing_address.post_code ?? '—'} copyValue={card.billing_address.post_code} />
-                    <RequisiteRow label="Страна (Country)" value={card.billing_address.country ?? '—'} copyValue={card.billing_address.country} />
+                    {!showAddress && (
+                        <button type="button" className="btn w-full" onClick={() => setShowAddress(true)}>
+                            Показать платёжный адрес
+                        </button>
+                    )}
+
+                    <div
+                        className={`grid transition-all duration-300 ease-out ${
+                            showAddress ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
+                        }`}
+                    >
+                        <div className="overflow-hidden">
+                            <RequisiteRow label="Страна (Country)" value={card.billing_address.country ?? '—'} copyValue={card.billing_address.country} />
+                            <RequisiteRow label="Город (City)" value={card.billing_address.city ?? '—'} copyValue={card.billing_address.city} />
+                            <RequisiteRow label="Адрес (Address)" value={card.billing_address.address ?? '—'} copyValue={card.billing_address.address} />
+                            <RequisiteRow label="Индекс (ZIP)" value={card.billing_address.post_code ?? '—'} copyValue={card.billing_address.post_code} />
+                        </div>
+                    </div>
                 </div>
             )}
-
-            <div className="mt-5">
-                <CopyButton value={fullText} label="Скопировать всё" />
-            </div>
         </div>
     );
 }

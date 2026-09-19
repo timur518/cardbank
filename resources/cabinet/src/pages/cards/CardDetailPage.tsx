@@ -23,7 +23,7 @@ function startOfMonth(): string {
 
 // Полная информация об одной карте: слева — визуал карты с переключателем
 // лицевой/оборотной стороны и виджет баланса, справа — реквизиты для оплаты и
-// платёжный адрес, ниже — вкладки с историей операций/расходов/лимитов. Левый
+// платёжный адрес, ниже — вкладки с историей операций/лимитов. Левый
 // сайдбар «Мои карты» — тот же список, что и на главной странице.
 export function CardDetailPage() {
     const { id } = useParams<{ id: string }>();
@@ -40,7 +40,6 @@ export function CardDetailPage() {
     const [requisites, setRequisites] = useState<CardRequisites | null>(null);
     const [requisitesLoading, setRequisitesLoading] = useState(false);
     const [requisitesError, setRequisitesError] = useState<string | null>(null);
-    const [revealed, setRevealed] = useState(false);
     const [showCvv, setShowCvv] = useState(false);
 
     const [monthPurchases, setMonthPurchases] = useState<CardTransaction[] | null>(null);
@@ -61,7 +60,6 @@ export function CardDetailPage() {
         setCardLoading(true);
         setCardError(null);
         setRequisites(null);
-        setRevealed(false);
         setShowCvv(false);
         setCardSide('front');
         setMonthPurchases(null);
@@ -71,6 +69,16 @@ export function CardDetailPage() {
             .then(setCard)
             .catch((error) => setCardError(extractErrorMessage(error, 'Не удалось загрузить карту.')))
             .finally(() => setCardLoading(false));
+    }, [id]);
+
+    // Полный номер подгружается автоматически при открытии страницы — без отдельной кнопки-гейта,
+    // так как он нужен для оплаты в интернете. CVV остаётся под отдельным затвором —
+    // его запрашивает handleShowCvv() через тот же ensureRequisites().
+    useEffect(() => {
+        if (id) {
+            ensureRequisites();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [id]);
 
     useEffect(() => {
@@ -83,8 +91,8 @@ export function CardDetailPage() {
             .catch(() => setMonthPurchases([]));
     }, [id, card?.status]);
 
-    // В сумму трат входят только успешные покупки — отклонённые попытки не списывают деньги
-    // с карты, хотя и попадают в выборку за месяц на вкладке «Расходы».
+    // В сумму трат (виджет BalancePanel) входят только успешные покупки — отклонённые
+    // попытки не списывают деньги с карты.
     const monthTotal = useMemo(
         () =>
             monthPurchases
@@ -127,25 +135,14 @@ export function CardDetailPage() {
         }
     }
 
-    async function handleToggleReveal() {
-        if (revealed) {
-            setRevealed(false);
-            return;
-        }
-
-        if (await ensureRequisites()) {
-            setRevealed(true);
-        }
-    }
-
     async function handleShowCvv() {
         if (await ensureRequisites()) {
             setShowCvv(true);
         }
     }
 
-    function handleShowExpenses() {
-        setActiveTab('expenses');
+    function handleViewTransactions() {
+        setActiveTab('transactions');
         document.getElementById('card-tabs-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
@@ -174,7 +171,6 @@ export function CardDetailPage() {
                                     subtitle={null}
                                     maskedNumber={`•••• •••• •••• ${card.card_last4 ?? '••••'}`}
                                     fullNumber={requisites?.card_number ?? null}
-                                    revealed={revealed}
                                     expiry={card.expiry}
                                     cardholderName={cardholderName}
                                     cvv={requisites?.cvv ?? null}
@@ -201,7 +197,7 @@ export function CardDetailPage() {
                                 <BalancePanel
                                     card={card}
                                     monthTotal={monthTotal}
-                                    onShowExpenses={handleShowExpenses}
+                                    onViewTransactions={handleViewTransactions}
                                     onTopupClick={() => setTopupModalOpen(true)}
                                 />
                             </div>
@@ -212,22 +208,14 @@ export function CardDetailPage() {
                                     cardholderName={cardholderName}
                                     requisites={requisites}
                                     requisitesLoading={requisitesLoading}
-                                    revealed={revealed}
                                     showCvv={showCvv}
-                                    onToggleReveal={handleToggleReveal}
                                     onShowCvv={handleShowCvv}
                                 />
                                 {requisitesError && <p className="form-error-banner">{requisitesError}</p>}
                             </div>
                         </div>
 
-                        <CardTabsSection
-                            card={card}
-                            activeTab={activeTab}
-                            onTabChange={setActiveTab}
-                            monthPurchases={monthPurchases}
-                            monthTotal={monthTotal}
-                        />
+                        <CardTabsSection card={card} activeTab={activeTab} onTabChange={setActiveTab} />
 
                         {topupModalOpen && <TopupModal card={card} onClose={() => setTopupModalOpen(false)} />}
                     </>

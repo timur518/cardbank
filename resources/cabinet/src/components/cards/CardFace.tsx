@@ -6,7 +6,6 @@ interface CardFaceProps {
     subtitle: string | null;
     maskedNumber: string;
     fullNumber: string | null;
-    revealed: boolean;
     expiry: string | null;
     cardholderName: string;
     cvv: string | null;
@@ -23,13 +22,14 @@ export function CardFace({
     subtitle,
     maskedNumber,
     fullNumber,
-    revealed,
     expiry,
     cardholderName,
     cvv,
     showCvv,
 }: CardFaceProps) {
-    const displayNumber = revealed && fullNumber ? fullNumber : maskedNumber;
+    // Полный номер подгружается автоматически при открытии страницы (без отдельной
+    // кнопки-гейта) — пока он не загружен, показывается маска.
+    const displayNumber = fullNumber ?? maskedNumber;
 
     return (
         <div className="relative aspect-[1.586] w-full overflow-hidden rounded-[28px] bg-gradient-to-br from-[#2b2a28] via-[#1c1b19] to-[#0e0e0d] p-6 text-white shadow-xl sm:p-7">

@@ -6,7 +6,7 @@ import { StatusPill } from '../common/StatusPill';
 interface BalancePanelProps {
     card: CardDetail;
     monthTotal: number | null;
-    onShowExpenses: () => void;
+    onViewTransactions: () => void;
     onTopupClick: () => void;
 }
 
@@ -14,7 +14,7 @@ interface BalancePanelProps {
 // покупок с начала месяца — считается по CardDetailPage) и кнопка пополнения.
 // Для карт вне статуса Active баланс пополнять нельзя — вместо суммы показывается
 // статус, а кнопка недоступна.
-export function BalancePanel({ card, monthTotal, onShowExpenses, onTopupClick }: BalancePanelProps) {
+export function BalancePanel({ card, monthTotal, onViewTransactions, onTopupClick }: BalancePanelProps) {
     const isActive = card.status === 'active';
 
     return (
@@ -38,7 +38,7 @@ export function BalancePanel({ card, monthTotal, onShowExpenses, onTopupClick }:
                 <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
                     <div>
                         <p className="text-sm font-semibold text-ink">Потрачено в этом месяце</p>
-                        <button type="button" className="text-xs font-bold text-orange-dark hover:underline" onClick={onShowExpenses}>
+                        <button type="button" className="text-xs font-bold text-orange-dark hover:underline" onClick={onViewTransactions}>
                             Подробнее →
                         </button>
                     </div>

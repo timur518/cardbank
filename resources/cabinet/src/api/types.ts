@@ -79,8 +79,9 @@ export interface CardDetail extends Card {
     billing_address: BillingAddress;
 }
 
-// Соответствует CardRequisitesResource (ответ GET /cards/{card}/requisites) — полный
-// номер и CVV, запрашиваются только по явному действию пользователя («Показать реквизиты»).
+// Соответствует CardRequisitesResource (ответ GET /cards/{card}/requisites) — полный номер
+// и CVV. Номер подгружается автоматически при открытии страницы карты, CVV — только по
+// кнопке «Показать CVV».
 export interface CardRequisites {
     card_number: string;
     expiry: string | null;

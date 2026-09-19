@@ -12,8 +12,8 @@ export async function fetchCard(cardId: number | string): Promise<CardDetail> {
     return data.data;
 }
 
-// Полный номер и CVV карты (CardController::requisites()) — запрашивается только по
-// явному действию пользователя («Показать реквизиты» / «Показать CVV»).
+// Полный номер и CVV карты (CardController::requisites()). Номер запрашивается автоматически
+// на странице карты, CVV — только по кнопке «Показать CVV».
 export async function fetchCardRequisites(cardId: number | string): Promise<CardRequisites> {
     const { data } = await apiClient.get<{ data: CardRequisites }>(`/cards/${cardId}/requisites`);
     return data.data;
