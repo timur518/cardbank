@@ -6,24 +6,20 @@ import { FormField } from '../../components/common/FormField';
 import { extractErrorMessage } from '../../api/client';
 
 type LoginStep = 'identifier' | 'password';
-type StepDirection = 'forward' | 'backward';
 
 /**
  * Вход в два шага (как у Google/Microsoft): сначала только телефон/email,
  * после клика по «Войти» экран динамично сменяется на ввод пароля — сама
- * авторизация происходит только на втором шаге. Новый шаг не просто появляется, а
- * «приезжает» с проявлением с нужной стороны (slide-in-right/-left в index.css): вперёд
- * (логин -> пароль) — справа, назад («Изменить») — слева, как в обычных мастерах.
- * Высоту панели при смене шага (короткий шаг 1 -> длиннее шаг 2) плавно подстраивает
- * уже существующий AuthTransition в AuthShell — он следит через ResizeObserver за
- * высотой контента LoginPage.
+ * авторизация происходит только на втором шаге. Плавность обеспечивают
+ * .fade-in-up (появление блока нового шага) и уже существующий
+ * AuthTransition в AuthShell — он следит через ResizeObserver за высотой
+ * контента LoginPage и сам плавно подстраивает высоту панели при смене шага.
  */
 export function LoginPage() {
     const { login } = useAuth();
     const navigate = useNavigate();
 
     const [step, setStep] = useState<LoginStep>('identifier');
-    const [direction, setDirection] = useState<StepDirection>('forward');
     const [values, setValues] = useState({ login: '', password: '' });
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,7 +29,6 @@ export function LoginPage() {
         setError(null);
 
         if (step === 'identifier') {
-            setDirection('forward');
             setStep('password');
             return;
         }
@@ -53,11 +48,8 @@ export function LoginPage() {
     function handleBack() {
         setError(null);
         setValues((prev) => ({ ...prev, password: '' }));
-        setDirection('backward');
         setStep('identifier');
     }
-
-    const enterClass = direction === 'forward' ? 'slide-in-right' : 'slide-in-left';
 
     return (
         <AuthLayout
@@ -73,7 +65,7 @@ export function LoginPage() {
                 {error ? <div className="form-error-banner">{error}</div> : null}
 
                 {step === 'identifier' ? (
-                    <div key={`identifier-${direction}`} className={enterClass}>
+                    <div key="identifier-step" className="fade-in-up">
                         <FormField
                             label="Телефон или email"
                             name="login"
@@ -85,7 +77,7 @@ export function LoginPage() {
                         />
                     </div>
                 ) : (
-                    <div key={`password-${direction}`} className={`flex flex-col gap-5 ${enterClass}`}>
+                    <div key="password-step" className="flex flex-col gap-5 fade-in-up">
                         <div className="flex items-center justify-between gap-3 text-sm">
                             <span className="truncate text-muted">
                                 Вход как <span className="font-semibold text-ink">{values.login}</span>
