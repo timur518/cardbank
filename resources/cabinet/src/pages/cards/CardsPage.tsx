@@ -92,7 +92,6 @@ export function CardsPage() {
         <div className="flex flex-col gap-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <p className="text-sm text-muted">{cards.length} карт всего</p>
                     <h1 className="text-3xl font-extrabold tracking-tight text-ink">Все карты</h1>
                 </div>
                 <Link to="/cards/new" className="btn btn-orange">
@@ -134,7 +133,7 @@ export function CardsPage() {
             )}
 
             {!isLoading && filteredCards.length > 0 && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 fade-in-up">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-2 fade-in-up">
                     {filteredCards.map((card) => (
                         <CardGridCard key={card.id} card={card} monthSpend={monthSpend[card.id] ?? null} />
                     ))}
