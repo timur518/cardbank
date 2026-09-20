@@ -86,7 +86,7 @@ export function DashboardLayout() {
                         <BrandLogo />
                     </NavLink>
 
-                    <nav className="hidden items-center gap-8 text-[16px] lg:flex">
+                    <nav className="hidden items-center gap-8 text-[16px] md:flex">
                         {NAV_ITEMS.map((item) => (
                             <NavLink
                                 key={item.to}
@@ -113,7 +113,7 @@ export function DashboardLayout() {
                 </div>
             </header>
 
-            <main className="mx-auto max-w-[1200px] px-4 py-6 pb-28 lg:px-8 lg:py-8 lg:pb-8">
+            <main className="mx-auto max-w-[1200px] px-4 py-6 pb-28 md:pb-8 lg:px-8 lg:py-8">
                 <Outlet />
             </main>
 

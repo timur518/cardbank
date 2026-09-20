@@ -37,8 +37,9 @@ const INDICATOR_TOP = -5;
 const INDICATOR_LEFT = -9;
 
 /**
- * Нижнее меню приложения — видно только на мобильных экранах (lg:hidden, тот же
- * порог, что и у горизонтального меню в шапке и сайдбара «Мои карты»), заменяет
+ * Нижнее меню приложения — видно ТОЛЬКО на мобильных экранах (md:hidden, скрывается уже с 768px,
+ * тот же порог, что и у горизонтального меню в шапке, которое появляется с той же ширины — никакой
+ * «дыры» без навигации между ними нет. Заменяет
  * собой навигацию из шапки. Плавающая закруглённая панель с отступом 5px от
  * нижней границы экрана и полупрозрачным фоном с блюром — точно как шапка
  * лендинга (.nav-pill в resources/css/app.css), чтобы ЛК на телефоне ощущался
@@ -59,14 +60,15 @@ const INDICATOR_LEFT = -9;
 export function MobileTabBar() {
     const location = useLocation();
     const contentRefs = useRef<Array<HTMLSpanElement | null>>([]);
-    const [indicator, setIndicator] = useState({ x: 0, y: 0, visible: false });
+    const [indicator, setIndicator] = useState({ x: 0, y: 0 });
 
     function measure() {
         const activeIndex = TABS.findIndex((tab) => isTabActive(location.pathname, tab));
         const el = activeIndex >= 0 ? contentRefs.current[activeIndex] : null;
 
+        // На маршрутах без соответствующего пункта (например, /topup) позицию не меняем — овал
+        // просто остаётся там, где был в последний раз (без отдельной анимации скрытия/появления).
         if (!el) {
-            setIndicator((prev) => ({ ...prev, visible: false }));
             return;
         }
 
@@ -76,7 +78,6 @@ export function MobileTabBar() {
         setIndicator({
             x: el.offsetLeft + el.offsetWidth / 2 - INDICATOR_WIDTH / 2 - INDICATOR_LEFT,
             y: el.offsetTop + el.offsetHeight / 2 - INDICATOR_HEIGHT / 2 - INDICATOR_TOP,
-            visible: true,
         });
     }
 
@@ -91,9 +92,9 @@ export function MobileTabBar() {
     }, [location.pathname]);
 
     return (
-        <nav className="mobile-tabbar lg:hidden">
+        <nav className="mobile-tabbar md:hidden">
             <span
-                className={`mobile-tab-indicator${indicator.visible ? ' is-visible' : ''}`}
+                className="mobile-tab-indicator"
                 style={{ transform: `translate(${indicator.x}px, ${indicator.y}px)` }}
             />
 
