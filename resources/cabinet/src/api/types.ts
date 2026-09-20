@@ -18,8 +18,7 @@ export interface LoginPayload {
     password: string;
 }
 
-// Поля, редактируемые клиентом на странице профиля (PATCH /profile) — соответствует
-// UpdateProfileRequest::rules(). email через этот эндпоинт не меняется.
+// Обновить данные в профиле.
 export interface UpdateProfilePayload {
     first_name: string;
     last_name: string;
@@ -28,14 +27,14 @@ export interface UpdateProfilePayload {
     date_of_birth: string;
 }
 
-// Соответствует UpdatePasswordRequest::rules() (POST /profile/password) — смена пароля
-// в личном кабинете, требует подтверждения текущим паролем.
+// Смена пароля в личном кабинете, требует подтверждения текущим паролем.
 export interface UpdatePasswordPayload {
     current_password: string;
     password: string;
     password_confirmation: string;
 }
 
+// Регистрация пользователя
 export interface RegisterPayload {
     first_name: string;
     last_name: string;
@@ -53,10 +52,7 @@ export interface RegisterPayload {
     utm_content?: string;
 }
 
-// Соответствует CardProductResource (только поля, нужные для отображения карты
-// клиента, без себестоимостных полей продукта). `topup_min_amount`/`topup_max_amount`
-// заполнены только в CardDetailResource (вкладка «Лимиты» на странице карты), в списке карт
-// (CardResource) их нет.
+// Карты клиента
 export interface CardProductSummary {
     key: string;
     name: string;
@@ -67,8 +63,7 @@ export interface CardProductSummary {
 
 export type CardStatus = 'waiting' | 'pending' | 'active' | 'frozen' | 'closed' | 'cancelled' | 'failed';
 
-// Соответствует CardResource. `card_last4` — null, пока карте ещё не присвоен
-// номер провайдером (статусы waiting/pending).
+// Информация о карте которая еще не выпущена.
 export interface Card {
     id: number;
     card_product: CardProductSummary;
@@ -81,8 +76,7 @@ export interface Card {
     billing_address: BillingAddress;
 }
 
-// Соответствует блоку `billing_address` в CardResource — платёжный адрес карты
-// (AVS), скопированный с CardProduct при выпуске. Любое поле может быть null.
+// Платёжный адрес карты
 export interface BillingAddress {
     country: string | null;
     city: string | null;
@@ -91,15 +85,12 @@ export interface BillingAddress {
     post_code: string | null;
 }
 
-// Соответствует CardDetailResource (ответ GET /cards/{card}) — всё, что есть в Card, плюс
-// стоимость выпуска — нужна только на странице одной карты.
+// Информация о карте
 export interface CardDetail extends Card {
     price_rub: string;
 }
 
-// Соответствует CardRequisitesResource (ответ GET /cards/{card}/requisites) — полный номер
-// и CVV. Номер подгружается автоматически при открытии страницы карты, CVV — только по
-// кнопке «Показать CVV».
+// Реквизиты карты
 export interface CardRequisites {
     card_number: string;
     expiry: string | null;
@@ -109,7 +100,7 @@ export interface CardRequisites {
 export type CardTransactionType = 'purchase' | 'topup' | 'fee' | 'refund' | 'decline';
 export type CardTransactionStatus = 'pending' | 'success' | 'declined' | 'reversed';
 
-// Соответствует CardTransactionResource.
+// Транзакции по карте
 export interface CardTransaction {
     id: number;
     card_id: number;
@@ -132,7 +123,7 @@ export interface Paginated<T> {
     meta: PaginationMeta;
 }
 
-// Соответствует ответу SettingsController::brand().
+// Настройки сайта
 export interface BrandSettings {
     brand_domain: string | null;
     brand_site_name: string | null;
@@ -141,8 +132,7 @@ export interface BrandSettings {
     brand_theme_color: string | null;
 }
 
-// Соответствует ответу SettingsController::referral(). Поля могут быть null, если
-// админ ещё не заполнил ReferralSettings в Filament.
+// Настройки реферальной
 export interface ReferralSettings {
     referral_issue_rate: string | null;
     referral_topup_rate: string | null;
@@ -151,13 +141,11 @@ export interface ReferralSettings {
     referral_min_bank_rub: string | null;
 }
 
-// Соответствует ответу SettingsController::currencyRates() — курс продажи с
-// наценкой к курсу ЦБ РФ (CurrencyRateService::sellRates()).
+// Текщие ставки курсов валют
 export type CurrencyCode = 'usd' | 'eur' | 'gbp';
 export type CurrencyRates = Record<CurrencyCode, string>;
 
-// Соответствует CardProductResource (полная версия для выбора продукта при
-// оформлении заявки, без себестоимостных полей продукта).
+// Информация о карточном продукте
 export interface CardProduct {
     id: number;
     key: string;
@@ -178,7 +166,7 @@ export interface CardProduct {
 
 export type PaymentMethodType = 'gateway' | 'crypto' | 'card' | 'wallet';
 
-// Соответствует PaymentMethodResource.
+// Платежные методы
 export interface PaymentMethod {
     id: number;
     name: string;
@@ -196,7 +184,7 @@ export interface IssueOrderPayload {
     idempotency_key: string;
 }
 
-// Соответствует ответу OrderController::issue().
+// Результат выпуска карты
 export interface IssueOrderResult {
     card_id: number;
     status: CardStatus;
@@ -217,7 +205,7 @@ export interface TopupOrderPayload {
     idempotency_key: string;
 }
 
-// Соответствует ответу OrderController::topup().
+// Результат пополнения карты
 export interface TopupOrderResult {
     card_id: number;
     topup_usd: string;
