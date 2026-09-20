@@ -585,14 +585,19 @@ body {
 .mobile-tab {
     position: relative;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 3px;
+    justify-content: center;
     min-width: 54px;
     padding: 4px 6px;
     font-size: .64rem;
     font-weight: 700;
     color: var(--color-muted);
+}
+.mobile-tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
 }
 .mobile-tab-icon {
     display: flex;
@@ -612,7 +617,7 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    border-radius: 20px;
+    border-radius: 50%;
     background: linear-gradient(135deg, rgba(243, 115, 56, .18), rgba(243, 115, 56, .08));
     box-shadow: inset 0 0 0 1px rgba(243, 115, 56, .18);
     opacity: 0;

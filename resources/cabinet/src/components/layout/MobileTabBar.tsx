@@ -8,7 +8,7 @@ interface TabDef {
     icon: () => JSX.Element;
 }
 
-// Порядок соответствует индексам tabRefs (0..3) — используется для расчёта позиции
+// Порядок соответствует индексам contentRefs (0..3) — используется для расчёта позиции
 // скользящего индикатора активного пункта. Кнопка «Пополнить» (FAB) в этот массив
 // не входит — она не участвует в подсветке, а всегда рендерится отдельно по центру.
 const TABS: TabDef[] = [
@@ -26,6 +26,10 @@ function isTabActive(pathname: string, tab: TabDef): boolean {
     return pathname === tab.to || pathname.startsWith(`${tab.to}/`);
 }
 
+// Небольшой запас сверх диагонали содержимого, чтобы круг не облегал иконку с подписью
+// впритык, а оставлял немного воздуха по краям.
+const INDICATOR_PADDING = 8;
+
 /**
  * Нижнее меню приложения — видно только на мобильных экранах (lg:hidden, тот же
  * порог, что и у горизонтального меню в шапке и сайдбара «Мои карты»), заменяет
@@ -34,13 +38,14 @@ function isTabActive(pathname: string, tab: TabDef): boolean {
  * лендинга (.nav-pill в resources/css/app.css), чтобы ЛК на телефоне ощущался
  * как нативное приложение.
  *
- * Переход между разделами сопровождается скользящим индикатором активного
- * пункта: скруглённый «пузырь»-подсветка, охватывающая иконку и подпись целиком, плавно
- * переезжает к новому разделу
- * (translateX с пружинящим cubic-bezier), а сама иконка слегка приподнимается и
- * увеличивается — вместо того, чтобы активный пункт просто резко менял цвет.
- * Позиция индикатора считается через refs (getBoundingClientRect), пересчитывается
- * при смене маршрута и при изменении размеров окна.
+ * Переход между разделами сопровождается скользящим индикатором активного пункта:
+ * идеально круглый «пузырь»-подсветка (width === height, border-radius: 50%) плавно
+ * переезжает к новому разделу (translate с пружинящим cubic-bezier), а иконка и подпись
+ * внутри него всегда строго по центру круга — вместо того, чтобы активный пункт просто
+ * резко менял цвет. Диаметр круга считается индивидуально под каждый пункт как диагональ
+ * прямоугольника «иконка + подпись» (Math.hypot) с небольшим запасом, поэтому оба элемента
+ * гарантированно помещаются внутри при любой длине подписи. Позиция считается через refs,
+ * пересчитывается при смене маршрута и при изменении размеров окна.
  *
  * Центральный пункт «Пополнить» — приподнятая акцентная кнопка (FAB) ведёт на
  * /topup: если у пользователя ровно одна активная карта — сразу открывает её
@@ -48,26 +53,27 @@ function isTabActive(pathname: string, tab: TabDef): boolean {
  */
 export function MobileTabBar() {
     const location = useLocation();
-    const tabRefs = useRef<Array<HTMLAnchorElement | null>>([]);
-    const [indicator, setIndicator] = useState({ x: 0, y: 0, width: 0, height: 0, visible: false });
+    const contentRefs = useRef<Array<HTMLSpanElement | null>>([]);
+    const [indicator, setIndicator] = useState({ x: 0, y: 0, size: 0, visible: false });
 
     function measure() {
         const activeIndex = TABS.findIndex((tab) => isTabActive(location.pathname, tab));
-        const el = activeIndex >= 0 ? tabRefs.current[activeIndex] : null;
+        const el = activeIndex >= 0 ? contentRefs.current[activeIndex] : null;
 
         if (!el) {
             setIndicator((prev) => ({ ...prev, visible: false }));
             return;
         }
 
-        // Индикатор повторяет размер и позицию всей ссылки (иконка + подпись
-        // вместе), а не только иконки — активный раздел целиком оказывается
-        // внутри скруглённого «пузыря» подсветки.
+        // Измеряем именно внутренний блок «иконка + подпись» (без паддингов ссылки) —
+        // диаметр круга равен его диагонали с небольшим запасом, поэтому оба элемента
+        // всегда целиком укладываются внутри идеально круглого индикатора.
+        const size = Math.hypot(el.offsetWidth, el.offsetHeight) + INDICATOR_PADDING;
+
         setIndicator({
-            x: el.offsetLeft,
-            y: el.offsetTop,
-            width: el.offsetWidth,
-            height: el.offsetHeight,
+            x: el.offsetLeft + el.offsetWidth / 2,
+            y: el.offsetTop + el.offsetHeight / 2,
+            size,
             visible: true,
         });
     }
@@ -87,14 +93,14 @@ export function MobileTabBar() {
             <span
                 className={`mobile-tab-indicator${indicator.visible ? ' is-visible' : ''}`}
                 style={{
-                    transform: `translate(${indicator.x}px, ${indicator.y}px)`,
-                    width: indicator.width,
-                    height: indicator.height,
+                    width: indicator.size,
+                    height: indicator.size,
+                    transform: `translate(${indicator.x - indicator.size / 2}px, ${indicator.y - indicator.size / 2}px)`,
                 }}
             />
 
             {TABS.slice(0, 2).map((tab, index) => (
-                <TabLink key={tab.to} tab={tab} innerRef={(el) => (tabRefs.current[index] = el)} />
+                <TabLink key={tab.to} tab={tab} contentRef={(el) => (contentRefs.current[index] = el)} />
             ))}
 
             <NavLink to="/topup" className="mobile-tabbar-item">
@@ -105,26 +111,23 @@ export function MobileTabBar() {
             </NavLink>
 
             {TABS.slice(2).map((tab, index) => (
-                <TabLink key={tab.to} tab={tab} innerRef={(el) => (tabRefs.current[index + 2] = el)} />
+                <TabLink key={tab.to} tab={tab} contentRef={(el) => (contentRefs.current[index + 2] = el)} />
             ))}
         </nav>
     );
 }
 
-function TabLink({ tab, innerRef }: { tab: TabDef; innerRef: (el: HTMLAnchorElement | null) => void }) {
+function TabLink({ tab, contentRef }: { tab: TabDef; contentRef: (el: HTMLSpanElement | null) => void }) {
     const Icon = tab.icon;
 
     return (
-        <NavLink
-            to={tab.to}
-            end={tab.end}
-            ref={innerRef}
-            className={({ isActive }) => `mobile-tab${isActive ? ' is-active' : ''}`}
-        >
-            <span className="mobile-tab-icon">
-                <Icon />
+        <NavLink to={tab.to} end={tab.end} className={({ isActive }) => `mobile-tab${isActive ? ' is-active' : ''}`}>
+            <span className="mobile-tab-content" ref={contentRef}>
+                <span className="mobile-tab-icon">
+                    <Icon />
+                </span>
+                <span className="mobile-tab-label">{tab.label}</span>
             </span>
-            <span className="mobile-tab-label">{tab.label}</span>
         </NavLink>
     );
 }
