@@ -21,8 +21,12 @@ export function App() {
             <AuthProvider>
                 <Routes>
                     <Route element={<GuestRoute />}>
+                        {/* /login — свой самостоятельный двухколоночный экран (карточка входа + видеопанель),
+                            не через общий AuthShell/AuthLayout — его вёрстка структурно не похожа на
+                            /register и /forgot-password, кроссфейд между ними больше не нужен. */}
+                        <Route path="/login" element={<LoginPage />} />
+
                         <Route element={<AuthShell />}>
-                            <Route path="/login" element={<LoginPage />} />
                             <Route path="/register" element={<RegisterPage />} />
                             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                         </Route>

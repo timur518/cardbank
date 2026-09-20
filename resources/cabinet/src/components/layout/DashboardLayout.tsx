@@ -2,7 +2,7 @@ import { ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { fetchBrandSettings } from '../../api/settings';
+import { BrandLogo } from '../common/BrandLogo';
 import { MobileTabBar } from './MobileTabBar';
 
 const NAV_ITEMS = [
@@ -11,33 +11,6 @@ const NAV_ITEMS = [
     { to: '/transactions', label: 'Операции', end: false },
     { to: '/partnership', label: 'Партнёрство', end: false },
 ];
-
-/** Логотип из настроек; пока настройки грузятся
- * или логотип не загружен — показываем название сайта текстом (.brand-mark —
- * тот же класс, что и у логотипа-текста на лендинге). */
-function BrandLogo() {
-    const [logo, setLogo] = useState<string | null>(null);
-    const [siteName, setSiteName] = useState('CardBank');
-
-    useEffect(() => {
-        fetchBrandSettings()
-            .then((brand) => {
-                setLogo(brand.brand_logo);
-                if (brand.brand_site_name) {
-                    setSiteName(brand.brand_site_name);
-                }
-            })
-            .catch(() => {
-                // Настройки не критичны для рендера шапки — молча остаёмся на дефолте.
-            });
-    }, []);
-
-    if (logo) {
-        return <img src={logo} alt={siteName} className="h-8 w-auto" />;
-    }
-
-    return <span className="brand-mark">{siteName}</span>;
-}
 
 
 
