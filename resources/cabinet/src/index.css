@@ -616,11 +616,11 @@ body {
    стекинг-контекст) держит её позади иконок и подписей, но поверх фона панели. */
 .mobile-tab-indicator {
     position: absolute;
-    top: -5px;
-    left: -9px;
-    width: 73px;
-    height: 57px;
-    border-radius: 50%;
+    top: 6px;
+    left: 6px;
+    width: 72px;
+    height: 55px;
+    border-radius: 360px;
     background: #00000050;
     z-index: -1;
     pointer-events: none;
