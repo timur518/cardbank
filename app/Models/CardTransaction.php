@@ -10,17 +10,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * Операция по карте. У каждой операции есть три независимых снэпшота суммы,
- * зафиксированных на момент операции:
- * - amount — сумма транзакции, которую видит клиент в истории платежей;
- * - cost_amount — себестоимость операции, реальная стоимость для компании;
- * - commission_amount — наша комиссия с операции, для подсчёта прибыли.
+ * Операция по карте. CardsPro отдаёт по каждой операции три суммы:
+ * - cost_amount — оригинальная сумма транзакции у эмитента, ДО комиссии CardsPro
+ *   (billAmount у вебхука CARD_TRANSACTION / transactionValue у GET /{san}/transactions);
+ * - commission_amount — комиссия CardsPro за операцию (fee / transactionCommission);
+ * - amount — итоговая сумма списания с карты, cost_amount + commission_amount
+ *   (billAmount+fee / transactionSum) — именно её видит клиент в истории платежей
+ *   и именно она двигает баланс карты.
  */
 class CardTransaction extends Model
 {
     use HasFactory;
-
-    public const UPDATED_AT = null;
 
     protected $fillable = [
         'card_id',
@@ -69,7 +69,7 @@ class CardTransaction extends Model
      * лежит уже завершённая операция (например покупка, которую сейчас возвращают,
      * reversal/refund) — это самостоятельное новое событие, для него создаётся новая строка.
      *
-     * @param  array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: \DateTimeInterface}  $tx
+     * @param  array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, cost_amount: ?float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: \DateTimeInterface}  $tx
      * @return array{transaction: self, isNew: bool}
      */
     public static function upsertFromProvider(int $cardId, array $tx): array
@@ -94,6 +94,7 @@ class CardTransaction extends Model
             'origin_tx_id' => $tx['origin_tx_id'],
             'type' => $tx['type'],
             'amount' => $tx['amount'],
+            'cost_amount' => $tx['cost_amount'] ?? null,
             'commission_amount' => $tx['commission_amount'],
             'currency' => $tx['currency'],
             'merchant' => $tx['merchant'],

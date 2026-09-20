@@ -39,6 +39,7 @@ interface CardProviderIntegration
      *     type: \App\Enums\CardTransactionType,
      *     status: \App\Enums\CardTransactionStatus,
      *     amount: float,
+     *     cost_amount: ?float,
      *     commission_amount: ?float,
      *     currency: string,
      *     merchant: ?string,

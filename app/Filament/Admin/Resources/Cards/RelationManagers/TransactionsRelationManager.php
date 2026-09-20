@@ -36,12 +36,12 @@ class TransactionsRelationManager extends RelationManager
                     ->label('Сумма')
                     ->money(fn ($record) => $record->currency),
                 TextColumn::make('cost_amount')
-                    ->label('Себестоимость')
+                    ->label('Без комиссии')
                     ->money(fn ($record) => $record->currency)
                     ->placeholder('—')
                     ->toggleable(),
                 TextColumn::make('commission_amount')
-                    ->label('Комиссия')
+                    ->label('Комиссия CardsPro')
                     ->money(fn ($record) => $record->currency)
                     ->placeholder('—')
                     ->toggleable(),

@@ -16,19 +16,19 @@ class CardTransactionInfolist
                 TextEntry::make('card.user.email')->label('Пользователь'),
                 TextEntry::make('type')->label('Тип операции'),
                 TextEntry::make('amount')
-                    ->label('Сумма транзакции')
+                    ->label('Итоговая сумма (с комиссией)')
                     ->money(fn (CardTransaction $record) => $record->currency)
-                    ->helperText('Видит клиент в истории платежей.'),
+                    ->helperText('Списано с карты, видит клиент в истории платежей.'),
                 TextEntry::make('cost_amount')
-                    ->label('Себестоимость транзакции')
+                    ->label('Сумма без комиссии')
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->placeholder('—')
-                    ->helperText('Реальная стоимость операции для компании.'),
+                    ->helperText('Оригинальная сумма транзакции у эмитента, до комиссии CardsPro.'),
                 TextEntry::make('commission_amount')
-                    ->label('Комиссия')
+                    ->label('Комиссия CardsPro')
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->placeholder('—')
-                    ->helperText('Снэпшот для подсчёта прибыли с операции.'),
+                    ->helperText('Комиссия провайдера за операцию: сумма без комиссии + комиссия = итоговая сумма.'),
                 TextEntry::make('merchant')->label('Продавец')->placeholder('—'),
                 TextEntry::make('status')->label('Статус')->badge(),
                 TextEntry::make('decline_reason')->label('Причина отказа')->placeholder('—'),

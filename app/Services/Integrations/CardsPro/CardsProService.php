@@ -429,13 +429,14 @@ class CardsProService implements CardProviderIntegration
      * на величину комиссии.
      *
      * @param  array<string, mixed>  $payload
-     * @return array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
+     * @return array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, cost_amount: ?float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
      */
     public static function normalizeTransactionPayload(array $payload): array
     {
         [$type, $status, $balanceSign] = self::mapTransactionType((string) ($payload['txType'] ?? ''));
         $fee = isset($payload['fee']) ? (float) $payload['fee'] : 0.0;
-        $amount = ((float) ($payload['billAmount'] ?? $payload['txAmount'] ?? 0)) + $fee;
+        $costAmount = isset($payload['billAmount']) ? (float) $payload['billAmount'] : null;
+        $amount = ($costAmount ?? (float) ($payload['txAmount'] ?? 0)) + $fee;
 
         return [
             'provider_tx_id' => (string) ($payload['txId'] ?? ''),
@@ -443,6 +444,7 @@ class CardsProService implements CardProviderIntegration
             'type' => $type,
             'status' => $status,
             'amount' => $amount,
+            'cost_amount' => $costAmount,
             'commission_amount' => isset($payload['fee']) ? $fee : null,
             'currency' => (string) ($payload['billCurrency'] ?? ''),
             'merchant' => $payload['merchantName'] ?? null,
@@ -466,7 +468,7 @@ class CardsProService implements CardProviderIntegration
      * оборот и в баланс карты, а не `transactionValue` без комиссии.
      *
      * @param  array<string, mixed>  $payload
-     * @return array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
+     * @return array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, cost_amount: ?float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
      */
     public static function normalizePolledTransaction(array $payload): array
     {
@@ -479,6 +481,7 @@ class CardsProService implements CardProviderIntegration
             'type' => $type,
             'status' => $status,
             'amount' => $amount,
+            'cost_amount' => isset($payload['transactionValue']) ? (float) $payload['transactionValue'] : null,
             'commission_amount' => isset($payload['transactionCommission']) ? (float) $payload['transactionCommission'] : null,
             'currency' => (string) ($payload['cardCurrency'] ?? ''),
             'merchant' => $payload['transactionRecipient'] ?? null,

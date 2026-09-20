@@ -212,7 +212,8 @@ class CardsProWebhookHandler
         // должна идти в оборот и в баланс карты (см. GET /{san}/transactions, где та же
         // связка задокументирована явно: transactionValue + transactionCommission = transactionSum).
         $fee = isset($payload['fee']) ? (float) $payload['fee'] : 0.0;
-        $amount = ((float) ($payload['billAmount'] ?? $payload['txAmount'] ?? 0)) + $fee;
+        $costAmount = isset($payload['billAmount']) ? (float) $payload['billAmount'] : null;
+        $amount = ($costAmount ?? (float) ($payload['txAmount'] ?? 0)) + $fee;
 
         // originTxnId — id холда (authorization), который расчитывает эта операция (см.
         // docs.cardspro.com/api/operations-callbacks) — upsertFromProvider() сольёт расчёт
@@ -224,6 +225,7 @@ class CardsProWebhookHandler
             'origin_tx_id' => $originTxId,
             'type' => $type,
             'amount' => $amount,
+            'cost_amount' => $costAmount,
             'commission_amount' => isset($payload['fee']) ? $fee : null,
             'currency' => $payload['billCurrency'] ?? $card->currency,
             'merchant' => $payload['merchantName'] ?? null,

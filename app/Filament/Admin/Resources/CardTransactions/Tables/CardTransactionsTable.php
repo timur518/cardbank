@@ -32,13 +32,13 @@ class CardTransactionsTable
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->sortable(),
                 TextColumn::make('cost_amount')
-                    ->label('Себестоимость')
+                    ->label('Без комиссии')
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->placeholder('—')
                     ->sortable()
                     ->toggleable(),
                 TextColumn::make('commission_amount')
-                    ->label('Комиссия')
+                    ->label('Комиссия CardsPro')
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->placeholder('—')
                     ->sortable()
