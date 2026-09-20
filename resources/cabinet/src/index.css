@@ -388,10 +388,11 @@ body {
     align-items: center;
     gap: .75rem;
     padding: .7rem .2rem;
-    border-top: 1px solid var(--color-border);
+    border-radius: 20px;
+    transition: background .15s ease;
 }
-.tx-group .tx-row:first-child {
-    border-top: none;
+.tx-row:hover {
+    background: var(--color-bg);
 }
 .tx-icon {
     display: flex;
