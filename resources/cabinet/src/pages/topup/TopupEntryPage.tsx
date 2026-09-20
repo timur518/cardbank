@@ -67,7 +67,7 @@ export function TopupEntryPage() {
                     <Link
                         key={card.id}
                         to={`/cards/${card.id}?topup=1`}
-                        className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3 transition hover:border-orange"
+                        className="flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                     >
                         <div className="flex items-center gap-3">
                             <CardThumbnail skin={card.card_product.skin} name={card.card_product.name} />

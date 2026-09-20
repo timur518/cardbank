@@ -39,7 +39,7 @@ export function CardsListSkeleton({ rows = 3 }: { rows?: number }) {
     return (
         <div className="flex flex-col gap-3" aria-hidden="true">
             {Array.from({ length: rows }).map((_, index) => (
-                <div key={index} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-3 py-3">
+                <div key={index} className="flex items-center justify-between gap-3 rounded-2xl bg-surface px-3 py-3 shadow-sm">
                     <div className="flex items-center gap-3">
                         <Skeleton className="h-9 w-14 shrink-0 rounded-lg" />
                         <Skeleton className="h-4 w-20" />
@@ -76,7 +76,7 @@ export function CardsGridSkeleton({ items = 6 }: { items?: number }) {
     return (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-hidden="true">
             {Array.from({ length: items }).map((_, index) => (
-                <div key={index} className="flex flex-col rounded-[28px] border border-border bg-surface p-4 shadow-sm">
+                <div key={index} className="flex flex-col rounded-[28px] bg-surface p-4 shadow-sm">
                     <Skeleton className="aspect-[1.586] w-full rounded-2xl" />
                     <div className="mt-4 flex flex-col gap-3">
                         <div className="flex items-center justify-between gap-2">
@@ -174,7 +174,7 @@ export function TopupCardsSkeleton({ rows = 2 }: { rows?: number }) {
     return (
         <div className="flex flex-col gap-3" aria-hidden="true">
             {Array.from({ length: rows }).map((_, index) => (
-                <div key={index} className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3">
+                <div key={index} className="flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 shadow-sm">
                     <div className="flex items-center gap-3">
                         <Skeleton className="h-9 w-14 shrink-0 rounded-lg" />
                         <div className="flex flex-col gap-2">

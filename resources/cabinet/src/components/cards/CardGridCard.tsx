@@ -28,7 +28,7 @@ export function CardGridCard({ card, monthSpend }: CardGridCardProps) {
     return (
         <Link
             to={`/cards/${card.id}`}
-            className="flex flex-col rounded-[28px] border border-border bg-surface p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+            className="flex flex-col rounded-[28px] bg-surface p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
         >
             <CardVisual card={card} />
 

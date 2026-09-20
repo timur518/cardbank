@@ -17,7 +17,7 @@ export function CardListItem({ card }: CardListItemProps) {
     return (
         <Link
             to={`/cards/${card.id}`}
-            className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-3 py-3 transition hover:border-orange"
+            className="flex items-center justify-between gap-3 rounded-2xl bg-surface px-3 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
         >
             <div className="flex items-center gap-3">
                 <CardThumbnail skin={card.card_product.skin} name={card.card_product.name} />
