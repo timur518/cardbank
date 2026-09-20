@@ -248,7 +248,7 @@ body {
     gap: .35rem;
     align-items: flex-start;
     border-radius: 24px;
-    border: 1.5px solid var(--color-border);
+    border: 1px solid var(--color-border);
     background: var(--color-surface);
     padding: 1.25rem 1.5rem;
     text-align: left;
@@ -258,6 +258,14 @@ body {
 .stat-btn:hover {
     transform: translateY(-2px);
     border-color: var(--color-orange);
+}
+/* Статическая карточка-вывод (текущий остаток) — не кнопка, без hover/cursor-эффектов. */
+.stat-btn-static {
+    cursor: default;
+}
+.stat-btn-static:hover {
+    transform: none;
+    border-color: var(--color-border);
 }
 .stat-btn-icon {
     font-size: 1.4rem;
@@ -270,6 +278,34 @@ body {
 .stat-btn-value {
     font-size: .82rem;
     color: var(--color-muted);
+}
+/*
+ * Мобильная адаптация: все три кнопки главного экрана в один ряд (контейнер переведён
+ * на flex-nowrap в DashboardPage.tsx). Фиксированный flex-базис 220px слишком широк для
+ * узких экранов — заменяем его на равное деление на три и урезаем отступы/шрифты, чтобы
+ * заголовки («Пополнить баланс», «Текущий остаток» и т.д.) вмещались в одну строку без
+ * переноса и не вылезали за границы кнопки.
+ */
+@media (max-width: 640px) {
+    .stat-btn {
+        flex: 1 1 0;
+        min-width: 0;
+        align-items: center;
+        gap: .2rem;
+        border-radius: 16px;
+        padding: .7rem .35rem;
+        text-align: center;
+    }
+    .stat-btn-icon { font-size: 1.15rem; }
+    .stat-btn-label {
+        font-size: .66rem;
+        letter-spacing: -.01em;
+        white-space: nowrap;
+    }
+    .stat-btn-value {
+        font-size: .62rem;
+        white-space: nowrap;
+    }
 }
 
 .add-card-slot {

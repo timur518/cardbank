@@ -12,7 +12,6 @@ export function DashboardPage() {
     const [cardsLoading, setCardsLoading] = useState(true);
     const [transactions, setTransactions] = useState<CardTransaction[]>([]);
     const [transactionsLoading, setTransactionsLoading] = useState(true);
-    const [showTotalBalance, setShowTotalBalance] = useState(false);
 
     useEffect(() => {
         fetchCards()
@@ -45,30 +44,27 @@ export function DashboardPage() {
             <CardsSidebar cards={cards} isLoading={cardsLoading} />
 
             <div className="flex flex-1 flex-col gap-8">
-                <div className="flex flex-wrap gap-4">
-                    <Link to="/cards/new" className="stat-btn">
-                        <span className="stat-btn-icon">💳</span>
-                        <span className="stat-btn-label">Выпустить новую карту</span>
-                    </Link>
+                <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-4">
+                    <div className="stat-btn stat-btn-static">
+                        <span className="stat-btn-label">
+                            {totalsByCurrency.size === 0
+                                ? '—'
+                                : Array.from(totalsByCurrency.entries())
+                                      .map(([currency, total]) => formatMoney(total, currency))
+                                      .join(' + ')}
+                        </span>
+                        <span className="stat-btn-value">Текущий остаток</span>
+                    </div>
 
                     <Link to="/topup" className="stat-btn">
                         <span className="stat-btn-icon">➕</span>
                         <span className="stat-btn-label">Пополнить баланс</span>
                     </Link>
 
-                    <button type="button" className="stat-btn" onClick={() => setShowTotalBalance((value) => !value)}>
-                        <span className="stat-btn-icon">💰</span>
-                        <span className="stat-btn-label">Баланс всех карт</span>
-                        {showTotalBalance && (
-                            <span className="stat-btn-value">
-                                {totalsByCurrency.size === 0
-                                    ? 'Нет активных карт'
-                                    : Array.from(totalsByCurrency.entries())
-                                          .map(([currency, total]) => formatMoney(total, currency))
-                                          .join(' + ')}
-                            </span>
-                        )}
-                    </button>
+                    <Link to="/cards/new" className="stat-btn">
+                        <span className="stat-btn-icon">💳</span>
+                        <span className="stat-btn-label">Новая карта</span>
+                    </Link>
                 </div>
 
                 <div className="auth-panel p-6">
