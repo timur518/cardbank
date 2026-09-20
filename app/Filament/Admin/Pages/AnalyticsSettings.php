@@ -27,7 +27,7 @@ class AnalyticsSettings extends Page implements HasForms
 
     protected static ?string $title = 'Аналитика и внешние сервисы';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 7;
 
     protected string $view = 'filament.admin.pages.analytics-settings';
 

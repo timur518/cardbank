@@ -27,7 +27,7 @@ class NotificationSettings extends Page implements HasForms
 
     protected static ?string $title = 'Настройки уведомлений';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 6;
 
     protected string $view = 'filament.admin.pages.notification-settings';
 
