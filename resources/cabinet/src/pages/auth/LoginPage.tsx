@@ -76,10 +76,6 @@ export function LoginPage() {
                     </div>
 
                     <div className="flex flex-1 flex-col justify-center py-6">
-                        <p className="mb-5 text-sm text-muted">
-                            {step === 'identifier' ? 'Введите телефон или email от аккаунта.' : 'Введите пароль от аккаунта.'}
-                        </p>
-
                         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                             {error ? <div className="form-error-banner">{error}</div> : null}
 

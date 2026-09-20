@@ -60,15 +60,6 @@ export function CardsPage() {
         });
     }, [cards]);
 
-    const counts = useMemo(
-        () => ({
-            all: cards.length,
-            active: cards.filter((card) => card.status === 'active').length,
-            frozen: cards.filter((card) => card.status === 'frozen').length,
-        }),
-        [cards],
-    );
-
     const filteredCards = useMemo(() => {
         const activeFilter = FILTERS.find((filter) => filter.key === statusFilter) ?? FILTERS[0];
         const query = search.trim().toLowerCase();
@@ -118,7 +109,7 @@ export function CardsPage() {
                             className={`cards-filter-tab${statusFilter === filter.key ? ' is-active' : ''}`}
                             onClick={() => setStatusFilter(filter.key)}
                         >
-                            {filter.label} {counts[filter.key]}
+                            {filter.label}
                         </button>
                     ))}
                 </div>
