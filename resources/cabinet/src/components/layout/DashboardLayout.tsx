@@ -12,7 +12,8 @@ const NAV_ITEMS = [
 ];
 
 /** Логотип из настроек бренда (Filament → BrandSettings); пока настройки грузятся
- * или логотип не загружен — показываем название сайта текстом. */
+ * или логотип не загружен — показываем название сайта текстом (.brand-mark —
+ * тот же класс, что и у логотипа-текста на лендинге). */
 function BrandLogo() {
     const [logo, setLogo] = useState<string | null>(null);
     const [siteName, setSiteName] = useState('CardBank');
@@ -34,7 +35,7 @@ function BrandLogo() {
         return <img src={logo} alt={siteName} className="h-8 w-auto" />;
     }
 
-    return <span className="text-lg font-extrabold tracking-tight text-ink">{siteName}</span>;
+    return <span className="brand-mark">{siteName}</span>;
 }
 
 function LogoutIcon() {
@@ -47,35 +48,57 @@ function LogoutIcon() {
 }
 
 /**
- * Общая шапка и обёртка контента для всех страниц ЛК, доступных после входа.
- * На widescreen — горизонтальное меню в шапке и компактная кнопка-иконка
- * выхода справа (вместо текстовой "Выйти"). На мобильных экранах шапка
- * упрощена до логотипа и иконки выхода — навигация переезжает в нижнее меню
- * приложения (MobileTabBar), поэтому под контентом добавлен отступ, чтобы его
- * не перекрывала фиксированная панель.
+ * Шапка ЛК — та же плавающая «таблетка» с блюром, что и на лендинге
+ * (.site-header/.nav-pill, resources/views/welcome.blade.php): закреплена
+ * (sticky) с отступом от верхней границы 20px (на лендинге — 40px, здесь
+ * меньше, т.к. под шапкой нет hero-видео), при прокрутке страницы фон
+ * пилюли уплотняется тем же способом (класс is-scrolled переключается по
+ * scroll-листенеру, как в resources/js/app.js).
+ *
+ * Общая шапка и обёртка контента для всех страниц ЛК, доступных после
+ * входа. На widescreen — горизонтальное меню внутри пилюли и
+ * компактная кнопка-иконка выхода справа. На мобильных экранах меню
+ * скрыто — навигация переезжает в нижнее меню приложения (MobileTabBar),
+ * поэтому под контентом добавлен отступ, чтобы его не перекрывала
+ * фиксированная панель.
  */
 export function DashboardLayout() {
     const { profile, logout } = useAuth();
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        function updateScrolled() {
+            setScrolled(window.scrollY > 20);
+        }
+
+        updateScrolled();
+        window.addEventListener('scroll', updateScrolled, { passive: true });
+        return () => window.removeEventListener('scroll', updateScrolled);
+    }, []);
 
     return (
         <div className="min-h-screen">
-            <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur">
-                <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 py-3 lg:px-8">
-                    <div className="flex items-center gap-8">
+            <header
+                className={`site-header sticky top-[20px] z-30 mt-[20px] px-4 lg:px-8 ${scrolled ? 'is-scrolled' : ''}`}
+            >
+                <div className="nav-pill mx-auto flex max-w-[1200px] items-center justify-between gap-4 rounded-full px-5 py-3 sm:px-7">
+                    <NavLink to="/">
                         <BrandLogo />
-                        <nav className="hidden items-center gap-6 md:flex">
-                            {NAV_ITEMS.map((item) => (
-                                <NavLink
-                                    key={item.to}
-                                    to={item.to}
-                                    end={item.end}
-                                    className={({ isActive }) => `dashboard-nav-link ${isActive ? 'is-active' : ''}`}
-                                >
-                                    {item.label}
-                                </NavLink>
-                            ))}
-                        </nav>
-                    </div>
+                    </NavLink>
+
+                    <nav className="hidden items-center gap-8 text-[16px] lg:flex">
+                        {NAV_ITEMS.map((item) => (
+                            <NavLink
+                                key={item.to}
+                                to={item.to}
+                                end={item.end}
+                                className={({ isActive }) => `nav-link ${isActive ? 'is-active' : ''}`}
+                            >
+                                {item.label}
+                            </NavLink>
+                        ))}
+                    </nav>
+
                     <div className="flex items-center gap-3">
                         <NavLink
                             to="/profile"

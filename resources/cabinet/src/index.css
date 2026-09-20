@@ -220,6 +220,27 @@ body {
     border-color: var(--color-orange);
 }
 
+/*
+ * Шапка ЛК — точно та же плавающая пилюля с блюром, что и на лендинге
+ * (resources/css/app.css: .site-header/.nav-pill/.brand-mark/.nav-link) — классы продублированы
+ * 1:1, так как ЛК — отдельное Vite-приложение и не может подключить тот же CSS-файл.
+ * Единственное отличие от лендинга — отступ сверху 20px вместо 40px.
+ */
+.site-header { transition: box-shadow .35s ease; }
+.nav-pill {
+    background: rgba(255, 255, 255, .78);
+    backdrop-filter: blur(12px) saturate(100%);
+    -webkit-backdrop-filter: blur(12px) saturate(100%);
+    border: 1px solid rgba(255, 255, 255, .7);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, .07);
+    transition: background .3s, box-shadow .3s;
+}
+.site-header.is-scrolled .nav-pill { background: rgba(255, 255, 255, .5); box-shadow: 0 12px 40px rgba(0, 0, 0, .1); }
+.brand-mark { font-size: 1.15rem; font-weight: 800; letter-spacing: -.045em; color: var(--color-ink); }
+.nav-link { color: var(--color-ink); transition: opacity .2s, transform .2s; }
+.nav-link:hover { transform: translateY(-1px); }
+.nav-link.is-active { color: var(--color-orange-dark); }
+
 .stat-btn {
     display: flex;
     flex: 1 1 220px;
