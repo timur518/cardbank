@@ -12,6 +12,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -29,11 +30,9 @@ class MerchantsTable
                 CreateAction::make()->label('Добавить мерчанта'),
             ])
             ->columns([
-                TextColumn::make('logo')
+                ViewColumn::make('logo')
                     ->label('')
-                    ->state(fn (Merchant $record) => (string) $record->getKey())
-                    ->formatStateUsing(fn (Merchant $record) => self::formatLogo($record))
-                    ->html(),
+                    ->view('filament.tables.columns.merchant-logo'),
                 TextColumn::make('name')
                     ->label('Название')
                     ->description(fn (Merchant $record) => $record->code)
@@ -67,20 +66,5 @@ class MerchantsTable
                     DeleteBulkAction::make(),
                 ]),
             ]);
-    }
-
-    private static function formatLogo(Merchant $record): string
-    {
-        if (! $record->logo_svg) {
-            return '<div style="width:36px;height:36px;border-radius:10px;background:#e5e7eb"></div>';
-        }
-
-        $color = $record->color ?: '#111827';
-
-        return sprintf(
-            '<div style="width:36px;height:36px;border-radius:10px;background:%s;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="20" height="20" fill="#fff">%s</svg></div>',
-            e($color),
-            $record->logo_svg
-        );
     }
 }
