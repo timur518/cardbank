@@ -115,43 +115,67 @@ class CardsProWebhookHandler
     /**
      * CARD_TOPUP, в отличие от вывода средств, ещё и реальная оплатная операция клиента, поэтому
      * кроме баланса также записываем её в «Транзакции по картам» (тип Topup) — иначе она нигде
-     * не видна и выпадает из оборота по картам. Идемпотентно по `docid`/`request_id`
-     * (в теле CARD_TOPUP нет своего `txId`, как у CARD_TRANSACTION).
+     * не видна и выпадает из оборота по картам.
+     *
+     * Строка чаще всего уже существует к этому моменту со status=Pending — её заводит
+     * {@see \App\Services\Integrations\CardsPro\CardsProOrderProcessor::recordPendingTransaction()} сразу
+     * после запроса `orders/topup` (чтобы клиент видел «в обработке» сразу после оплаты, а не
+     * только после этого вебхука). Здесь она по тому же `docid`/`request_id` переводится в
+     * Success (EXECUTED) или Declined (DECLINED), а не создаётся вторая. Если по какой-топричине
+     * pending-строки не оказалось (старые данные до этой доработки/нет docid в ответе на `orders/topup`) —
+     * EXECUTED всё равно создаёт строку сразу как Success (старое поведение), а DECLINED просто игнорируется
+     * (связывать отказ нечем). Идемпотентно по `docid`/`request_id` (в теле CARD_TOPUP нет
+     * своего `txId`, как у CARD_TRANSACTION).
      */
     protected function handleTopup(array $payload): void
     {
-        if (($payload['status'] ?? null) !== 'EXECUTED') {
+        $card = $this->findCard((string) ($payload['san'] ?? ''));
+        $providerTxId = (string) ($payload['docid'] ?? $payload['request_id'] ?? '');
+        $status = (string) ($payload['status'] ?? '');
+
+        if (! $card || $providerTxId === '') {
             return;
         }
 
-        $card = $this->findCard((string) ($payload['san'] ?? ''));
+        if ($status === 'DECLINED') {
+            CardTransaction::where('card_id', $card->id)
+                ->where('provider_tx_id', $providerTxId)
+                ->where('status', CardTransactionStatus::Pending)
+                ->update([
+                    'type' => CardTransactionType::Decline,
+                    'status' => CardTransactionStatus::Declined,
+                    'decline_reason' => (string) ($payload['declineReason'] ?? $payload['message'] ?? 'Провайдер отклонил пополнение карты'),
+                ]);
+
+            return;
+        }
+
         $amount = (float) ($payload['params']['amount'] ?? 0);
 
-        if (! $card || $amount <= 0) {
+        if ($status !== 'EXECUTED' || $amount <= 0) {
             return;
         }
 
-        $providerTxId = (string) ($payload['docid'] ?? $payload['request_id'] ?? '');
-        $isNewTransaction = $providerTxId === '' || ! CardTransaction::where('card_id', $card->id)
+        // Считаем ДО обновления — иначе после updateOrCreate() она всегда будет Success.
+        $wasAlreadySuccess = CardTransaction::where('card_id', $card->id)
             ->where('provider_tx_id', $providerTxId)
+            ->where('status', CardTransactionStatus::Success)
             ->exists();
 
-        if ($providerTxId !== '') {
-            CardTransaction::updateOrCreate(
-                ['card_id' => $card->id, 'provider_tx_id' => $providerTxId],
-                [
-                    'type' => CardTransactionType::Topup,
-                    'amount' => $amount,
-                    'currency' => $payload['params']['currency'] ?? $card->currency,
-                    'status' => CardTransactionStatus::Success,
-                    'occurred_at' => now(),
-                ]
-            );
-        }
+        CardTransaction::updateOrCreate(
+            ['card_id' => $card->id, 'provider_tx_id' => $providerTxId],
+            [
+                'type' => CardTransactionType::Topup,
+                'amount' => $amount,
+                'currency' => $payload['params']['currency'] ?? $card->currency,
+                'status' => CardTransactionStatus::Success,
+                'occurred_at' => now(),
+            ]
+        );
 
-        // Баланс двигаем только один раз, при первом получении события на этот provider_tx_id —
+        // Баланс двигаем только один раз, при первом переходе этой операции в Success —
         // повторная доставка того же вебхука не должна начислять дважды.
-        if ($isNewTransaction) {
+        if (! $wasAlreadySuccess) {
             $card->increment('balance', $amount);
         }
     }

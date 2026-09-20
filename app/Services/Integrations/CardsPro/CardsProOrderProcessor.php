@@ -4,9 +4,12 @@ namespace App\Services\Integrations\CardsPro;
 
 use App\Enums\CardProviderOperationStatus;
 use App\Enums\CardProviderOperationType;
+use App\Enums\CardTransactionStatus;
+use App\Enums\CardTransactionType;
 use App\Models\Card;
 use App\Models\CardProvider;
 use App\Models\CardProviderOperation;
+use App\Models\CardTransaction;
 use App\Services\CardProviderOperationResolver;
 
 /**
@@ -55,6 +58,40 @@ class CardsProOrderProcessor
         $raw = CardsProService::for($provider)->topUpCard((string) $card->provider_card_id, $topupUsd, $card->currency);
 
         $this->recordOperation($card, $provider, CardProviderOperationType::Topup, $raw, ['amount' => $topupUsd]);
+
+        // Синхронный DECLINED уже зафиксирован recordOperation() выше — заводить ещё и CardTransaction нечего, час на обработку там не будет.
+        if (($raw['status'] ?? null) !== 'DECLINED') {
+            $this->recordPendingTransaction($card, $raw, $topupUsd);
+        }
+    }
+
+    /**
+     * Заводит CardTransaction(type=Topup, status=Pending) сразу после синхронного
+     * INPROCESS/EXECUTED ответа CardsPro на `orders/topup`, чтобы клиент видел «пополнение в
+     * обработке» в истории сразу после оплаты, а не только после вебхука CARD_TOPUP.
+     * `provider_tx_id` берётся из того же `docid`/`request_id`, который вернётся в вебхуке —
+     * {@see \App\Services\Integrations\CardsPro\CardsProWebhookHandler::handleTopup()} находит эту же
+     * строку по нему и переводит её в Success/Declined, а не создаёт вторую.
+     *
+     * @param  array<string, mixed>  $raw
+     */
+    protected function recordPendingTransaction(Card $card, array $raw, float $topupUsd): void
+    {
+        $providerTxId = isset($raw['docid']) ? (string) $raw['docid'] : (string) ($raw['request_id'] ?? '');
+
+        if ($providerTxId === '') {
+            return;
+        }
+
+        CardTransaction::create([
+            'card_id' => $card->id,
+            'type' => CardTransactionType::Topup,
+            'amount' => $topupUsd,
+            'currency' => $card->currency,
+            'status' => CardTransactionStatus::Pending,
+            'provider_tx_id' => $providerTxId,
+            'occurred_at' => now(),
+        ]);
     }
 
     /**
