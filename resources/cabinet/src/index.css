@@ -391,7 +391,7 @@ html::-webkit-scrollbar {
     padding: 0 .2rem;
     font-size: .8rem;
     font-weight: 400;
-    color: var(--color-muted);
+    color: var(--color-orange);
 }
 .tx-group-title::before,
 .tx-group-title::after {
@@ -420,7 +420,7 @@ html::-webkit-scrollbar {
     flex-shrink: 0;
     border-radius: 999px;
     background: var(--color-bg);
-    color: var(--color-muted);
+    color: var(--color-orange);
 }
 .tx-icon svg {
     width: 20px;
@@ -816,7 +816,7 @@ html::-webkit-scrollbar {
     margin-top: -10px;
     font-size: .64rem;
     font-weight: 700;
-    color: var(--color-orange-dark);
+    color: #d0c1ad;
 }
 
 /*
