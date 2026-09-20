@@ -1,9 +1,10 @@
 import { MapPinIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import type { Card } from '../../api/types';
-import { formatBalanceHero, formatMoney } from '../../utils/format';
+import { formatMoney } from '../../utils/format';
 import { CARD_STATUS_LABELS, CARD_STATUS_TONES } from '../../utils/labels';
 import { StatusPill } from '../common/StatusPill';
+import { CardVisual } from './CardVisual';
 
 interface CardGridCardProps {
     card: Card;
@@ -29,36 +30,7 @@ export function CardGridCard({ card, monthSpend }: CardGridCardProps) {
             to={`/cards/${card.id}`}
             className="flex flex-col rounded-[28px] border border-border bg-surface p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
         >
-            <div className="relative aspect-[1.586] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#2b2a28] via-[#1c1b19] to-[#0e0e0d] p-5 text-white">
-                <span className="pointer-events-none absolute -right-4 -top-8 text-[9rem] leading-none font-black text-white/5 select-none">
-                    {card.card_product.name.charAt(0)}
-                </span>
-
-                <div className="relative flex h-full flex-col justify-between">
-                    <div className="flex items-center gap-2">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange text-xs font-extrabold">
-                            {card.card_product.name.charAt(0)}
-                        </span>
-                        <p className="text-sm font-semibold">{card.card_product.name}</p>
-                    </div>
-
-                    <p className="font-mono text-lg tracking-[0.25em] text-white/90">
-                        •••• {card.card_last4 ?? '••••'}
-                    </p>
-
-                    <div className="flex items-end justify-between gap-3">
-                        {isActive ? (
-                            <div>
-                                <p className="text-[9px] font-semibold tracking-widest text-white/45">БАЛАНС</p>
-                                <p className="font-mono text-2xl font-extrabold">{formatBalanceHero(card.balance, card.currency)}</p>
-                            </div>
-                        ) : (
-                            <StatusPill label={CARD_STATUS_LABELS[card.status]} tone={CARD_STATUS_TONES[card.status]} />
-                        )}
-                        <p className="font-mono text-xs text-white/60">{card.expiry ?? '—/—'}</p>
-                    </div>
-                </div>
-            </div>
+            <CardVisual card={card} />
 
             <div className="mt-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-2">
