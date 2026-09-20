@@ -190,7 +190,7 @@ class CardProviderOperationResolver
             return;
         }
 
-        $card->increment('balance', $amount);
+        $card->refreshBalanceFromProvider();
         $this->recordTopupExpense($card, $operation, $amount, "Пополнение карты с комиссией провайдера (авто, операция #{$operation->id})");
     }
 
@@ -259,9 +259,11 @@ class CardProviderOperationResolver
     {
         $amount = (float) ($operation->payload['amount'] ?? 0);
 
-        if ($operation->card_id && $amount > 0) {
-            Card::where('id', $operation->card_id)->decrement('balance', $amount);
+        if (! $operation->card_id || $amount <= 0) {
+            return;
         }
+
+        Card::find($operation->card_id)?->refreshBalanceFromProvider();
     }
 
     protected function applyBlock(CardProviderOperation $operation): void

@@ -40,7 +40,7 @@ class CardsProWebhookHandler
     {
         match ($type) {
             CardsProCallbackType::CardTopup => $this->handleTopup($payload),
-            CardsProCallbackType::CardWithdrawal => $this->applyBalanceChange($payload, -1),
+            CardsProCallbackType::CardWithdrawal => $this->applyBalanceChange($payload),
             CardsProCallbackType::CardBlock => $this->handleBlock($payload),
             CardsProCallbackType::CardFreeze => $this->handleStatusChange($payload, CardStatus::Frozen, 'Карта заморожена по данным CardsPro (CARD_FREEZE)'),
             CardsProCallbackType::CardUnfreeze => $this->handleStatusChange($payload, CardStatus::Active, 'Карта разморожена по данным CardsPro (CARD_UNFREEZE)'),
@@ -96,7 +96,7 @@ class CardsProWebhookHandler
             ->first();
     }
 
-    protected function applyBalanceChange(array $payload, int $sign): void
+    protected function applyBalanceChange(array $payload): void
     {
         if (($payload['status'] ?? null) !== 'EXECUTED') {
             return;
@@ -109,7 +109,7 @@ class CardsProWebhookHandler
             return;
         }
 
-        $card->increment('balance', $sign * $amount);
+        $card->refreshBalanceFromProvider();
     }
 
     /**
@@ -173,10 +173,10 @@ class CardsProWebhookHandler
             ]
         );
 
-        // Баланс двигаем только один раз, при первом переходе этой операции в Success —
-        // повторная доставка того же вебхука не должна начислять дважды.
+        // Перезапрашиваем баланс у CardsPro только один раз, при первом переходе этой операции в
+        // Success — повторная доставка того же вебхука не должна дёргать апи впустую.
         if (! $wasAlreadySuccess) {
-            $card->increment('balance', $amount);
+            $card->refreshBalanceFromProvider();
         }
     }
 
@@ -258,10 +258,12 @@ class CardsProWebhookHandler
             'occurred_at' => $payload['txDate'] ?? now(),
         ]);
 
-        // Баланс двигаем только один раз, при первом получении этой операции — повторная
-        // доставка того же вебхука не должна списывать дважды.
+        // $balanceSign === 0 значит, что этот txType вообще не двигает деньги (холд/отклон) —
+        // перезапрашивать баланс у провайдера тогда нечем. Иначе делаем это только один
+        // раз, при первом получении этой операции — повторная доставка того же вебхука не
+        // должна дёргать CardsPro впустую.
         if ($result['isNew'] && $balanceSign !== 0 && $amount > 0) {
-            $card->increment('balance', $balanceSign * $amount);
+            $card->refreshBalanceFromProvider();
         }
     }
 

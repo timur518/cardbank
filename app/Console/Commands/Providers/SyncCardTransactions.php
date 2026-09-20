@@ -18,10 +18,12 @@ use Throwable;
  * Универсальная подстраховка на случай потерянных вебхуков CARD_TRANSACTION: по каждой
  * активной/замороженной карте у каждого активного провайдера докачивает операции с
  * отметки `history_checked_at` (или с даты выпуска карты, если ещё ни разу не
- * проверяли), создаёт недостающие {@see CardTransaction} и двигает баланс карты
- * только для впервые увиденных операций — идемпотентно через
+ * проверяли), создаёт недостающие {@see CardTransaction} идемпотентно через
  * {@see CardTransaction::upsertFromProvider()} (как и обработчик вебхука), там же
- * сливающий расчёт с его холдом по origin_tx_id вместо второй строки на ту же покупку.
+ * сливающий расчёт с его холдом по origin_tx_id вместо второй строки на ту же покупку. Если
+ * среди впервые увиденных операций была хотя бы одна, двигающая деньги, баланс карты не
+ * досчитывается локально, а перезапрашивается у провайдера один раз за карту за прогон
+ * (см. {@see \App\Models\Card::refreshBalanceFromProvider()}).
  */
 class SyncCardTransactions extends Command
 {
@@ -55,6 +57,8 @@ class SyncCardTransactions extends Command
                             continue;
                         }
 
+                        $balanceMightHaveChanged = false;
+
                         foreach ($transactions as $tx) {
                             if ($tx['provider_tx_id'] === '') {
                                 continue;
@@ -68,8 +72,20 @@ class SyncCardTransactions extends Command
                                 $createdTotal++;
 
                                 if ($tx['balance_delta'] !== 0.0) {
-                                    $card->increment('balance', $tx['balance_delta']);
+                                    $balanceMightHaveChanged = true;
                                 }
+                            }
+                        }
+
+                        // Один перезапрос баланса на карту за прогон, а не на каждую новую операцию —
+                        // итоговый результат всё равно сходится к реальному балансу у CardsPro. Одна
+                        // неудачная карта не должна останавливать весь прогон.
+                        if ($balanceMightHaveChanged) {
+                            try {
+                                $card->refreshBalanceFromProvider();
+                            } catch (Throwable $e) {
+                                $failed++;
+                                $this->warn("Карта #{$card->id} ({$card->provider_card_id}): {$this->describeError($e)}");
                             }
                         }
 

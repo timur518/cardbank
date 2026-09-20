@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CardStatus;
+use App\Services\Integrations\ProviderIntegrationResolver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -71,6 +72,29 @@ class Card extends Model
     public function provider(): BelongsTo
     {
         return $this->belongsTo(CardProvider::class, 'provider_id');
+    }
+
+    /**
+     * Единственный способ, которым `balance` должен меняться. Намеренно не считаем
+     * баланс локально дельтой операций (increment/decrement по sign/type вебхука) — любая
+     * ошибка в знаке/типе операции или неучтённая нами комиссия провайдера
+     * тихо и навсегда расходится с реальным балансом у провайдера. Вместо этого после
+     * любого события, двигающего деньги на карте (вебхук или резервный опрос),
+     * перезапрашиваем у провайдера актуальный баланс и просто ставим его как есть
+     * (тот же `fetchCardSnapshot()`, что и в `providers:sync-card-balances`).
+     */
+    public function refreshBalanceFromProvider(): void
+    {
+        if (! $this->provider_card_id) {
+            return;
+        }
+
+        $snapshot = ProviderIntegrationResolver::for($this->provider)->fetchCardSnapshot($this->provider_card_id);
+
+        $this->update([
+            'balance' => $snapshot['balance'],
+            'balance_checked_at' => now(),
+        ]);
     }
 
     public function statusHistories(): HasMany
