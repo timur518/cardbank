@@ -1,5 +1,5 @@
-import { useEffect, useLayoutEffect, useRef, useState, type JSX } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { type JSX } from 'react';
+import { NavLink } from 'react-router-dom';
 
 interface TabDef {
     to: string;
@@ -8,9 +8,7 @@ interface TabDef {
     icon: () => JSX.Element;
 }
 
-// Порядок соответствует индексам contentRefs (0..3) — используется для расчёта позиции
-// скользящего индикатора активного пункта. Кнопка «Пополнить» (FAB) в этот массив
-// не входит — она не участвует в подсветке, а всегда рендерится отдельно по центру.
+// Кнопка «Пополнить» (FAB) в этот массив не входит — она всегда рендерится отдельно по центру.
 const TABS: TabDef[] = [
     { to: '/', end: true, label: 'Главная', icon: HomeIcon },
     { to: '/cards', label: 'Карты', icon: CardsIcon },
@@ -18,91 +16,32 @@ const TABS: TabDef[] = [
     { to: '/profile', label: 'Профиль', icon: ProfileIcon },
 ];
 
-function isTabActive(pathname: string, tab: TabDef): boolean {
-    if (tab.end) {
-        return pathname === tab.to;
-    }
-
-    return pathname === tab.to || pathname.startsWith(`${tab.to}/`);
-}
-
-// Фиксированный размер овала-индикатора — один и тот же для всех пунктов меню, подобран вручную
-// через dev tools так, чтобы иконка с подписью всегда оказывались с идеальным отступом от краёв.
-const INDICATOR_WIDTH = 72;
-const INDICATOR_HEIGHT = 55;
-// Базовые top/left индикатора в CSS (см. .mobile-tab-indicator в index.css) — учитываются при
-// переводе центра активной вкладки в translate(x, y), чтобы итоговая позиция (top + y, left + x)
-// точно центрировала овал относительно иконки и подписи.
-const INDICATOR_TOP = 6;
-const INDICATOR_LEFT = 6;
-
 /**
  * Нижнее меню приложения — видно ТОЛЬКО на мобильных экранах, скрывается с 768px вверх через
  * @media (min-width: 768px) { display: none } в самом index.css (а не через Tailwind-класс
  * md:hidden — .mobile-tabbar здесь кастомный класс вне @layer, а Tailwind-утилиты лежат внутри
  * @layer utilities, и нелейерный display: flex здесь всегда побеждал бы лейерный md:hidden).
  * Тот же порог 768px и у горизонтального меню в шапке (появляется с md:flex) — никакой
- * «дыры» без навигации между ними нет. Заменяет
- * собой навигацию из шапки. Плавающая закруглённая панель с отступом 5px от
- * нижней границы экрана и полупрозрачным фоном с блюром — точно как шапка
- * лендинга (.nav-pill в resources/css/app.css), чтобы ЛК на телефоне ощущался
- * как нативное приложение.
+ * «дыры» без навигации между ними нет. Заменяет собой навигацию из шапки. Плавающая закруглённая
+ * панель с отступом 5px от нижней границы экрана и полупрозрачным тёмным фоном с блюром.
  *
- * Переход между разделами сопровождается скользящим индикатором активного пункта:
- * овальная «пузырь»-подсветка фиксированного размера (72×55, подобран вручную через dev tools)
- * плавно переезжает к новому разделу (translate с пружинящим cubic-bezier), а иконка и подпись внутри
- * него всегда строго по центру овала — вместо того, чтобы активный пункт просто резко менял
- * цвет. Центр активной вкладки (иконка + подпись вместе) считается через refs, и овал
- * центрируется на нём transform: translate(x, y) поверх базовых top/left из CSS. Пересчитывается
- * при смене маршрута и при изменении размеров окна.
+ * Активный пункт подсвечивается без отдельного «скользящего» индикатора и JS-расчёта позиции
+ * (раньше это делал отдельный .mobile-tab-indicator через refs и translate(x, y), но любая
+ * последующая правка размеров/отступов требовала пересчитывать его вручную — ненадёжно). Фон
+ * активного состояния теперь повешен прямо на сам .mobile-tab (min-width/min-height задаёт
+ * размер овала у любого пункта, background появляется только у .is-active) — он гарантированно
+ * центрирован на своём пункте (align-items/justify-content у .mobile-tab), без риска
+ * рассинхронизации с реальным положением элемента на экране.
  *
  * Центральный пункт «Пополнить» — приподнятая акцентная кнопка (FAB) ведёт на
  * /topup: если у пользователя ровно одна активная карта — сразу открывает её
  * пополнение, иначе даёт выбрать карту (см. TopupEntryPage).
  */
 export function MobileTabBar() {
-    const location = useLocation();
-    const contentRefs = useRef<Array<HTMLSpanElement | null>>([]);
-    const [indicator, setIndicator] = useState({ x: 0, y: 0 });
-
-    function measure() {
-        const activeIndex = TABS.findIndex((tab) => isTabActive(location.pathname, tab));
-        const el = activeIndex >= 0 ? contentRefs.current[activeIndex] : null;
-
-        // На маршрутах без соответствующего пункта (например, /topup) позицию не меняем — овал
-        // просто остаётся там, где был в последний раз (без отдельной анимации скрытия/появления).
-        if (!el) {
-            return;
-        }
-
-        // Центр внутреннего блока «иконка + подпись» (без паддингов ссылки). translate(x, y) добавляется
-        // к базовым top/left из CSS, поэтому итоговая позиция овала (top + y, left + x) должна равняться
-        // (centerY - height/2, centerX - width/2), отсюда x = centerX - width/2 - left, y = centerY - height/2 - top.
-        setIndicator({
-            x: el.offsetLeft + el.offsetWidth / 2 - INDICATOR_WIDTH / 2 - INDICATOR_LEFT,
-            y: el.offsetTop + el.offsetHeight / 2 - INDICATOR_HEIGHT / 2 - INDICATOR_TOP,
-        });
-    }
-
-    useLayoutEffect(measure, [location.pathname]);
-
-    // Перерегистрируется при каждой смене маршрута, чтобы measure() внутри замыкания
-    // всегда видел актуальный location.pathname, а не значение на момент монтирования.
-    useEffect(() => {
-        window.addEventListener('resize', measure);
-        return () => window.removeEventListener('resize', measure);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [location.pathname]);
-
     return (
         <nav className="mobile-tabbar">
-            <span
-                className="mobile-tab-indicator"
-                style={{ transform: `translate(${indicator.x}px, ${indicator.y}px)` }}
-            />
-
-            {TABS.slice(0, 2).map((tab, index) => (
-                <TabLink key={tab.to} tab={tab} contentRef={(el) => (contentRefs.current[index] = el)} />
+            {TABS.slice(0, 2).map((tab) => (
+                <TabLink key={tab.to} tab={tab} />
             ))}
 
             <NavLink to="/topup" className="mobile-tabbar-item">
@@ -112,19 +51,19 @@ export function MobileTabBar() {
                 <span className="mobile-tabbar-fab-label">Пополнить</span>
             </NavLink>
 
-            {TABS.slice(2).map((tab, index) => (
-                <TabLink key={tab.to} tab={tab} contentRef={(el) => (contentRefs.current[index + 2] = el)} />
+            {TABS.slice(2).map((tab) => (
+                <TabLink key={tab.to} tab={tab} />
             ))}
         </nav>
     );
 }
 
-function TabLink({ tab, contentRef }: { tab: TabDef; contentRef: (el: HTMLSpanElement | null) => void }) {
+function TabLink({ tab }: { tab: TabDef }) {
     const Icon = tab.icon;
 
     return (
         <NavLink to={tab.to} end={tab.end} className={({ isActive }) => `mobile-tab${isActive ? ' is-active' : ''}`}>
-            <span className="mobile-tab-content" ref={contentRef}>
+            <span className="mobile-tab-content">
                 <span className="mobile-tab-icon">
                     <Icon />
                 </span>

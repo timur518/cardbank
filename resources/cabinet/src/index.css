@@ -635,7 +635,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 54px;
+    min-width: 73px;
+    min-height: 54px;
+    border-radius: 360px;
     padding: 4px 6px;
     font-size: .64rem;
     font-weight: 700;
@@ -653,26 +655,18 @@ body {
 }
 .mobile-tab svg { width: 22px; height: 22px; }
 .mobile-tab-label { transition: color .25s ease, transform .35s cubic-bezier(.34, 1.56, .64, 1); }
-.mobile-tab.is-active { color: var(--color-orange-dark); }
+/*
+ * Фон активного пункта повешен прямо на .mobile-tab (сам элемент уже центрирован в
+ * flex-ряду .mobile-tabbar через justify-content: space-around, а своё содержимое — через
+ * align-items/justify-content выше), поэтому овал гарантированно точно под своим пунктом
+ * без отдельного JS-расчёта позиции (раньше это делал отдельный .mobile-tab-indicator).
+ */
+.mobile-tab.is-active {
+    color: var(--color-orange-dark);
+    background: #00000050;
+}
 .mobile-tab.is-active .mobile-tab-icon { transform: translateY(-2px) scale(1.14); }
 .mobile-tab.is-active .mobile-tab-label { transform: translateY(-1px); }
-
-/* Скользящая подсветка активного раздела — позиционируется transform'ом (см.
-   MobileTabBar.tsx), плавно переезжая под иконкой нового раздела при каждом переходе.
-   z-index: -1 (вместе с fixed-позиционированием .mobile-tabbar, который создаёт свой
-   стекинг-контекст) держит её позади иконок и подписей, но поверх фона панели. */
-.mobile-tab-indicator {
-    position: absolute;
-    top: 6px;
-    left: 6px;
-    width: 72px;
-    height: 55px;
-    border-radius: 360px;
-    background: #00000050;
-    z-index: -1;
-    pointer-events: none;
-    transition: transform .45s cubic-bezier(.22, 1, .36, 1);
-}
 
 .mobile-tabbar-item {
     display: flex;
