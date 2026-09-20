@@ -364,13 +364,24 @@ body {
 .tx-group + .tx-group {
     margin-top: 1.25rem;
 }
+/* Заголовок-разделитель: дата и горизонтальная черточка — один элемент, линии
+ * до/после текста — ::before/::after, текст всегда ровно посередине черты. */
 .tx-group-title {
-    font-size: .74rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .03em;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 0 0 .6rem;
+    padding: 0 .2rem;
+    font-size: .8rem;
+    font-weight: 400;
     color: var(--color-muted);
-    padding: 0 .2rem .5rem;
+}
+.tx-group-title::before,
+.tx-group-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
 }
 .tx-row {
     display: flex;
