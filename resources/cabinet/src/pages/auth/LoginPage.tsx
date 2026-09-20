@@ -18,15 +18,16 @@ const heroVideoUrl = `${API_ROOT}/assets/images/herobg.mp4`;
  * теперь принципиально другая):
  * слева — карточка входа фиксированной высоты 550px (лого + заголовок
  * сверху, форма по центру, ссылка на регистрацию снизу); справа — видео-
- * панель, которая визуально «выезжает» из-под карточки (ниже по z-index и
- * частично перекрыта её правым краем) с плавающим блоком быстрого входа
- * внизу. Видео-панель показывается только от 1024px (lg) и шире — на
- * мобильных остаётся только карточка входа, как раньше.
+ * панель-заставка (без блока соцсетей на ней), которая визуально «выезжает»
+ * из-под карточки (ниже по z-index и частично перекрыта её правым краем).
+ * Показывается только от 1024px (lg) и шире — на мобильных остаётся только
+ * карточка входа, как раньше.
  *
  * Сам вход — в два шага (как у Google/Microsoft): сначала только
  * телефон/email, после клика по «Войти» форма динамично сменяется на ввод
  * пароля — реальная авторизация происходит только на втором шаге.
- * .fade-in-up обеспечивает плавное появление блока нового шага.
+ * .fade-in-up обеспечивает плавное появление блока нового шага. Кнопки
+ * быстрого входа (Яндекс/VK) — сразу под основной «Войти», в одной строке 50/50.
  */
 export function LoginPage() {
     const { login } = useAuth();
@@ -131,6 +132,15 @@ export function LoginPage() {
                             <button type="submit" className="btn btn-primary btn-block" disabled={isSubmitting}>
                                 {isSubmitting ? 'Входим…' : 'Войти'}
                             </button>
+
+                            <div className="flex gap-3">
+                                <button type="button" className="btn flex-1">
+                                    Войти через Яндекс
+                                </button>
+                                <button type="button" className="btn flex-1">
+                                    Войти через VK
+                                </button>
+                            </div>
                         </form>
                     </div>
 
@@ -151,15 +161,6 @@ export function LoginPage() {
                         loop
                         playsInline
                     />
-
-                    <div className="absolute inset-x-6 bottom-6 flex flex-col gap-3 rounded-3xl bg-white p-4 shadow-lg">
-                        <button type="button" className="btn rounded-full">
-                            Войти через Яндекс
-                        </button>
-                        <button type="button" className="btn rounded-full">
-                            Войти через VK
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
