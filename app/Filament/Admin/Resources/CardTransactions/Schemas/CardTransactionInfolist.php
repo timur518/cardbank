@@ -29,7 +29,11 @@ class CardTransactionInfolist
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->placeholder('—')
                     ->helperText('Комиссия провайдера за операцию: сумма без комиссии + комиссия = итоговая сумма.'),
-                TextEntry::make('merchant')->label('Продавец')->placeholder('—'),
+                TextEntry::make('merchant')->label('Продавец (как прислал провайдер)')->placeholder('—'),
+                TextEntry::make('merchantRecord.name')
+                    ->label('Мерчант (из справочника)')
+                    ->placeholder('Не определён')
+                    ->helperText('Определяется автоматически по коду в поле "Продавец" — см. раздел "Мерчанты".'),
                 TextEntry::make('status')->label('Статус')->badge(),
                 TextEntry::make('decline_reason')->label('Причина отказа')->placeholder('—'),
                 TextEntry::make('provider_tx_id')->label('ID операции у провайдера')->placeholder('—'),

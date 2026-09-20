@@ -45,9 +45,10 @@ class TransactionsRelationManager extends RelationManager
                     ->money(fn ($record) => $record->currency)
                     ->placeholder('—')
                     ->toggleable(),
-                TextColumn::make('merchant')
-                    ->label('Продавец')
-                    ->placeholder('—'),
+                TextColumn::make('merchantRecord.name')
+                    ->label('Мерчант')
+                    ->description(fn ($record) => $record->merchant)
+                    ->placeholder(fn ($record) => $record->merchant ?: '—'),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge(),

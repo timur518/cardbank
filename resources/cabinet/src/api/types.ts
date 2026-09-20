@@ -100,6 +100,16 @@ export interface CardRequisites {
 export type CardTransactionType = 'purchase' | 'topup' | 'fee' | 'refund' | 'decline';
 export type CardTransactionStatus = 'pending' | 'success' | 'declined' | 'reversed';
 
+// Мерчант из справочника админки, определённый автоматически по описанию операции
+// (см. Merchant::matchByDescription() на бэкенде) — null, если совпадение не найдено.
+export interface TransactionMerchantInfo {
+    id: number;
+    name: string;
+    category: string;
+    logo_svg: string | null;
+    color: string | null;
+}
+
 // Транзакции по карте
 export interface CardTransaction {
     id: number;
@@ -108,6 +118,7 @@ export interface CardTransaction {
     amount: string;
     currency: string;
     merchant: string | null;
+    merchant_info: TransactionMerchantInfo | null;
     status: CardTransactionStatus;
     occurred_at: string;
 }

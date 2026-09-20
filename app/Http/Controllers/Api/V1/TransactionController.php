@@ -41,6 +41,8 @@ class TransactionController extends Controller
 
     private function paginate(Builder|\Illuminate\Database\Eloquent\Relations\HasMany $query, Request $request): AnonymousResourceCollection
     {
+        $query->with('merchantRecord');
+
         if ($type = $request->string('type')->toString()) {
             $query->where('type', $type);
         }

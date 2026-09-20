@@ -30,6 +30,7 @@ class CardTransaction extends Model
         'commission_amount',
         'currency',
         'merchant',
+        'merchant_id',
         'status',
         'decline_reason',
         'provider_tx_id',
@@ -74,6 +75,8 @@ class CardTransaction extends Model
      */
     public static function upsertFromProvider(int $cardId, array $tx): array
     {
+        $merchantId = Merchant::matchByDescription($tx['merchant'] ?? null)?->id;
+
         $existingBySameId = static::where('card_id', $cardId)
             ->where('provider_tx_id', $tx['provider_tx_id'])
             ->first();
@@ -98,6 +101,7 @@ class CardTransaction extends Model
             'commission_amount' => $tx['commission_amount'],
             'currency' => $tx['currency'],
             'merchant' => $tx['merchant'],
+            'merchant_id' => $merchantId,
             'status' => $tx['status'],
             'decline_reason' => $tx['decline_reason'],
             'occurred_at' => $tx['occurred_at'],
@@ -116,6 +120,17 @@ class CardTransaction extends Model
     public function card(): BelongsTo
     {
         return $this->belongsTo(Card::class);
+    }
+
+    /**
+     * Мерчант из справочника admin/merchants (см. {@see Merchant::matchByDescription()}), если
+     * он был определён при создании транзакции. Назван не `merchant()`, т.к. это имя
+     * уже занято колонкой `merchant` (сырое описание операции от провайдера) —
+     * при одинаковом имени Eloquent отдаёт атрибут, а не результат связи.
+     */
+    public function merchantRecord(): BelongsTo
+    {
+        return $this->belongsTo(Merchant::class, 'merchant_id');
     }
 
     public function income(): HasOne

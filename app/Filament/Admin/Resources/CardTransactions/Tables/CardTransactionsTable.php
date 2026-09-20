@@ -6,6 +6,7 @@ use App\Enums\CardTransactionStatus;
 use App\Enums\CardTransactionType;
 use App\Models\Card;
 use App\Models\CardTransaction;
+use App\Models\Merchant;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -27,6 +28,11 @@ class CardTransactionsTable
                 TextColumn::make('type')
                     ->label('Тип операции')
                     ->badge(),
+                TextColumn::make('merchantRecord.name')
+                    ->label('Мерчант')
+                    ->description(fn (CardTransaction $record) => $record->merchant)
+                    ->placeholder(fn (CardTransaction $record) => $record->merchant ?: '—')
+                    ->searchable(['merchant']),
                 TextColumn::make('amount')
                     ->label('Сумма')
                     ->money(fn (CardTransaction $record) => $record->currency)
@@ -62,6 +68,11 @@ class CardTransactionsTable
                     ->label('Карта')
                     ->relationship('card', 'id')
                     ->getOptionLabelFromRecordUsing(fn (Card $record) => $record->masked_number)
+                    ->searchable(),
+                SelectFilter::make('merchant_id')
+                    ->label('Мерчант')
+                    ->relationship('merchantRecord', 'name')
+                    ->getOptionLabelFromRecordUsing(fn (Merchant $record) => $record->name)
                     ->searchable(),
             ])
             // Раздел заполняется автоматически по данным от карточного провайдера — ручное создание,

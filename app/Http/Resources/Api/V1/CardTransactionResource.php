@@ -21,7 +21,19 @@ class CardTransactionResource extends JsonResource
             'type' => $this->type->value,
             'amount' => number_format((float) $this->amount, 2, '.', ''),
             'currency' => $this->currency,
+            // Сырое описание операции от провайдера как есть (например "AUGMENT CODE
+            // PALO ALTO USA") — используется в ЛК как запасной вариант, если мерчант
+            // не найден в нашем справочнике (merchant_info ниже — null).
             'merchant' => $this->merchant,
+            // Мерчант, определённый автоматически по 'merchant' через Merchant::matchByDescription()
+            // (см. CardTransaction::upsertFromProvider()) — null, если совпадение не найдено.
+            'merchant_info' => $this->merchantRecord ? [
+                'id' => $this->merchantRecord->id,
+                'name' => $this->merchantRecord->name,
+                'category' => $this->merchantRecord->category->value,
+                'logo_svg' => $this->merchantRecord->logo_svg,
+                'color' => $this->merchantRecord->color,
+            ] : null,
             'status' => $this->status->value,
             'occurred_at' => optional($this->occurred_at)->toIso8601String(),
         ];

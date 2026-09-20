@@ -57,6 +57,7 @@ class MerchantSeeder extends Seeder
             ['code' => 'DEEPL', 'name' => 'DeepL', 'category' => MerchantCategory::AiServices, 'color' => '#0F2B46'],
             ['code' => 'GRAMMARLY', 'name' => 'Grammarly', 'category' => MerchantCategory::AiServices, 'color' => '#15C39A'],
             ['code' => 'IDEOGRAM', 'name' => 'Ideogram', 'category' => MerchantCategory::AiServices, 'color' => '#4B4B4B'],
+            ['code' => 'AUGMENT CODE', 'name' => 'Augment AI', 'category' => MerchantCategory::AiServices, 'color' => '#7C5CFC'],
 
             // ==================== Разработка, хостинг, домены ====================
             ['code' => 'GITHUB', 'name' => 'GitHub', 'category' => MerchantCategory::DevTools, 'color' => '#6E7681'],

@@ -93,16 +93,28 @@ function TransactionRow({ tx }: { tx: CardTransaction }) {
     const Icon = TRANSACTION_TYPE_ICONS[tx.type];
     const typeLabel = TRANSACTION_TYPE_LABELS[tx.type];
     const isPending = tx.status === 'pending';
+    const merchant = tx.merchant_info;
+    const merchantName = merchant?.name ?? tx.merchant;
+    const title = merchantName ?? typeLabel;
 
     return (
         <div className="tx-row">
-            <span className="tx-icon">
-                <Icon />
+            <span
+                className="tx-icon"
+                style={merchant ? { background: merchant.color ?? undefined, color: '#fff' } : undefined}
+            >
+                {merchant?.logo_svg ? (
+                    <svg viewBox="0 0 24 24" fill="currentColor" dangerouslySetInnerHTML={{ __html: merchant.logo_svg }} />
+                ) : merchant ? (
+                    <span className="tx-icon-letter">{merchant.name.charAt(0).toUpperCase()}</span>
+                ) : (
+                    <Icon />
+                )}
             </span>
             <span className="tx-info">
-                <span className="tx-title">{tx.merchant ?? typeLabel}</span>
+                <span className="tx-title">{title}</span>
                 <span className="tx-subtitle">
-                    {tx.merchant ? typeLabel : formatTime(tx.occurred_at)}
+                    {merchantName ? typeLabel : formatTime(tx.occurred_at)}
                 </span>
             </span>
             <span className="tx-amount-wrap">
