@@ -68,7 +68,15 @@ class SyncPendingOperations extends Command
                 continue;
             }
 
-            $resolver->resolve($operation, $result['status'], $result['raw']);
+            try {
+                $resolver->resolve($operation, $result['status'], $result['raw']);
+            } catch (Throwable $e) {
+                $failed++;
+                $this->warn("Операция #{$operation->id} ({$operation->request_id}): {$this->describeError($e)}");
+
+                continue;
+            }
+
             $resolved++;
         }
 

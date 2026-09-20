@@ -13,6 +13,7 @@ use App\Models\CardStatusHistory;
 use App\Models\Expense;
 use App\Models\Setting;
 use App\Services\Integrations\ProviderIntegrationResolver;
+use Throwable;
 
 /**
  * Применяет финальный результат асинхронной операции провайдера (выпуск/пополнение/
@@ -190,7 +191,7 @@ class CardProviderOperationResolver
             return;
         }
 
-        $card->refreshBalanceFromProvider();
+        $this->refreshCardBalance($card);
         $this->recordTopupExpense($card, $operation, $amount, "Пополнение карты с комиссией провайдера (авто, операция #{$operation->id})");
     }
 
@@ -263,7 +264,26 @@ class CardProviderOperationResolver
             return;
         }
 
-        Card::find($operation->card_id)?->refreshBalanceFromProvider();
+        $card = Card::find($operation->card_id);
+
+        if ($card) {
+            $this->refreshCardBalance($card);
+        }
+    }
+
+    /**
+     * Неудача этого запроса не должна оставлять операцию незавершённой (она уже заклеймлена
+     * выше, в claim()) и не должна мешать остальным побочным эффектам (например,
+     * recordTopupExpense() в applyTopup()). Ошибка только логируется — баланс подтянется
+     * в течение 15 минут фоновым providers:sync-card-balances.
+     */
+    protected function refreshCardBalance(Card $card): void
+    {
+        try {
+            $card->refreshBalanceFromProvider();
+        } catch (Throwable $e) {
+            report($e);
+        }
     }
 
     protected function applyBlock(CardProviderOperation $operation): void

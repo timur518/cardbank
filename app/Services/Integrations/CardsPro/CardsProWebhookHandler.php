@@ -13,6 +13,7 @@ use App\Models\CardProviderOperation;
 use App\Models\CardStatusHistory;
 use App\Models\CardTransaction;
 use App\Services\CardProviderOperationResolver;
+use Throwable;
 
 /**
  * Применяет к нашим моделям изменения из вебхуков CardsPro — но только там, где в
@@ -109,7 +110,23 @@ class CardsProWebhookHandler
             return;
         }
 
-        $card->refreshBalanceFromProvider();
+        $this->refreshCardBalance($card);
+    }
+
+    /**
+     * Неудача этого запроса (сеть/CardsPro недоступен) не должна валить весь вебхук —
+     * сама транзакция/отклонение к этому моменту уже записаны и теряться не должны.
+     * Ошибка только логируется — баланс подтянется либо повторной доставкой этого же вебхука
+     * (если CardsPro его ретраит), либо в течение 15 минут — фоновым
+     * providers:sync-card-balances.
+     */
+    protected function refreshCardBalance(Card $card): void
+    {
+        try {
+            $card->refreshBalanceFromProvider();
+        } catch (Throwable $e) {
+            report($e);
+        }
     }
 
     /**
@@ -176,7 +193,7 @@ class CardsProWebhookHandler
         // Перезапрашиваем баланс у CardsPro только один раз, при первом переходе этой операции в
         // Success — повторная доставка того же вебхука не должна дёргать апи впустую.
         if (! $wasAlreadySuccess) {
-            $card->refreshBalanceFromProvider();
+            $this->refreshCardBalance($card);
         }
     }
 
@@ -263,7 +280,7 @@ class CardsProWebhookHandler
         // раз, при первом получении этой операции — повторная доставка того же вебхука не
         // должна дёргать CardsPro впустую.
         if ($result['isNew'] && $balanceSign !== 0 && $amount > 0) {
-            $card->refreshBalanceFromProvider();
+            $this->refreshCardBalance($card);
         }
     }
 
