@@ -6,6 +6,7 @@ import type { Card, CardTransaction } from '../../api/types';
 import { CardsSidebar } from '../../components/cards/CardsSidebar';
 import { TransactionsTable } from '../../components/transactions/TransactionsTable';
 import { formatMoney } from '../../utils/format';
+import { useFitFontSize } from '../../utils/useFitFontSize';
 
 export function DashboardPage() {
     const [cards, setCards] = useState<Card[]>([]);
@@ -39,6 +40,17 @@ export function DashboardPage() {
         return totals;
     }, [cards]);
 
+    // Текст суммы неизвестен заранее (число валют, количество цифр зависит от балансов карт),
+    // поэтому кегль подбирается автоматически по фактической ширине через useFitFontSize
+    // (от 28px для коротких сумм до 14px для длинных, например суммы в нескольких валютах сразу).
+    const balanceText =
+        totalsByCurrency.size === 0
+            ? '—'
+            : Array.from(totalsByCurrency.entries())
+                  .map(([currency, total]) => formatMoney(total, currency))
+                  .join(' + ');
+    const balanceRef = useFitFontSize(balanceText, 28, 14);
+
     return (
         <div className="flex flex-col gap-8 lg:flex-row">
             <CardsSidebar cards={cards} isLoading={cardsLoading} />
@@ -46,12 +58,8 @@ export function DashboardPage() {
             <div className="flex flex-1 flex-col gap-8">
                 <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-4">
                     <div className="stat-btn stat-btn-static">
-                        <span className="stat-btn-label">
-                            {totalsByCurrency.size === 0
-                                ? '—'
-                                : Array.from(totalsByCurrency.entries())
-                                      .map(([currency, total]) => formatMoney(total, currency))
-                                      .join(' + ')}
+                        <span className="stat-balance-amount" ref={balanceRef}>
+                            {balanceText}
                         </span>
                         <span className="stat-btn-value">Текущий остаток</span>
                     </div>

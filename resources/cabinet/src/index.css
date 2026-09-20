@@ -259,9 +259,16 @@ body {
     transform: translateY(-2px);
     border-color: var(--color-orange);
 }
-/* Статическая карточка-вывод (текущий остаток) — не кнопка, без hover/cursor-эффектов. */
+/*
+ * Статическая карточка-вывод (текущий остаток) — не кнопка, без hover/cursor-эффектов.
+ * justify-content: center центрирует весь контент (сумму + подпись) по вертикали внутри
+ * .stat-btn (flex-direction: column, поэтому главная ось у justify-content — вертикальная) —
+ * важно, когда блок растягивается по высоте до соседей в ряду (align-items: stretch по умолчанию
+ * у родительского flex-контейнера в DashboardPage.tsx).
+ */
 .stat-btn-static {
     cursor: default;
+    justify-content: center;
 }
 .stat-btn-static:hover {
     transform: none;
@@ -278,6 +285,22 @@ body {
 .stat-btn-value {
     font-size: .82rem;
     color: var(--color-muted);
+}
+/*
+ * Крупная цифра текущего остатка. Фактический кегль (14–28px) задаётся инлайн-стилем
+ * через useFitFontSize (DashboardPage.tsx) по фактической ширине текста, чтобы большие
+ * суммы (например, «12 540.4$» или несколько валют через «+») помещались без переноса
+ * в рамках ширины кнопки; white-space/overflow — страховочный фоллбэк на случай, если даже
+ * минимальный кегль всё ещё не вмещает.
+ */
+.stat-balance-amount {
+    display: inline-block;
+    max-width: 100%;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--color-ink);
+    white-space: nowrap;
+    overflow: hidden;
 }
 /*
  * Мобильная адаптация: все три кнопки главного экрана в один ряд (контейнер переведён
