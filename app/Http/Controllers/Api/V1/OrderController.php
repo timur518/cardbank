@@ -55,7 +55,7 @@ class OrderController extends Controller
 
         if ($topupUsd < (float) $product->topup_min_amount || $topupUsd > (float) $product->topup_max_amount) {
             throw ValidationException::withMessages([
-                'topup_amount' => 'Сумма пополнения вне допустимых границ для этой карты.',
+                'topup_amount' => 'Сумма пополнения некорректна. Проверьте условия пополнения.',
             ]);
         }
 
@@ -126,7 +126,7 @@ class OrderController extends Controller
 
         if ($topupUsd < (float) $product->topup_min_amount || $topupUsd > (float) $product->topup_max_amount) {
             throw ValidationException::withMessages([
-                'amount' => 'Сумма пополнения вне допустимых границ для этой карты.',
+                'amount' => 'Сумма пополнения некорректна. Проверьте условия пополнения.',
             ]);
         }
 
