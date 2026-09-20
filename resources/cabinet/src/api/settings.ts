@@ -11,9 +11,9 @@ export async function fetchReferralSettings(): Promise<ReferralSettings> {
     return data.data;
 }
 
-// Курс продажи валют с наценкой (SettingsController::currencyRates()) — используется для
+// Курс продажи валют с наценкой — используется для
 // пересчёта суммы в $ в ₽ на шаге оформления заказа (серверный пересчёт
-// в OrderController всегда авторитетен, здесь только для отображения «К оплате» до отправки).
+// всегда авторитетен, здесь только для отображения «К оплате» до отправки).
 export async function fetchCurrencyRates(): Promise<CurrencyRates> {
     const { data } = await apiClient.get<{ data: CurrencyRates }>('/settings/currency-rates');
     return data.data;

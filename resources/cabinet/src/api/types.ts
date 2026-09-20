@@ -1,4 +1,4 @@
-// Соответствует полям, которые отдаёт UserResource на бэкенде.
+// Поля профиля.
 export interface Profile {
     id: string;
     first_name: string;

@@ -289,9 +289,7 @@
                     ['Пополнение баланса из России', 'Мгновенное пополнение баланса российскими картами или через СБП.'],
                 ];
 
-                // Курс USD -> RUB с нашей наценкой (та же формула, что и в админке,
-                // см. resources/views/filament/admin/partials/currency-rate-badges.blade.php)
-                // — нужен, чтобы на фронте пересчитывать сумму в $ в рубли для "К оплате".
+                // Курс USD -> RUB с нашей наценкой для "К оплате".
                 $currencySettings = \App\Models\Setting::getMany(['currency_rate_usd', 'currency_markup_usd_percent']);
                 $usdToRub = $currencySettings['currency_rate_usd'] !== null
                     ? ((float) $currencySettings['currency_rate_usd']) * (1 + ((float) ($currencySettings['currency_markup_usd_percent'] ?? 0)) / 100)
