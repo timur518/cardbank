@@ -114,8 +114,8 @@ export function RequisitesPanel({ card, cardholderName, requisites, requisitesLo
                     </h2>
                     <p className="text-xs text-muted">
                         {displayedMode === 'card'
-                            ? 'Имя, номер, срок и CVV'
-                            : 'Вводите на сайте именно его, латиницей — не свой домашний'}
+                            ? 'Реквизиты карты'
+                            : 'Вводите при оплате именно его, иначе может быть отказ в оплате'}
                     </p>
                 </div>
             </div>

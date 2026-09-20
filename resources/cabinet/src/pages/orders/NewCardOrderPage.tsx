@@ -200,9 +200,8 @@ export function NewCardOrderPage() {
                             </div>
                             {selectedProduct && (
                                 <p className="apply-hint">
-                                    Пополнение: от ${selectedProduct.topup_min_amount ?? '0'} до $
-                                    {selectedProduct.topup_max_amount ?? '—'} (плюс {formatRub(Number(selectedProduct.price_rub))}{' '}
-                                    за саму карту)
+                                    Пополнение: от ${selectedProduct.topup_min_amount ?? '10'} до $
+                                    {selectedProduct.topup_max_amount ?? '—'}
                                 </p>
                             )}
                         </div>

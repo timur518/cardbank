@@ -59,7 +59,7 @@ export function CardFace({
 
                         <div>
                             <ChipIcon />
-                            <p className="mt-3 font-mono text-lg tracking-[0.15em] sm:text-2xl">{displayNumber}</p>
+                            <p className="mt-3 font-mono text-lg tracking-[0.15em] sm:text-xl">{displayNumber}</p>
                         </div>
 
                         <div className="flex items-end justify-between">
