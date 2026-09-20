@@ -7,7 +7,7 @@ import type { Card, CardDetail, CardRequisites, CardTransaction } from '../../ap
 import { BalancePanel } from '../../components/cards/BalancePanel';
 import { CardFace } from '../../components/cards/CardFace';
 import { CardTabsSection, type CardTabKey } from '../../components/cards/CardTabsSection';
-import { CardsSidebar } from '../../components/cards/CardsSidebar';
+import { CardsStrip } from '../../components/cards/CardsStrip';
 import { RequisitesPanel } from '../../components/cards/RequisitesPanel';
 import { CardDetailSkeleton } from '../../components/common/Skeleton';
 import { TopupModal } from '../../components/cards/TopupModal';
@@ -17,8 +17,9 @@ import { transliterateFio } from '../../utils/masks';
 
 // Полная информация об одной карте: слева — визуал карты с переключателем
 // лицевой/оборотной стороны и виджет баланса, справа — реквизиты для оплаты и
-// платёжный адрес, ниже — вкладки с историей операций/лимитов. Левый
-// сайдбар «Мои карты» — тот же список, что и на главной странице.
+// платёжный адрес, ниже — вкладки с историей операций/лимитов. Сверху —
+// та же горизонтальная лента «Мои карты» (CardsStrip), что и на главной
+// странице, для быстрого переключения между картами.
 export function CardDetailPage() {
     const { id } = useParams<{ id: string }>();
     const { profile } = useAuth();
@@ -149,66 +150,64 @@ export function CardDetailPage() {
     }
 
     return (
-        <div className="flex flex-col gap-8 lg:flex-row">
-            <CardsSidebar cards={cards} isLoading={cardsLoading} />
+        <div className="flex flex-col gap-6">
+            <CardsStrip cards={cards} isLoading={cardsLoading} />
 
-            <div className="flex flex-1 flex-col gap-6">
-                <div>
-                    <Link to="/cards" className="text-sm font-semibold text-muted hover:text-ink">
-                        ← Мои карты
-                    </Link>
-                </div>
+            <div>
+                <Link to="/cards" className="text-sm font-semibold text-muted hover:text-ink">
+                    ← Мои карты
+                </Link>
+            </div>
 
-                {cardLoading && <CardDetailSkeleton />}
+            {cardLoading && <CardDetailSkeleton />}
 
-                {!cardLoading && cardError && <p className="form-error-banner">{cardError}</p>}
+            {!cardLoading && cardError && <p className="form-error-banner">{cardError}</p>}
 
-                {!cardLoading && card && (
-                    <div className="flex flex-col gap-6 fade-in-up">
-                        <div className="grid gap-6 lg:grid-cols-2">
-                            <div className="flex flex-col gap-4">
-                                <CardFace
-                                    flipped={flipped}
-                                    onFlip={() => setFlipped((value) => !value)}
-                                    productName={card.card_product.name}
-                                    subtitle={null}
-                                    maskedNumber={`•••• •••• •••• ${card.card_last4 ?? '••••'}`}
-                                    fullNumber={requisites?.card_number ?? null}
-                                    expiry={card.expiry}
-                                    cardholderName={cardholderName}
-                                    cvv={requisites?.cvv ?? null}
-                                    showCvv={showCvv}
-                                />
+            {!cardLoading && card && (
+                <div className="flex flex-col gap-6 fade-in-up">
+                    <div className="grid gap-6 lg:grid-cols-2">
+                        <div className="flex flex-col gap-4">
+                            <CardFace
+                                flipped={flipped}
+                                onFlip={() => setFlipped((value) => !value)}
+                                productName={card.card_product.name}
+                                subtitle={null}
+                                maskedNumber={`•••• •••• •••• ${card.card_last4 ?? '••••'}`}
+                                fullNumber={requisites?.card_number ?? null}
+                                expiry={card.expiry}
+                                cardholderName={cardholderName}
+                                cvv={requisites?.cvv ?? null}
+                                showCvv={showCvv}
+                            />
 
-                                <BalancePanel
-                                    card={card}
-                                    monthTotal={monthTotal}
-                                    onViewTransactions={handleViewTransactions}
-                                    onTopupClick={() => setTopupModalOpen(true)}
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-2">
-                                <RequisitesPanel
-                                    card={card}
-                                    cardholderName={cardholderName}
-                                    requisites={requisites}
-                                    requisitesLoading={requisitesLoading}
-                                    showCvv={showCvv}
-                                    onShowCvv={handleShowCvv}
-                                />
-                                {requisitesError && <p className="form-error-banner">{requisitesError}</p>}
-                            </div>
+                            <BalancePanel
+                                card={card}
+                                monthTotal={monthTotal}
+                                onViewTransactions={handleViewTransactions}
+                                onTopupClick={() => setTopupModalOpen(true)}
+                            />
                         </div>
 
-                        <CardTabsSection card={card} activeTab={activeTab} onTabChange={setActiveTab} />
+                        <div className="flex flex-col gap-2">
+                            <RequisitesPanel
+                                card={card}
+                                cardholderName={cardholderName}
+                                requisites={requisites}
+                                requisitesLoading={requisitesLoading}
+                                showCvv={showCvv}
+                                onShowCvv={handleShowCvv}
+                            />
+                            {requisitesError && <p className="form-error-banner">{requisitesError}</p>}
+                        </div>
                     </div>
-                )}
 
-                {!cardLoading && card && topupModalOpen && (
-                    <TopupModal card={card} onClose={() => setTopupModalOpen(false)} />
-                )}
-            </div>
+                    <CardTabsSection card={card} activeTab={activeTab} onTabChange={setActiveTab} />
+                </div>
+            )}
+
+            {!cardLoading && card && topupModalOpen && (
+                <TopupModal card={card} onClose={() => setTopupModalOpen(false)} />
+            )}
         </div>
     );
 }

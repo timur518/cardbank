@@ -3,8 +3,7 @@ import { Link } from 'react-router-dom';
 import { fetchCards } from '../../api/cards';
 import { fetchTransactions } from '../../api/transactions';
 import type { Card, CardTransaction } from '../../api/types';
-import { CardsSidebar } from '../../components/cards/CardsSidebar';
-import { MobileCardsStrip } from '../../components/cards/MobileCardsStrip';
+import { CardsStrip } from '../../components/cards/CardsStrip';
 import { NewCardIcon, PlusIcon } from '../../components/common/Icons';
 import { Skeleton, TransactionsSkeleton } from '../../components/common/Skeleton';
 import { TransactionsTable } from '../../components/transactions/TransactionsTable';
@@ -55,48 +54,44 @@ export function DashboardPage() {
     const balanceRef = useFitFontSize(balanceText, 28, 14);
 
     return (
-        <div className="flex flex-col gap-8 lg:flex-row">
-            <CardsSidebar cards={cards} isLoading={cardsLoading} />
+        <div className="flex flex-col gap-8">
+            <CardsStrip cards={cards} isLoading={cardsLoading} />
 
-            <div className="flex flex-1 flex-col gap-8">
-                <MobileCardsStrip cards={cards} isLoading={cardsLoading} />
-
-                <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-4 lg:mt-[30px]">
-                    <div className="stat-btn stat-btn-static">
-                        {cardsLoading ? (
-                            <Skeleton className="h-7 w-24" />
-                        ) : (
-                            <span className="stat-balance-amount fade-in-up" ref={balanceRef}>
-                                {balanceText}
-                            </span>
-                        )}
-                        <span className="stat-btn-value">Текущий остаток</span>
-                    </div>
-
-                    <Link to="/topup" className="stat-btn">
-                        <span className="stat-btn-icon"><PlusIcon /></span>
-                        <span className="stat-btn-label">Пополнить баланс</span>
-                    </Link>
-
-                    <Link to="/cards/new" className="stat-btn">
-                        <span className="stat-btn-icon"><NewCardIcon /></span>
-                        <span className="stat-btn-label">Новая карта</span>
-                    </Link>
-                </div>
-
-                <div className="auth-panel p-6">
-                    <h2 className="mb-4 text-sm font-extrabold uppercase tracking-wide text-muted">
-                        История последних операций
-                    </h2>
-
-                    {transactionsLoading ? (
-                        <TransactionsSkeleton rows={4} />
+            <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-4">
+                <div className="stat-btn stat-btn-static">
+                    {cardsLoading ? (
+                        <Skeleton className="h-7 w-24" />
                     ) : (
-                        <div className="fade-in-up">
-                            <TransactionsTable transactions={transactions} />
-                        </div>
+                        <span className="stat-balance-amount fade-in-up" ref={balanceRef}>
+                            {balanceText}
+                        </span>
                     )}
+                    <span className="stat-btn-value">Текущий остаток</span>
                 </div>
+
+                <Link to="/topup" className="stat-btn">
+                    <span className="stat-btn-icon"><PlusIcon /></span>
+                    <span className="stat-btn-label">Пополнить баланс</span>
+                </Link>
+
+                <Link to="/cards/new" className="stat-btn">
+                    <span className="stat-btn-icon"><NewCardIcon /></span>
+                    <span className="stat-btn-label">Новая карта</span>
+                </Link>
+            </div>
+
+            <div className="auth-panel p-6">
+                <h2 className="mb-4 text-sm font-extrabold uppercase tracking-wide text-muted">
+                    История последних операций
+                </h2>
+
+                {transactionsLoading ? (
+                    <TransactionsSkeleton rows={4} />
+                ) : (
+                    <div className="fade-in-up">
+                        <TransactionsTable transactions={transactions} />
+                    </div>
+                )}
             </div>
         </div>
     );

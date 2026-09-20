@@ -72,7 +72,7 @@ export function DashboardLayout() {
             {/* key={location.pathname} — заставляет React перемонтировать этот div при каждом переходе между
                 страницами, чтобы .page-transition запускалась заново каждый раз, а не только один
                 раз при первом рендере лейаута. */}
-            <main className="mx-auto max-w-[1200px] px-4 py-6 pb-28 md:pb-8 lg:px-8 lg:py-8">
+            <main className="mx-auto max-w-[830px] px-4 py-6 pb-28 md:pb-8 lg:px-8 lg:py-8">
                 <div key={location.pathname} className="page-transition">
                     <Outlet />
                 </div>
