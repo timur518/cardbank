@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
-import { fetchCard, fetchCardRequisites, fetchCards } from '../../api/cards';
+import { fetchCard, fetchCardRequisites } from '../../api/cards';
 import { extractErrorMessage } from '../../api/client';
 import { fetchCardTransactions } from '../../api/transactions';
-import type { Card, CardDetail, CardRequisites, CardTransaction } from '../../api/types';
+import type { CardDetail, CardRequisites, CardTransaction } from '../../api/types';
 import { BalancePanel } from '../../components/cards/BalancePanel';
 import { CardFace } from '../../components/cards/CardFace';
 import { CardTabsSection, type CardTabKey } from '../../components/cards/CardTabsSection';
-import { CardsStrip } from '../../components/cards/CardsStrip';
 import { RequisitesPanel } from '../../components/cards/RequisitesPanel';
 import { CardDetailSkeleton } from '../../components/common/Skeleton';
 import { TopupModal } from '../../components/cards/TopupModal';
@@ -17,16 +16,12 @@ import { transliterateFio } from '../../utils/masks';
 
 // Полная информация об одной карте: слева — визуал карты с переключателем
 // лицевой/оборотной стороны и виджет баланса, справа — реквизиты для оплаты и
-// платёжный адрес, ниже — вкладки с историей операций/лимитов. Сверху —
-// та же горизонтальная лента «Мои карты» (CardsStrip), что и на главной
-// странице, для быстрого переключения между картами.
+// платёжный адрес, ниже — вкладки с историей операций/лимитов. Лента «Мои
+// карты» здесь намеренно не показывается — она только на главном экране.
 export function CardDetailPage() {
     const { id } = useParams<{ id: string }>();
     const { profile } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
-
-    const [cards, setCards] = useState<Card[]>([]);
-    const [cardsLoading, setCardsLoading] = useState(true);
 
     const [card, setCard] = useState<CardDetail | null>(null);
     const [cardLoading, setCardLoading] = useState(true);
@@ -41,12 +36,6 @@ export function CardDetailPage() {
     const [monthPurchases, setMonthPurchases] = useState<CardTransaction[] | null>(null);
     const [activeTab, setActiveTab] = useState<CardTabKey>('transactions');
     const [topupModalOpen, setTopupModalOpen] = useState(false);
-
-    useEffect(() => {
-        fetchCards()
-            .then(setCards)
-            .finally(() => setCardsLoading(false));
-    }, []);
 
     useEffect(() => {
         if (!id) {
@@ -151,8 +140,6 @@ export function CardDetailPage() {
 
     return (
         <div className="flex flex-col gap-6">
-            <CardsStrip cards={cards} isLoading={cardsLoading} />
-
             <div>
                 <Link to="/cards" className="text-sm font-semibold text-muted hover:text-ink">
                     ← Мои карты
