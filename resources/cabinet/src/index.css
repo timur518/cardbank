@@ -693,7 +693,6 @@ body {
     color: var(--color-orange-dark);
     background: #00000050;
 }
-.mobile-tab.is-active .mobile-tab-icon { transform: translateY(-2px) scale(1.14); }
 .mobile-tab.is-active .mobile-tab-label { transform: translateY(-1px); }
 
 .mobile-tabbar-item {
