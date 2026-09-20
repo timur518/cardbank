@@ -35,7 +35,8 @@ function isTabActive(pathname: string, tab: TabDef): boolean {
  * как нативное приложение.
  *
  * Переход между разделами сопровождается скользящим индикатором активного
- * пункта: мягкая подсветка плавно перемещается под иконкой нового раздела
+ * пункта: скруглённый «пузырь»-подсветка, охватывающая иконку и подпись целиком, плавно
+ * переезжает к новому разделу
  * (translateX с пружинящим cubic-bezier), а сама иконка слегка приподнимается и
  * увеличивается — вместо того, чтобы активный пункт просто резко менял цвет.
  * Позиция индикатора считается через refs (getBoundingClientRect), пересчитывается
@@ -48,7 +49,7 @@ function isTabActive(pathname: string, tab: TabDef): boolean {
 export function MobileTabBar() {
     const location = useLocation();
     const tabRefs = useRef<Array<HTMLAnchorElement | null>>([]);
-    const [indicator, setIndicator] = useState({ x: 0, visible: false });
+    const [indicator, setIndicator] = useState({ x: 0, y: 0, width: 0, height: 0, visible: false });
 
     function measure() {
         const activeIndex = TABS.findIndex((tab) => isTabActive(location.pathname, tab));
@@ -59,9 +60,16 @@ export function MobileTabBar() {
             return;
         }
 
-        // Центр найденной ссылки минус половина ширины индикатора (38px) даёт
-        // координату, на которую нужно сдвинуть индикатор transform'ом.
-        setIndicator({ x: el.offsetLeft + el.offsetWidth / 2 - 19, visible: true });
+        // Индикатор повторяет размер и позицию всей ссылки (иконка + подпись
+        // вместе), а не только иконки — активный раздел целиком оказывается
+        // внутри скруглённого «пузыря» подсветки.
+        setIndicator({
+            x: el.offsetLeft,
+            y: el.offsetTop,
+            width: el.offsetWidth,
+            height: el.offsetHeight,
+            visible: true,
+        });
     }
 
     useLayoutEffect(measure, [location.pathname]);
@@ -78,7 +86,11 @@ export function MobileTabBar() {
         <nav className="mobile-tabbar lg:hidden">
             <span
                 className={`mobile-tab-indicator${indicator.visible ? ' is-visible' : ''}`}
-                style={{ transform: `translateX(${indicator.x}px)` }}
+                style={{
+                    transform: `translate(${indicator.x}px, ${indicator.y}px)`,
+                    width: indicator.width,
+                    height: indicator.height,
+                }}
             />
 
             {TABS.slice(0, 2).map((tab, index) => (

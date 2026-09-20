@@ -610,17 +610,16 @@ body {
    стекинг-контекст) держит её позади иконок и подписей, но поверх фона панели. */
 .mobile-tab-indicator {
     position: absolute;
-    top: 4px;
+    top: 0;
     left: 0;
-    width: 38px;
-    height: 38px;
-    border-radius: 999px;
+    border-radius: 20px;
     background: linear-gradient(135deg, rgba(243, 115, 56, .18), rgba(243, 115, 56, .08));
     box-shadow: inset 0 0 0 1px rgba(243, 115, 56, .18);
     opacity: 0;
     z-index: -1;
     pointer-events: none;
-    transition: transform .45s cubic-bezier(.22, 1, .36, 1), opacity .25s ease;
+    transition: transform .45s cubic-bezier(.22, 1, .36, 1), width .45s cubic-bezier(.22, 1, .36, 1),
+        height .45s cubic-bezier(.22, 1, .36, 1), opacity .25s ease;
 }
 .mobile-tab-indicator.is-visible { opacity: 1; }
 
