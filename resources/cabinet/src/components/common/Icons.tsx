@@ -10,8 +10,9 @@ export {
     ClockIcon as HistoryIcon,
     UserIcon as ProfileIcon,
     PlusIcon,
-    // Новая карта — отдельная от PlusIcon (та занята под кнопку «Пополнить») иконка «добавить».
-    PlusCircleIcon as NewCardIcon,
+    // Новая карта — иконка банковской карты (в heroicons нет варианта с двумя картами,
+    // только одна CreditCardIcon — та же, что и у «Мои карты»/реквизитах, это нормально).
+    CreditCardIcon as NewCardIcon,
     // Иконки строк истории операций (TransactionsTable) — по одной на CardTransactionType.
     ShoppingBagIcon as PurchaseIcon,
     ArrowDownIcon as TopupTxIcon,
