@@ -26,9 +26,15 @@ function isTabActive(pathname: string, tab: TabDef): boolean {
     return pathname === tab.to || pathname.startsWith(`${tab.to}/`);
 }
 
-// Небольшой запас сверх диагонали содержимого, чтобы круг не облегал иконку с подписью
-// впритык, а оставлял немного воздуха по краям.
-const INDICATOR_PADDING = 8;
+// Фиксированный размер овала-индикатора — один и тот же для всех пунктов меню, подобран вручную
+// через dev tools так, чтобы иконка с подписью всегда оказывались с идеальным отступом от краёв.
+const INDICATOR_WIDTH = 73;
+const INDICATOR_HEIGHT = 57;
+// Базовые top/left индикатора в CSS (см. .mobile-tab-indicator в index.css) — учитываются при
+// переводе центра активной вкладки в translate(x, y), чтобы итоговая позиция (top + y, left + x)
+// точно центрировала овал относительно иконки и подписи.
+const INDICATOR_TOP = -5;
+const INDICATOR_LEFT = -9;
 
 /**
  * Нижнее меню приложения — видно только на мобильных экранах (lg:hidden, тот же
@@ -39,13 +45,12 @@ const INDICATOR_PADDING = 8;
  * как нативное приложение.
  *
  * Переход между разделами сопровождается скользящим индикатором активного пункта:
- * идеально круглый «пузырь»-подсветка (width === height, border-radius: 50%) плавно
- * переезжает к новому разделу (translate с пружинящим cubic-bezier), а иконка и подпись
- * внутри него всегда строго по центру круга — вместо того, чтобы активный пункт просто
- * резко менял цвет. Диаметр круга считается индивидуально под каждый пункт как диагональ
- * прямоугольника «иконка + подпись» (Math.hypot) с небольшим запасом, поэтому оба элемента
- * гарантированно помещаются внутри при любой длине подписи. Позиция считается через refs,
- * пересчитывается при смене маршрута и при изменении размеров окна.
+ * овальная «пузырь»-подсветка фиксированного размера (73×57, подобран вручную через dev tools)
+ * плавно переезжает к новому разделу (translate с пружинящим cubic-bezier), а иконка и подпись внутри
+ * него всегда строго по центру овала — вместо того, чтобы активный пункт просто резко менял
+ * цвет. Центр активной вкладки (иконка + подпись вместе) считается через refs, и овал
+ * центрируется на нём transform: translate(x, y) поверх базовых top/left из CSS. Пересчитывается
+ * при смене маршрута и при изменении размеров окна.
  *
  * Центральный пункт «Пополнить» — приподнятая акцентная кнопка (FAB) ведёт на
  * /topup: если у пользователя ровно одна активная карта — сразу открывает её
@@ -54,7 +59,7 @@ const INDICATOR_PADDING = 8;
 export function MobileTabBar() {
     const location = useLocation();
     const contentRefs = useRef<Array<HTMLSpanElement | null>>([]);
-    const [indicator, setIndicator] = useState({ x: 0, y: 0, size: 0, visible: false });
+    const [indicator, setIndicator] = useState({ x: 0, y: 0, visible: false });
 
     function measure() {
         const activeIndex = TABS.findIndex((tab) => isTabActive(location.pathname, tab));
@@ -65,15 +70,12 @@ export function MobileTabBar() {
             return;
         }
 
-        // Измеряем именно внутренний блок «иконка + подпись» (без паддингов ссылки) —
-        // диаметр круга равен его диагонали с небольшим запасом, поэтому оба элемента
-        // всегда целиком укладываются внутри идеально круглого индикатора.
-        const size = Math.hypot(el.offsetWidth, el.offsetHeight) + INDICATOR_PADDING;
-
+        // Центр внутреннего блока «иконка + подпись» (без паддингов ссылки). translate(x, y) добавляется
+        // к базовым top/left из CSS, поэтому итоговая позиция овала (top + y, left + x) должна равняться
+        // (centerY - height/2, centerX - width/2), отсюда x = centerX - width/2 - left, y = centerY - height/2 - top.
         setIndicator({
-            x: el.offsetLeft + el.offsetWidth / 2,
-            y: el.offsetTop + el.offsetHeight / 2,
-            size,
+            x: el.offsetLeft + el.offsetWidth / 2 - INDICATOR_WIDTH / 2 - INDICATOR_LEFT,
+            y: el.offsetTop + el.offsetHeight / 2 - INDICATOR_HEIGHT / 2 - INDICATOR_TOP,
             visible: true,
         });
     }
@@ -92,11 +94,7 @@ export function MobileTabBar() {
         <nav className="mobile-tabbar lg:hidden">
             <span
                 className={`mobile-tab-indicator${indicator.visible ? ' is-visible' : ''}`}
-                style={{
-                    width: indicator.size,
-                    height: indicator.size,
-                    transform: `translate(${indicator.x - indicator.size / 2}px, ${indicator.y - indicator.size / 2}px)`,
-                }}
+                style={{ transform: `translate(${indicator.x}px, ${indicator.y}px)` }}
             />
 
             {TABS.slice(0, 2).map((tab, index) => (
