@@ -168,3 +168,29 @@ export function TopupCardsSkeleton({ rows = 2 }: { rows?: number }) {
         </div>
     );
 }
+
+/** Блок ссылки и сетка условий на странице «Партнёрская программа»
+ * (PartnershipPage) на время загрузки условий программы. */
+export function PartnershipSkeleton() {
+    return (
+        <div className="flex flex-col gap-6" aria-hidden="true">
+            <div className="auth-panel flex flex-col gap-4 p-6 sm:p-8">
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-3 w-full max-w-md" />
+                <Skeleton className="h-12 w-full rounded-2xl" />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {Array.from({ length: 4 }).map((_, index) => (
+                    <div key={index} className="flex items-start gap-4 rounded-2xl bg-surface p-5 shadow-sm">
+                        <Skeleton className="h-11 w-11 shrink-0 rounded-full" />
+                        <div className="flex flex-1 flex-col gap-2">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-full" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
