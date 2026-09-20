@@ -1,3 +1,4 @@
+import { ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -38,14 +39,7 @@ function BrandLogo() {
     return <span className="brand-mark">{siteName}</span>;
 }
 
-function LogoutIcon() {
-    return (
-        <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 17.5v1a2.5 2.5 0 0 1-2.5 2.5h-6A2.5 2.5 0 0 1 4 18.5v-13A2.5 2.5 0 0 1 6.5 3h6A2.5 2.5 0 0 1 15 5.5v1" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h11m0 0-3.5-3.5M20 12l-3.5 3.5" />
-        </svg>
-    );
-}
+
 
 /**
  * Шапка ЛК
@@ -95,7 +89,7 @@ export function DashboardLayout() {
                             {profile?.first_name} {profile?.last_name}
                         </NavLink>
                         <button type="button" className="icon-btn" title="Выйти" aria-label="Выйти" onClick={() => logout()}>
-                            <LogoutIcon />
+                            <ArrowRightStartOnRectangleIcon className="h-[18px] w-[18px]" />
                         </button>
                     </div>
                 </div>

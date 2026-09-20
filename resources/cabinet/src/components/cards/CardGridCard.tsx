@@ -1,3 +1,4 @@
+import { MapPinIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import type { Card } from '../../api/types';
 import { formatBalanceHero, formatMoney } from '../../utils/format';
@@ -15,15 +16,6 @@ function hasAddress(card: Card): boolean {
 
 function shortAddress(card: Card): string | null {
     return card.billing_address.address ?? card.billing_address.city ?? card.billing_address.country;
-}
-
-function PinIcon() {
-    return (
-        <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z" />
-            <circle cx="12" cy="10" r="2.5" />
-        </svg>
-    );
 }
 
 // Карточка одной карты в сетке страницы «Мои карты»: сверху — тёмный визуал
@@ -88,7 +80,7 @@ export function CardGridCard({ card, monthSpend }: CardGridCardProps) {
 
                 {hasAddress(card) && (
                     <div className="flex items-center gap-2 border-t border-border pt-3 text-sm text-muted">
-                        <PinIcon />
+                        <MapPinIcon className="h-4 w-4 shrink-0" />
                         <span className="truncate">
                             <span className="font-semibold text-ink">Адрес</span> · {shortAddress(card)}
                         </span>

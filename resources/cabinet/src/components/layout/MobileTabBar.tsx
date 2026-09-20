@@ -1,4 +1,4 @@
-import { type JSX } from 'react';
+import { type ComponentType } from 'react';
 import { NavLink } from 'react-router-dom';
 import { CardsIcon, HistoryIcon, HomeIcon, PlusIcon, ProfileIcon } from '../common/Icons';
 
@@ -6,7 +6,7 @@ interface TabDef {
     to: string;
     end?: boolean;
     label: string;
-    icon: () => JSX.Element;
+    icon: ComponentType;
 }
 
 // Кнопка «Пополнить» (FAB) в этот массив не входит — она всегда рендерится отдельно по центру.

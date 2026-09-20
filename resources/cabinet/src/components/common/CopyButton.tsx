@@ -1,3 +1,4 @@
+import { CheckIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
 interface CopyButtonProps {
@@ -24,7 +25,7 @@ export function CopyButton({ value, label }: CopyButtonProps) {
     if (label) {
         return (
             <button type="button" className="btn" disabled={!value} onClick={handleClick}>
-                <CopyIcon />
+                <DocumentDuplicateIcon className="h-4 w-4" />
                 {copied ? 'Скопировано' : label}
             </button>
         );
@@ -38,24 +39,7 @@ export function CopyButton({ value, label }: CopyButtonProps) {
             onClick={handleClick}
             title={copied ? 'Скопировано' : 'Скопировать'}
         >
-            {copied ? <CheckIcon /> : <CopyIcon />}
+            {copied ? <CheckIcon className="h-4 w-4" /> : <DocumentDuplicateIcon className="h-4 w-4" />}
         </button>
-    );
-}
-
-function CopyIcon() {
-    return (
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <rect x="9" y="9" width="12" height="12" rx="2" />
-            <path strokeLinecap="round" d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
-        </svg>
-    );
-}
-
-function CheckIcon() {
-    return (
-        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
     );
 }

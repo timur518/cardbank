@@ -1,3 +1,4 @@
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchCards } from '../../api/cards';
@@ -100,10 +101,7 @@ export function CardsPage() {
 
             <div className="flex flex-wrap items-center gap-3">
                 <label className="cards-search">
-                    <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                        <circle cx="11" cy="11" r="7" />
-                        <path strokeLinecap="round" d="m21 21-4.3-4.3" />
-                    </svg>
+                    <MagnifyingGlassIcon className="h-4 w-4 shrink-0" />
                     <input
                         type="text"
                         placeholder="Поиск по названию, последним 4 цифрам, валюте…"

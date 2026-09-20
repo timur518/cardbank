@@ -1,3 +1,4 @@
+import { BuildingLibraryIcon, CreditCardIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import type { PaymentMethod } from '../../api/types';
 import { formatRub } from '../../utils/format';
 
@@ -15,31 +16,14 @@ function isSbp(method: PaymentMethod): boolean {
 
 function PaymentMethodIcon({ method }: { method: PaymentMethod }) {
     if (method.type === 'card') {
-        return (
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
-                <path strokeLinecap="round" d="M2.5 9.5h19" />
-                <path strokeLinecap="round" d="M6 15h4" />
-            </svg>
-        );
+        return <CreditCardIcon className="h-5 w-5" />;
     }
 
     if (isSbp(method)) {
-        return (
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                <rect x="3" y="3" width="7" height="7" rx="1.2" />
-                <rect x="14" y="3" width="7" height="7" rx="1.2" />
-                <rect x="3" y="14" width="7" height="7" rx="1.2" />
-                <path strokeLinecap="round" d="M14 14h3m4 0h0M14 17.5h7M17.5 14v7" />
-            </svg>
-        );
+        return <QrCodeIcon className="h-5 w-5" />;
     }
 
-    return (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3 10l9-6 9 6M4.5 9.5V19h15V9.5M9 19v-6h6v6" />
-        </svg>
-    );
+    return <BuildingLibraryIcon className="h-5 w-5" />;
 }
 
 // Один способ оплаты на шаге выпуска/пополнения карты. Описание — диапазон сумм

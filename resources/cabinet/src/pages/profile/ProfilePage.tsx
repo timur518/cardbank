@@ -1,3 +1,4 @@
+import { LockClosedIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useState, type FormEvent } from 'react';
 import { updatePassword } from '../../api/auth';
 import { extractErrorMessage } from '../../api/client';
@@ -77,10 +78,7 @@ function ProfileDataSection() {
         <section className="auth-panel p-6">
             <div className="mb-5 flex items-center gap-3">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f3f0ee] text-ink">
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                        <circle cx="12" cy="8" r="3.5" />
-                        <path strokeLinecap="round" d="M4.5 20c1.4-4 4.2-6 7.5-6s6.1 2 7.5 6" />
-                    </svg>
+                    <UserIcon className="h-5 w-5" />
                 </span>
                 <div>
                     <h2 className="text-base font-extrabold tracking-tight text-ink">Мои данные</h2>
@@ -176,10 +174,7 @@ function SecuritySection() {
         <section className="auth-panel p-6">
             <div className="mb-5 flex items-center gap-3">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f3f0ee] text-ink">
-                    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                        <rect x="5" y="10.5" width="14" height="9.5" rx="2.2" />
-                        <path strokeLinecap="round" d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
-                    </svg>
+                    <LockClosedIcon className="h-5 w-5" />
                 </span>
                 <div>
                     <h2 className="text-base font-extrabold tracking-tight text-ink">Безопасность</h2>

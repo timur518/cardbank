@@ -1,3 +1,5 @@
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
+
 interface CardFaceProps {
     flipped: boolean;
     onFlip: () => void;
@@ -109,10 +111,7 @@ function FlipButton({ onClick }: { onClick: () => void }) {
             title="Перевернуть карту"
             className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm transition hover:bg-white/20"
         >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.5 9.5a6 6 0 1 0-1.5 6.5" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.5 4.5v5h-5" />
-            </svg>
+            <ArrowPathIcon className="h-4 w-4" />
         </button>
     );
 }

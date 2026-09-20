@@ -1,5 +1,5 @@
 import type { CardStatus, CardTransactionStatus, CardTransactionType } from '../api/types';
-import type { JSX } from 'react';
+import type { ComponentType } from 'react';
 import { DeclineIcon, FeeIcon, PurchaseIcon, RefundIcon, TopupTxIcon } from '../components/common/Icons';
 import type { StatusTone } from '../components/common/StatusPill';
 
@@ -49,7 +49,7 @@ export const TRANSACTION_STATUS_TONES: Record<CardTransactionStatus, StatusTone>
 };
 
 // Иконка строки в списке операций (TransactionsTable) — подбирается по CardTransactionType.
-export const TRANSACTION_TYPE_ICONS: Record<CardTransactionType, () => JSX.Element> = {
+export const TRANSACTION_TYPE_ICONS: Record<CardTransactionType, ComponentType> = {
     purchase: PurchaseIcon,
     topup: TopupTxIcon,
     fee: FeeIcon,

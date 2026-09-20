@@ -1,3 +1,4 @@
+import { CreditCardIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { useEffect, useRef, useState, type ReactNode, type TransitionEvent } from 'react';
 import type { CardDetail, CardRequisites } from '../../api/types';
 import { CopyButton } from '../common/CopyButton';
@@ -105,17 +106,7 @@ export function RequisitesPanel({ card, cardholderName, requisites, requisitesLo
         <div className="auth-panel p-6">
             <div className="mb-2 flex items-center gap-3">
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f3f0ee] text-ink">
-                    {displayedMode === 'card' ? (
-                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                            <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
-                            <path strokeLinecap="round" d="M2.5 9.5h19" />
-                        </svg>
-                    ) : (
-                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                            <path d="M12 21s-7-6.1-7-11a7 7 0 0 1 14 0c0 4.9-7 11-7 11z" />
-                            <circle cx="12" cy="10" r="2.5" />
-                        </svg>
-                    )}
+                    {displayedMode === 'card' ? <CreditCardIcon className="h-5 w-5" /> : <MapPinIcon className="h-5 w-5" />}
                 </span>
                 <div>
                     <h2 className="text-base font-extrabold tracking-tight text-ink">
