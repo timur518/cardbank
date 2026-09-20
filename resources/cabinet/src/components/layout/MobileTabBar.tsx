@@ -37,8 +37,11 @@ const INDICATOR_TOP = 6;
 const INDICATOR_LEFT = 6;
 
 /**
- * Нижнее меню приложения — видно ТОЛЬКО на мобильных экранах (md:hidden, скрывается уже с 768px,
- * тот же порог, что и у горизонтального меню в шапке, которое появляется с той же ширины — никакой
+ * Нижнее меню приложения — видно ТОЛЬКО на мобильных экранах, скрывается с 768px вверх через
+ * @media (min-width: 768px) { display: none } в самом index.css (а не через Tailwind-класс
+ * md:hidden — .mobile-tabbar здесь кастомный класс вне @layer, а Tailwind-утилиты лежат внутри
+ * @layer utilities, и нелейерный display: flex здесь всегда побеждал бы лейерный md:hidden).
+ * Тот же порог 768px и у горизонтального меню в шапке (появляется с md:flex) — никакой
  * «дыры» без навигации между ними нет. Заменяет
  * собой навигацию из шапки. Плавающая закруглённая панель с отступом 5px от
  * нижней границы экрана и полупрозрачным фоном с блюром — точно как шапка
@@ -92,7 +95,7 @@ export function MobileTabBar() {
     }, [location.pathname]);
 
     return (
-        <nav className="mobile-tabbar md:hidden">
+        <nav className="mobile-tabbar">
             <span
                 className="mobile-tab-indicator"
                 style={{ transform: `translate(${indicator.x}px, ${indicator.y}px)` }}
