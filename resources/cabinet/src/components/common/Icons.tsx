@@ -61,3 +61,63 @@ export function NewCardIcon() {
         </svg>
     );
 }
+
+// Далее — иконки для строк истории операций (TransactionsTable) — по одной на каждый
+// CardTransactionType (purchase/topup/fee/refund/decline) и отдельно ClockIcon для
+// пометки операций в статусе pending («в обработке на стороне эмитента»).
+
+export function PurchaseIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 8h12l-1 12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 8Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 8V6a3 3 0 0 1 6 0v2" />
+        </svg>
+    );
+}
+
+export function TopupTxIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 13l6 6 6-6" />
+        </svg>
+    );
+}
+
+export function FeeIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+            <circle cx="12" cy="12" r="9" />
+            <path strokeLinecap="round" d="M9 15 15 9" />
+            <circle cx="9.5" cy="9.5" r="1" fill="currentColor" stroke="none" />
+            <circle cx="14.5" cy="14.5" r="1" fill="currentColor" stroke="none" />
+        </svg>
+    );
+}
+
+export function RefundIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7 4 11l4 4" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 11h11a5 5 0 0 1 0 10h-2" />
+        </svg>
+    );
+}
+
+export function DeclineIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+            <circle cx="12" cy="12" r="9" />
+            <path strokeLinecap="round" d="M9.5 9.5l5 5M14.5 9.5l-5 5" />
+        </svg>
+    );
+}
+
+export function ClockIcon() {
+    return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+            <circle cx="12" cy="12" r="9" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5l3.5 2" />
+        </svg>
+    );
+}

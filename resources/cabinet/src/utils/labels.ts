@@ -1,4 +1,6 @@
 import type { CardStatus, CardTransactionStatus, CardTransactionType } from '../api/types';
+import type { JSX } from 'react';
+import { DeclineIcon, FeeIcon, PurchaseIcon, RefundIcon, TopupTxIcon } from '../components/common/Icons';
 import type { StatusTone } from '../components/common/StatusPill';
 
 // Зеркалит getLabel() соответствующих PHP-энамов (CardStatus, CardTransactionType,
@@ -44,4 +46,13 @@ export const TRANSACTION_STATUS_TONES: Record<CardTransactionStatus, StatusTone>
     pending: 'warning',
     declined: 'danger',
     reversed: 'gray',
+};
+
+// Иконка строки в списке операций (TransactionsTable) — подбирается по CardTransactionType.
+export const TRANSACTION_TYPE_ICONS: Record<CardTransactionType, () => JSX.Element> = {
+    purchase: PurchaseIcon,
+    topup: TopupTxIcon,
+    fee: FeeIcon,
+    refund: RefundIcon,
+    decline: DeclineIcon,
 };

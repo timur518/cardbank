@@ -1,49 +1,118 @@
 import type { CardTransaction } from '../../api/types';
-import { formatDateTime, formatMoney } from '../../utils/format';
-import { TRANSACTION_STATUS_LABELS, TRANSACTION_STATUS_TONES, TRANSACTION_TYPE_LABELS } from '../../utils/labels';
-import { StatusPill } from '../common/StatusPill';
+import { ClockIcon } from '../common/Icons';
+import { formatMoney } from '../../utils/format';
+import { TRANSACTION_TYPE_ICONS, TRANSACTION_TYPE_LABELS } from '../../utils/labels';
 
 interface TransactionsTableProps {
     transactions: CardTransaction[];
     emptyMessage?: string;
 }
 
-// Таблица операций по картам — переиспользуется и в блоке «последние операции» на
-// главной странице, и на полной странице «Операции».
+const MONTHS = [
+    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+];
+
+function isSameDay(a: Date, b: Date): boolean {
+    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+// Заголовок группы по дате выполнения операции: «Сегодня» / «Вчера» для последних
+// суток, «ДД месяц» для остальных операций текущего года, «ДД месяц ГГГГ» — для
+// операций прошлых лет.
+function groupTitle(occurredAt: string): string {
+    const date = new Date(occurredAt);
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+
+    if (isSameDay(date, now)) {
+        return 'Сегодня';
+    }
+    if (isSameDay(date, yesterday)) {
+        return 'Вчера';
+    }
+
+    const dayMonth = `${date.getDate()} ${MONTHS[date.getMonth()]}`;
+    return date.getFullYear() === now.getFullYear() ? dayMonth : `${dayMonth} ${date.getFullYear()}`;
+}
+
+function formatTime(occurredAt: string): string {
+    return new Date(occurredAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+}
+
+interface TransactionGroup {
+    title: string;
+    items: CardTransaction[];
+}
+
+// Список операций уже приходит с бэкенда отсортированным по occurred_at по убыванию,
+// поэтому группы формируются простым проходом по порядку — новая группа открывается
+// при смене заголовка даты у соседних операций.
+function groupTransactions(transactions: CardTransaction[]): TransactionGroup[] {
+    const groups: TransactionGroup[] = [];
+
+    for (const tx of transactions) {
+        const title = groupTitle(tx.occurred_at);
+        const current = groups[groups.length - 1];
+
+        if (current && current.title === title) {
+            current.items.push(tx);
+        } else {
+            groups.push({ title, items: [tx] });
+        }
+    }
+
+    return groups;
+}
+
+// Список операций по картам — переиспользуется и в блоке «последние операции» на
+// главной странице, и на полной странице «Операции», и во вкладке карты.
 export function TransactionsTable({ transactions, emptyMessage = 'Операций пока нет.' }: TransactionsTableProps) {
     if (transactions.length === 0) {
         return <p className="py-8 text-center text-sm text-muted">{emptyMessage}</p>;
     }
 
+    const groups = groupTransactions(transactions);
+
     return (
-        <div className="overflow-x-auto">
-            <table className="data-table">
-                <thead>
-                    <tr>
-                        <th>Дата</th>
-                        <th>Тип</th>
-                        <th>Продавец</th>
-                        <th>Сумма</th>
-                        <th>Статус</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {transactions.map((tx) => (
-                        <tr key={tx.id}>
-                            <td className="whitespace-nowrap">{formatDateTime(tx.occurred_at)}</td>
-                            <td>{TRANSACTION_TYPE_LABELS[tx.type]}</td>
-                            <td>{tx.merchant ?? '—'}</td>
-                            <td className="font-semibold whitespace-nowrap">{formatMoney(tx.amount, tx.currency)}</td>
-                            <td>
-                                <StatusPill
-                                    label={TRANSACTION_STATUS_LABELS[tx.status]}
-                                    tone={TRANSACTION_STATUS_TONES[tx.status]}
-                                />
-                            </td>
-                        </tr>
+        <div className="tx-list">
+            {groups.map((group) => (
+                <div key={group.title} className="tx-group">
+                    <div className="tx-group-title">{group.title}</div>
+                    {group.items.map((tx) => (
+                        <TransactionRow key={tx.id} tx={tx} />
                     ))}
-                </tbody>
-            </table>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function TransactionRow({ tx }: { tx: CardTransaction }) {
+    const Icon = TRANSACTION_TYPE_ICONS[tx.type];
+    const typeLabel = TRANSACTION_TYPE_LABELS[tx.type];
+    const isPending = tx.status === 'pending';
+
+    return (
+        <div className="tx-row">
+            <span className="tx-icon">
+                <Icon />
+            </span>
+            <span className="tx-info">
+                <span className="tx-title">{tx.merchant ?? typeLabel}</span>
+                <span className="tx-subtitle">
+                    {tx.merchant ? typeLabel : formatTime(tx.occurred_at)}
+                </span>
+            </span>
+            <span className="tx-amount-wrap">
+                {isPending && (
+                    <span className="tx-pending-icon" title="В обработке на стороне эмитента">
+                        <ClockIcon />
+                    </span>
+                )}
+                <span className="tx-amount">{formatMoney(tx.amount, tx.currency)}</span>
+            </span>
         </div>
     );
 }

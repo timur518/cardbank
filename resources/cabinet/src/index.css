@@ -356,26 +356,86 @@ body {
     color: var(--color-orange-dark);
 }
 
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: .88rem;
+/*
+ * Список операций (TransactionsTable) — сгруппирован по дате выполнения («Сегодня»,
+ * «Вчера», дальше датами) вместо таблицы с отдельной колонкой статуса (её больше
+ * нет — статус pending показывается иконкой часов рядом с суммой).
+ */
+.tx-group + .tx-group {
+    margin-top: 1.25rem;
 }
-.data-table th {
-    text-align: left;
+.tx-group-title {
     font-size: .74rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .03em;
     color: var(--color-muted);
-    padding: 0 .9rem .6rem;
+    padding: 0 .2rem .5rem;
 }
-.data-table td {
-    padding: .85rem .9rem;
+.tx-row {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .7rem .2rem;
     border-top: 1px solid var(--color-border);
-    color: var(--color-ink);
 }
-.data-table tr:first-child td { border-top: none; }
+.tx-group .tx-row:first-child {
+    border-top: none;
+}
+.tx-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: var(--color-bg);
+    color: var(--color-muted);
+}
+.tx-icon svg {
+    width: 20px;
+    height: 20px;
+}
+.tx-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+.tx-title {
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tx-subtitle {
+    font-size: .78rem;
+    color: var(--color-muted);
+}
+.tx-amount-wrap {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    flex-shrink: 0;
+}
+.tx-pending-icon {
+    display: flex;
+    color: var(--color-muted);
+}
+.tx-pending-icon svg {
+    width: 15px;
+    height: 15px;
+}
+.tx-amount {
+    font-size: .92rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    white-space: nowrap;
+}
 
 .status-pill {
     display: inline-flex;
