@@ -431,6 +431,10 @@ html::-webkit-scrollbar {
     font-weight: 700;
     line-height: 1;
 }
+.tx-icon-danger {
+    background: #fdecea;
+    color: var(--color-orange-dark);
+}
 .tx-info {
     display: flex;
     flex-direction: column;
@@ -468,6 +472,12 @@ html::-webkit-scrollbar {
     font-weight: 700;
     color: var(--color-ink);
     white-space: nowrap;
+}
+.tx-amount-success {
+    color: #1e7a3c;
+}
+.tx-amount-danger {
+    color: var(--color-orange-dark);
 }
 
 .status-pill {

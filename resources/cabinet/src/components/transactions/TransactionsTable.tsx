@@ -1,5 +1,5 @@
 import type { CardTransaction } from '../../api/types';
-import { ClockIcon } from '../common/Icons';
+import { ClockIcon, DeclineIcon } from '../common/Icons';
 import { formatMoney } from '../../utils/format';
 import { TRANSACTION_TYPE_ICONS, TRANSACTION_TYPE_LABELS } from '../../utils/labels';
 
@@ -93,17 +93,24 @@ function TransactionRow({ tx }: { tx: CardTransaction }) {
     const Icon = TRANSACTION_TYPE_ICONS[tx.type];
     const typeLabel = TRANSACTION_TYPE_LABELS[tx.type];
     const isPending = tx.status === 'pending';
-    const merchant = tx.merchant_info;
+    // Отклонённый платёж/пополнение (например, провайдер отклонил из-за
+    // нехватки средств на мастер-балансе) — всегда красная иконка/сумма,
+    // независимо от того, что это было — покупка или пополнение.
+    const isDeclined = tx.status === 'declined';
+    const isSuccessTopup = tx.type === 'topup' && tx.status === 'success';
+    const merchant = isDeclined ? undefined : tx.merchant_info;
     const merchantName = merchant?.name ?? tx.merchant;
     const title = merchantName ?? typeLabel;
 
     return (
         <div className="tx-row">
             <span
-                className="tx-icon"
+                className={`tx-icon${isDeclined ? ' tx-icon-danger' : ''}`}
                 style={merchant ? { background: merchant.color ?? undefined, color: '#fff' } : undefined}
             >
-                {merchant?.logo_svg ? (
+                {isDeclined ? (
+                    <DeclineIcon />
+                ) : merchant?.logo_svg ? (
                     <svg viewBox="0 0 24 24" fill="currentColor" dangerouslySetInnerHTML={{ __html: merchant.logo_svg }} />
                 ) : merchant ? (
                     <span className="tx-icon-letter">{merchant.name.charAt(0).toUpperCase()}</span>
@@ -123,7 +130,11 @@ function TransactionRow({ tx }: { tx: CardTransaction }) {
                         <ClockIcon />
                     </span>
                 )}
-                <span className="tx-amount">{formatMoney(tx.amount, tx.currency)}</span>
+                <span
+                    className={`tx-amount${isSuccessTopup ? ' tx-amount-success' : ''}${isDeclined ? ' tx-amount-danger' : ''}`}
+                >
+                    {formatMoney(tx.amount, tx.currency)}
+                </span>
             </span>
         </div>
     );
