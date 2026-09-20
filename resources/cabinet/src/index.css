@@ -24,6 +24,26 @@ body {
     font-weight: 450;
 }
 
+/* Полоса прокрутки страницы нигде в ЛК не видна (сама прокрутка работает как обычно) —
+ * html вместо body, так как именно у него реальный overflow всей страницы. */
+html {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+html::-webkit-scrollbar {
+    display: none;
+}
+
+/* То же самое для отдельных прокручиваемых блоков внутри страницы (например,
+ * горизонтальная лента карт MobileCardsStrip) — навешивается точечно через класс. */
+.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
 /*
  * Кнопки ЛК (личный кабинет) — отдельная, более сдержанная система по сравнению с
  * маркетинговыми CTA лендинга: базовый `.btn` — нейтральная второстепенная кнопка
@@ -673,6 +693,11 @@ body {
 .modal-sheet-body {
     overflow-y: auto;
     padding: 12px 20px calc(20px + env(safe-area-inset-bottom));
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.modal-sheet-body::-webkit-scrollbar {
+    display: none;
 }
 
 @media (min-width: 640px) {
@@ -706,7 +731,7 @@ body {
     display: flex;
     align-items: flex-end;
     justify-content: space-around;
-    padding: 8px 6px;
+    padding: 6px;
     border-radius: 999px;
     background: rgb(0 0 0 / 60%);
     color: #d0c1ad;

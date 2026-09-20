@@ -23,7 +23,7 @@ const CARD_WIDTH_CLASS = 'w-[66.666vw] max-w-[280px] shrink-0';
  */
 export function MobileCardsStrip({ cards, isLoading }: MobileCardsStripProps) {
     return (
-        <div className="flex gap-3 overflow-x-auto pb-1 lg:hidden">
+        <div className="no-scrollbar flex gap-3 overflow-x-auto pb-1 lg:hidden">
             {isLoading ? (
                 <MobileCardsStripSkeleton />
             ) : (

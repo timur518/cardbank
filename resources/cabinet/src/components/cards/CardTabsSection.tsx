@@ -52,7 +52,7 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
 
     return (
         <div id="card-tabs-section" className="flex flex-col gap-4">
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="no-scrollbar flex gap-2 overflow-x-auto">
                 {TABS.map((tab) => (
                     <button
                         key={tab.key}
