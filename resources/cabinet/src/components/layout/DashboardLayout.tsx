@@ -37,7 +37,7 @@ export function DashboardLayout() {
             <header
                 className={`site-header sticky top-[20px] z-30 mt-[20px] px-4 lg:px-8 ${scrolled ? 'is-scrolled' : ''}`}
             >
-                <div className="nav-pill mx-auto flex max-w-[1200px] items-center justify-between gap-4 rounded-full px-5 py-3 sm:px-7">
+                <div className="nav-pill mx-auto flex max-w-[1000px] items-center justify-between gap-4 rounded-full px-5 py-3 sm:px-7">
                     <NavLink to="/">
                         <BrandLogo />
                     </NavLink>
