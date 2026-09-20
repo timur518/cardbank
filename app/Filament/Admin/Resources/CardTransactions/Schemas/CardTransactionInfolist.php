@@ -33,6 +33,10 @@ class CardTransactionInfolist
                 TextEntry::make('status')->label('Статус')->badge(),
                 TextEntry::make('decline_reason')->label('Причина отказа')->placeholder('—'),
                 TextEntry::make('provider_tx_id')->label('ID операции у провайдера')->placeholder('—'),
+                TextEntry::make('origin_tx_id')
+                    ->label('ID исходного холда')
+                    ->placeholder('—')
+                    ->helperText('originTxId/originTxnId у CardsPro — если заполнен, расчёт был слит с этим холдом в одну запись.'),
                 TextEntry::make('occurred_at')->label('Дата операции')->dateTime('d.m.Y H:i'),
             ]);
     }

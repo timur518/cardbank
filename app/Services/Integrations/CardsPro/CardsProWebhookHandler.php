@@ -214,27 +214,27 @@ class CardsProWebhookHandler
         $fee = isset($payload['fee']) ? (float) $payload['fee'] : 0.0;
         $amount = ((float) ($payload['billAmount'] ?? $payload['txAmount'] ?? 0)) + $fee;
 
-        $isNewTransaction = ! CardTransaction::where('card_id', $card->id)
-            ->where('provider_tx_id', $providerTxId)
-            ->exists();
+        // originTxnId — id холда (authorization), который расчитывает эта операция (см.
+        // docs.cardspro.com/api/operations-callbacks) — upsertFromProvider() сольёт расчёт
+        // с его холдом в одну запись вместо второй строки на ту же покупку.
+        $originTxId = ($payload['originTxnId'] ?? null) !== null ? (string) $payload['originTxnId'] : null;
 
-        CardTransaction::updateOrCreate(
-            ['card_id' => $card->id, 'provider_tx_id' => $providerTxId],
-            [
-                'type' => $type,
-                'amount' => $amount,
-                'commission_amount' => isset($payload['fee']) ? $fee : null,
-                'currency' => $payload['billCurrency'] ?? $card->currency,
-                'merchant' => $payload['merchantName'] ?? null,
-                'status' => $status,
-                'decline_reason' => $payload['declineReason'] ?? null,
-                'occurred_at' => $payload['txDate'] ?? now(),
-            ]
-        );
+        $result = CardTransaction::upsertFromProvider($card->id, [
+            'provider_tx_id' => $providerTxId,
+            'origin_tx_id' => $originTxId,
+            'type' => $type,
+            'amount' => $amount,
+            'commission_amount' => isset($payload['fee']) ? $fee : null,
+            'currency' => $payload['billCurrency'] ?? $card->currency,
+            'merchant' => $payload['merchantName'] ?? null,
+            'status' => $status,
+            'decline_reason' => $payload['declineReason'] ?? null,
+            'occurred_at' => $payload['txDate'] ?? now(),
+        ]);
 
-        // Баланс двигаем только один раз, при первом получении события на этот
-        // provider_tx_id — повторная доставка того же вебхука не должна списывать дважды.
-        if ($isNewTransaction && $balanceSign !== 0 && $amount > 0) {
+        // Баланс двигаем только один раз, при первом получении этой операции — повторная
+        // доставка того же вебхука не должна списывать дважды.
+        if ($result['isNew'] && $balanceSign !== 0 && $amount > 0) {
             $card->increment('balance', $balanceSign * $amount);
         }
     }

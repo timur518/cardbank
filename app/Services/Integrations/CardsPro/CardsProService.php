@@ -413,8 +413,14 @@ class CardsProService implements CardProviderIntegration
     /**
      * Одна операция из вебхука CARD_TRANSACTION (см. docs.cardspro.com/api/operations-callbacks) —
      * `txId`, `txType`, `billAmount`, `billCurrency`, `merchantName`, `declineReason`,
-     * `txDate`, `fee`. Для ответа `GET /{san}/transactions` см. {@see normalizePolledTransaction()}
-     * — там другие имена полей.
+     * `txDate`, `fee`, `originTxnId`. Для ответа `GET /{san}/transactions` см. {@see normalizePolledTransaction()}
+     * — там другие имена полей (`originTxId`, без «n»).
+     *
+     * `originTxnId`/`originTxId` — id холда (authorization), который расчётывается
+     * этой операцией (или исходной покупки — для reversal/refund); используется в
+     * {@see \App\Models\CardTransaction::upsertFromProvider()}, чтобы слить расчёт с его же холдом
+     * в одну строку вместо двух (раньше одна и та же покупка давала дубль — сначала
+     * строку на авторизацию, затем вторую на расчёт с другим provider_tx_id).
      *
      * `billAmount` — сумма до комиссии (по аналогии с `transactionValue` в `GET /{san}/transactions`,
      * где это явно задокументировано), а `fee` — отдельная комиссия, списываемая
@@ -423,7 +429,7 @@ class CardsProService implements CardProviderIntegration
      * на величину комиссии.
      *
      * @param  array<string, mixed>  $payload
-     * @return array{provider_tx_id: string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
+     * @return array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
      */
     public static function normalizeTransactionPayload(array $payload): array
     {
@@ -433,6 +439,7 @@ class CardsProService implements CardProviderIntegration
 
         return [
             'provider_tx_id' => (string) ($payload['txId'] ?? ''),
+            'origin_tx_id' => ($payload['originTxnId'] ?? null) !== null ? (string) $payload['originTxnId'] : null,
             'type' => $type,
             'status' => $status,
             'amount' => $amount,
@@ -459,7 +466,7 @@ class CardsProService implements CardProviderIntegration
      * оборот и в баланс карты, а не `transactionValue` без комиссии.
      *
      * @param  array<string, mixed>  $payload
-     * @return array{provider_tx_id: string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
+     * @return array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
      */
     public static function normalizePolledTransaction(array $payload): array
     {
@@ -468,6 +475,7 @@ class CardsProService implements CardProviderIntegration
 
         return [
             'provider_tx_id' => (string) ($payload['transactionId'] ?? ''),
+            'origin_tx_id' => ($payload['originTxId'] ?? null) !== null ? (string) $payload['originTxId'] : null,
             'type' => $type,
             'status' => $status,
             'amount' => $amount,

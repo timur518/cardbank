@@ -18,9 +18,10 @@ use Throwable;
  * Универсальная подстраховка на случай потерянных вебхуков CARD_TRANSACTION: по каждой
  * активной/замороженной карте у каждого активного провайдера докачивает операции с
  * отметки `history_checked_at` (или с даты выпуска карты, если ещё ни разу не
- * проверяли), создаёт недостающие {@see CardTransaction} (идемпотентно по
- * `provider_tx_id` — как и обработчик вебхука) и двигает баланс карты только для
- * впервые увиденных операций.
+ * проверяли), создаёт недостающие {@see CardTransaction} и двигает баланс карты
+ * только для впервые увиденных операций — идемпотентно через
+ * {@see CardTransaction::upsertFromProvider()} (как и обработчик вебхука), там же
+ * сливающий расчёт с его холдом по origin_tx_id вместо второй строки на ту же покупку.
  */
 class SyncCardTransactions extends Command
 {
@@ -59,25 +60,11 @@ class SyncCardTransactions extends Command
                                 continue;
                             }
 
-                            $isNew = ! CardTransaction::where('card_id', $card->id)
-                                ->where('provider_tx_id', $tx['provider_tx_id'])
-                                ->exists();
+                            $tx['currency'] = $tx['currency'] ?: $card->currency;
 
-                            CardTransaction::updateOrCreate(
-                                ['card_id' => $card->id, 'provider_tx_id' => $tx['provider_tx_id']],
-                                [
-                                    'type' => $tx['type'],
-                                    'amount' => $tx['amount'],
-                                    'commission_amount' => $tx['commission_amount'],
-                                    'currency' => $tx['currency'] ?: $card->currency,
-                                    'merchant' => $tx['merchant'],
-                                    'status' => $tx['status'],
-                                    'decline_reason' => $tx['decline_reason'],
-                                    'occurred_at' => $tx['occurred_at'],
-                                ]
-                            );
+                            $result = CardTransaction::upsertFromProvider($card->id, $tx);
 
-                            if ($isNew) {
+                            if ($result['isNew']) {
                                 $createdTotal++;
 
                                 if ($tx['balance_delta'] !== 0.0) {

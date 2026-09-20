@@ -35,6 +35,7 @@ interface CardProviderIntegration
      *
      * @return array<int, array{
      *     provider_tx_id: string,
+     *     origin_tx_id: ?string,
      *     type: \App\Enums\CardTransactionType,
      *     status: \App\Enums\CardTransactionStatus,
      *     amount: float,
