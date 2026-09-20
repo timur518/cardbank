@@ -804,7 +804,7 @@ html::-webkit-scrollbar {
     border-radius: 999px;
     border: none;
     background: var(--color-orange);
-    color: #fff;
+    color: #d0c1ad;
     box-shadow: 0 10px 22px rgba(243, 115, 56, .4);
     transform: translateY(-14px);
     transition: transform .15s ease, background .15s ease;
