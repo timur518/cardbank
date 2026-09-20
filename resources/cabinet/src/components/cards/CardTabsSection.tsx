@@ -89,7 +89,13 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                             </div>
                         </div>
 
-                        {isLoading ? <TransactionsSkeleton /> : <TransactionsTable transactions={transactions} />}
+                        {isLoading ? (
+                            <TransactionsSkeleton />
+                        ) : (
+                            <div className="fade-in-up">
+                                <TransactionsTable transactions={transactions} />
+                            </div>
+                        )}
 
                         {meta && meta.last_page > 1 && (
                             <div className="mt-4 flex items-center justify-center gap-4">

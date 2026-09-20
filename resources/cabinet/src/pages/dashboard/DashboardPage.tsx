@@ -63,7 +63,7 @@ export function DashboardPage() {
                         {cardsLoading ? (
                             <Skeleton className="h-7 w-24" />
                         ) : (
-                            <span className="stat-balance-amount" ref={balanceRef}>
+                            <span className="stat-balance-amount fade-in-up" ref={balanceRef}>
                                 {balanceText}
                             </span>
                         )}
@@ -86,7 +86,13 @@ export function DashboardPage() {
                         История последних операций
                     </h2>
 
-                    {transactionsLoading ? <TransactionsSkeleton rows={4} /> : <TransactionsTable transactions={transactions} />}
+                    {transactionsLoading ? (
+                        <TransactionsSkeleton rows={4} />
+                    ) : (
+                        <div className="fade-in-up">
+                            <TransactionsTable transactions={transactions} />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

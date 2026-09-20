@@ -26,7 +26,13 @@ export function TransactionsPage() {
             <h1 className="text-2xl font-extrabold tracking-tight text-ink">Операции</h1>
 
             <div className="auth-panel p-6">
-                {isLoading ? <TransactionsSkeleton rows={8} /> : <TransactionsTable transactions={transactions} />}
+                {isLoading ? (
+                    <TransactionsSkeleton rows={8} />
+                ) : (
+                    <div className="fade-in-up">
+                        <TransactionsTable transactions={transactions} />
+                    </div>
+                )}
 
                 {meta && meta.last_page > 1 && (
                     <div className="mt-4 flex items-center justify-center gap-4">

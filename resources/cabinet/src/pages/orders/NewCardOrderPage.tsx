@@ -138,7 +138,7 @@ export function NewCardOrderPage() {
 
             <div className="apply-panel grid lg:grid-cols-[1fr_2fr]">
                 <aside className="apply-sidebar">
-                    <div className="apply-card-list">
+                    <div className="apply-card-list fade-in-up">
                         {products.map((product) => (
                             <CardProductOption
                                 key={product.id}
@@ -151,7 +151,7 @@ export function NewCardOrderPage() {
                 </aside>
 
                 <div className="apply-form-wrap">
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit} className="fade-in-up">
                         <div className="apply-field">
                             <label>Способ оплаты</label>
                             <div className="apply-pay-list">

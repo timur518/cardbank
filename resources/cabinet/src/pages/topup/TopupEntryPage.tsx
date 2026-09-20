@@ -48,7 +48,7 @@ export function TopupEntryPage() {
         return (
             <div className="flex flex-col gap-6">
                 <h1 className="text-2xl font-extrabold tracking-tight text-ink">Пополнить карту</h1>
-                <div className="auth-panel flex flex-col items-center gap-4 p-8 text-center">
+                <div className="auth-panel flex flex-col items-center gap-4 p-8 text-center fade-in-up">
                     <p className="text-sm text-muted">Нет активных карт для пополнения.</p>
                     <Link to="/cards/new" className="btn btn-primary">
                         Выпустить карту
@@ -62,7 +62,7 @@ export function TopupEntryPage() {
         <div className="flex flex-col gap-6">
             <h1 className="text-2xl font-extrabold tracking-tight text-ink">Выберите карту для пополнения</h1>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 fade-in-up">
                 {activeCards.map((card) => (
                     <Link
                         key={card.id}

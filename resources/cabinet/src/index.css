@@ -823,3 +823,18 @@ body {
 @keyframes skeleton-shimmer {
     100% { transform: translateX(100%); }
 }
+
+/*
+ * Входная анимация для контента, который приходит на смену скелетону (Skeleton.tsx) —
+ * лёгкий fade+slide вместо резкой подмены DOM. Скелетон и реальный контент —
+ * разные элементы/компоненты в одной и той же позиции дерева, поэтому React всегда
+ * перемонтирует узел при переключении — анимация запускается заново каждый раз, когда
+ * скелетон сменяется данными (включая повторные загрузки/пагинацию, не только первый).
+ */
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+    animation: fade-in-up .35s cubic-bezier(.16, 1, .3, 1);
+}

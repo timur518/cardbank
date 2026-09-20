@@ -164,7 +164,7 @@ export function CardDetailPage() {
                 {!cardLoading && cardError && <p className="form-error-banner">{cardError}</p>}
 
                 {!cardLoading && card && (
-                    <>
+                    <div className="flex flex-col gap-6 fade-in-up">
                         <div className="grid gap-6 lg:grid-cols-2">
                             <div className="flex flex-col gap-4">
                                 <CardFace
@@ -202,9 +202,11 @@ export function CardDetailPage() {
                         </div>
 
                         <CardTabsSection card={card} activeTab={activeTab} onTabChange={setActiveTab} />
+                    </div>
+                )}
 
-                        {topupModalOpen && <TopupModal card={card} onClose={() => setTopupModalOpen(false)} />}
-                    </>
+                {!cardLoading && card && topupModalOpen && (
+                    <TopupModal card={card} onClose={() => setTopupModalOpen(false)} />
                 )}
             </div>
         </div>

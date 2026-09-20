@@ -88,7 +88,7 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
             {isLoading ? (
                 <PaymentMethodsSkeleton />
             ) : (
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="fade-in-up">
                         <div className="apply-field !mt-0">
                             <label>Способ оплаты</label>
                             <div className="apply-pay-list">

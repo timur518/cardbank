@@ -21,7 +21,13 @@ export function CardsSidebar({ cards, isLoading }: CardsSidebarProps) {
                 <p className="text-sm text-muted">У вас пока нет карт.</p>
             )}
 
-            {!isLoading && cards.map((card) => <CardListItem key={card.id} card={card} />)}
+            {!isLoading && cards.length > 0 && (
+                <div className="flex flex-col gap-3 fade-in-up">
+                    {cards.map((card) => (
+                        <CardListItem key={card.id} card={card} />
+                    ))}
+                </div>
+            )}
 
             <Link to="/cards/new" className="add-card-slot">
                 + Новая карта
