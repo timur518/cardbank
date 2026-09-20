@@ -4,6 +4,7 @@ import { fetchCards } from '../../api/cards';
 import { fetchTransactions } from '../../api/transactions';
 import type { Card, CardTransaction } from '../../api/types';
 import { CardsSidebar } from '../../components/cards/CardsSidebar';
+import { NewCardIcon, PlusIcon } from '../../components/common/Icons';
 import { TransactionsTable } from '../../components/transactions/TransactionsTable';
 import { formatMoney } from '../../utils/format';
 import { useFitFontSize } from '../../utils/useFitFontSize';
@@ -65,12 +66,12 @@ export function DashboardPage() {
                     </div>
 
                     <Link to="/topup" className="stat-btn">
-                        <span className="stat-btn-icon">➕</span>
+                        <span className="stat-btn-icon"><PlusIcon /></span>
                         <span className="stat-btn-label">Пополнить баланс</span>
                     </Link>
 
                     <Link to="/cards/new" className="stat-btn">
-                        <span className="stat-btn-icon">💳</span>
+                        <span className="stat-btn-icon"><NewCardIcon /></span>
                         <span className="stat-btn-label">Новая карта</span>
                     </Link>
                 </div>

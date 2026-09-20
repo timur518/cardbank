@@ -275,7 +275,12 @@ body {
     border-color: var(--color-border);
 }
 .stat-btn-icon {
-    font-size: 1.4rem;
+    display: flex;
+    color: var(--color-orange-dark);
+}
+.stat-btn-icon svg {
+    width: 24px;
+    height: 24px;
 }
 .stat-btn-label {
     font-size: .95rem;
@@ -319,7 +324,7 @@ body {
         padding: .7rem .35rem;
         text-align: center;
     }
-    .stat-btn-icon { font-size: 1.15rem; }
+    .stat-btn-icon svg { width: 19px; height: 19px; }
     .stat-btn-label {
         font-size: .66rem;
         letter-spacing: -.01em;

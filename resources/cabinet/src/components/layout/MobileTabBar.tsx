@@ -1,5 +1,6 @@
 import { type JSX } from 'react';
 import { NavLink } from 'react-router-dom';
+import { CardsIcon, HistoryIcon, HomeIcon, PlusIcon, ProfileIcon } from '../common/Icons';
 
 interface TabDef {
     to: string;
@@ -73,47 +74,3 @@ function TabLink({ tab }: { tab: TabDef }) {
     );
 }
 
-function HomeIcon() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 11.5 12 4l8 7.5" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 10v9a1 1 0 0 0 1 1h3v-5a2 2 0 0 1 4 0v5h3a1 1 0 0 0 1-1v-9" />
-        </svg>
-    );
-}
-
-function CardsIcon() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <rect x="2.5" y="5" width="19" height="14" rx="2.5" />
-            <path strokeLinecap="round" d="M2.5 9.5h19" />
-        </svg>
-    );
-}
-
-function HistoryIcon() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <circle cx="12" cy="13" r="8" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4l3 2" />
-            <path strokeLinecap="round" d="M9 3h6" />
-        </svg>
-    );
-}
-
-function ProfileIcon() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-            <circle cx="12" cy="8" r="3.5" />
-            <path strokeLinecap="round" d="M4.5 20c1.4-4 4.2-6 7.5-6s6.1 2 7.5 6" />
-        </svg>
-    );
-}
-
-function PlusIcon() {
-    return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
-            <path strokeLinecap="round" d="M12 5v14M5 12h14" />
-        </svg>
-    );
-}
