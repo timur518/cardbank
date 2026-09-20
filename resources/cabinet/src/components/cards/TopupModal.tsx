@@ -4,6 +4,7 @@ import { extractErrorMessage } from '../../api/client';
 import { topupOrder } from '../../api/orders';
 import type { CardDetail, PaymentMethod } from '../../api/types';
 import { Modal } from '../common/Modal';
+import { PaymentMethodsSkeleton } from '../common/Skeleton';
 import { PaymentMethodOption } from '../orders/PaymentMethodOption';
 
 interface TopupModalProps {
@@ -85,7 +86,7 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
     return (
         <Modal title="Пополнить карту" onClose={onClose}>
             {isLoading ? (
-                <p className="py-6 text-center text-sm text-muted">Загрузка…</p>
+                <PaymentMethodsSkeleton />
             ) : (
                 <form onSubmit={handleSubmit}>
                         <div className="apply-field !mt-0">

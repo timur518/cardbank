@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { fetchCards } from '../../api/cards';
 import type { Card } from '../../api/types';
 import { CardThumbnail } from '../../components/cards/CardThumbnail';
+import { TopupCardsSkeleton } from '../../components/common/Skeleton';
 import { formatMoney } from '../../utils/format';
 
 /**
@@ -31,7 +32,12 @@ export function TopupEntryPage() {
     }, [activeCards]);
 
     if (activeCards === null) {
-        return <p className="py-8 text-center text-sm text-muted">Загрузка…</p>;
+        return (
+            <div className="flex flex-col gap-6">
+                <h1 className="text-2xl font-extrabold tracking-tight text-ink">Пополнить карту</h1>
+                <TopupCardsSkeleton />
+            </div>
+        );
     }
 
     if (activeCards.length === 1) {

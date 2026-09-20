@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Card } from '../../api/types';
+import { CardsListSkeleton } from '../common/Skeleton';
 import { CardListItem } from './CardListItem';
 
 interface CardsSidebarProps {
@@ -14,7 +15,7 @@ export function CardsSidebar({ cards, isLoading }: CardsSidebarProps) {
         <aside className="hidden flex-col gap-3 lg:flex lg:w-[280px] lg:shrink-0">
             <h2 className="text-sm font-extrabold uppercase tracking-wide text-muted">Мои карты</h2>
 
-            {isLoading && <p className="text-sm text-muted">Загрузка…</p>}
+            {isLoading && <CardsListSkeleton />}
 
             {!isLoading && cards.length === 0 && (
                 <p className="text-sm text-muted">У вас пока нет карт.</p>

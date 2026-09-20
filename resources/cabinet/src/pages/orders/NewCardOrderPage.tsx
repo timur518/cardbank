@@ -5,6 +5,7 @@ import { extractErrorMessage } from '../../api/client';
 import { issueOrder } from '../../api/orders';
 import { fetchCurrencyRates } from '../../api/settings';
 import type { CardProduct, PaymentMethod } from '../../api/types';
+import { CardProductsSkeleton, PaymentMethodsSkeleton } from '../../components/common/Skeleton';
 import { CardProductOption } from '../../components/orders/CardProductOption';
 import { PaymentMethodOption } from '../../components/orders/PaymentMethodOption';
 import { formatRub } from '../../utils/format';
@@ -108,7 +109,19 @@ export function NewCardOrderPage() {
     }
 
     if (isLoading) {
-        return <p className="py-8 text-center text-sm text-muted">Загрузка…</p>;
+        return (
+            <div className="flex flex-col gap-6">
+                <h1 className="text-2xl font-extrabold tracking-tight text-ink">Оформление карты</h1>
+                <div className="apply-panel grid lg:grid-cols-[1fr_2fr]">
+                    <aside className="apply-sidebar">
+                        <CardProductsSkeleton />
+                    </aside>
+                    <div className="apply-form-wrap">
+                        <PaymentMethodsSkeleton />
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (loadError || products.length === 0 || methods.length === 0) {

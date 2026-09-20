@@ -5,6 +5,7 @@ import { fetchCards } from '../../api/cards';
 import { fetchCardTransactions } from '../../api/transactions';
 import type { Card, CardStatus } from '../../api/types';
 import { CardGridCard } from '../../components/cards/CardGridCard';
+import { CardsGridSkeleton } from '../../components/common/Skeleton';
 import { startOfMonth, sumSuccessfulPurchases } from '../../utils/format';
 
 type StatusFilter = 'all' | 'active' | 'frozen';
@@ -124,7 +125,7 @@ export function CardsPage() {
                 </div>
             </div>
 
-            {isLoading && <p className="text-sm text-muted">Загрузка…</p>}
+            {isLoading && <CardsGridSkeleton />}
 
             {!isLoading && filteredCards.length === 0 && (
                 <p className="text-sm text-muted">

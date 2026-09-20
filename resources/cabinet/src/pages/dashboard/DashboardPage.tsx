@@ -5,6 +5,7 @@ import { fetchTransactions } from '../../api/transactions';
 import type { Card, CardTransaction } from '../../api/types';
 import { CardsSidebar } from '../../components/cards/CardsSidebar';
 import { NewCardIcon, PlusIcon } from '../../components/common/Icons';
+import { Skeleton, TransactionsSkeleton } from '../../components/common/Skeleton';
 import { TransactionsTable } from '../../components/transactions/TransactionsTable';
 import { formatMoney } from '../../utils/format';
 import { useFitFontSize } from '../../utils/useFitFontSize';
@@ -59,9 +60,13 @@ export function DashboardPage() {
             <div className="flex flex-1 flex-col gap-8">
                 <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-4">
                     <div className="stat-btn stat-btn-static">
-                        <span className="stat-balance-amount" ref={balanceRef}>
-                            {balanceText}
-                        </span>
+                        {cardsLoading ? (
+                            <Skeleton className="h-7 w-24" />
+                        ) : (
+                            <span className="stat-balance-amount" ref={balanceRef}>
+                                {balanceText}
+                            </span>
+                        )}
                         <span className="stat-btn-value">Текущий остаток</span>
                     </div>
 
@@ -81,11 +86,7 @@ export function DashboardPage() {
                         История последних операций
                     </h2>
 
-                    {transactionsLoading ? (
-                        <p className="py-8 text-center text-sm text-muted">Загрузка…</p>
-                    ) : (
-                        <TransactionsTable transactions={transactions} />
-                    )}
+                    {transactionsLoading ? <TransactionsSkeleton rows={4} /> : <TransactionsTable transactions={transactions} />}
                 </div>
             </div>
         </div>

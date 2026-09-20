@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchTransactions } from '../../api/transactions';
 import type { CardTransaction, PaginationMeta } from '../../api/types';
+import { TransactionsSkeleton } from '../../components/common/Skeleton';
 import { TransactionsTable } from '../../components/transactions/TransactionsTable';
 
 export function TransactionsPage() {
@@ -25,11 +26,7 @@ export function TransactionsPage() {
             <h1 className="text-2xl font-extrabold tracking-tight text-ink">Операции</h1>
 
             <div className="auth-panel p-6">
-                {isLoading ? (
-                    <p className="py-8 text-center text-sm text-muted">Загрузка…</p>
-                ) : (
-                    <TransactionsTable transactions={transactions} />
-                )}
+                {isLoading ? <TransactionsSkeleton rows={8} /> : <TransactionsTable transactions={transactions} />}
 
                 {meta && meta.last_page > 1 && (
                     <div className="mt-4 flex items-center justify-center gap-4">

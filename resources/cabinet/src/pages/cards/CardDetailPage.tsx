@@ -9,6 +9,7 @@ import { CardFace } from '../../components/cards/CardFace';
 import { CardTabsSection, type CardTabKey } from '../../components/cards/CardTabsSection';
 import { CardsSidebar } from '../../components/cards/CardsSidebar';
 import { RequisitesPanel } from '../../components/cards/RequisitesPanel';
+import { CardDetailSkeleton } from '../../components/common/Skeleton';
 import { TopupModal } from '../../components/cards/TopupModal';
 import { useAuth } from '../../context/AuthContext';
 import { startOfMonth, sumSuccessfulPurchases } from '../../utils/format';
@@ -158,7 +159,7 @@ export function CardDetailPage() {
                     </Link>
                 </div>
 
-                {cardLoading && <p className="py-8 text-center text-sm text-muted">Загрузка…</p>}
+                {cardLoading && <CardDetailSkeleton />}
 
                 {!cardLoading && cardError && <p className="form-error-banner">{cardError}</p>}
 

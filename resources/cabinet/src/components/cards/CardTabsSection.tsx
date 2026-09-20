@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchCardTransactions } from '../../api/transactions';
 import type { CardDetail, CardTransaction, PaginationMeta } from '../../api/types';
+import { Skeleton, TransactionsSkeleton } from '../common/Skeleton';
 import { TransactionsTable } from '../transactions/TransactionsTable';
 
 export type CardTabKey = 'transactions' | 'limits' | 'codes';
@@ -75,7 +76,7 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                     <>
                         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                             <p className="text-xs text-muted">
-                                {meta ? `${meta.total} операций` : '—'}
+                                {meta ? `${meta.total} операций` : <Skeleton className="h-3 w-20" />}
                                 {justUpdated && ' · обновлено сейчас'}
                             </p>
                             <div className="flex items-center gap-2">
@@ -88,11 +89,7 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                             </div>
                         </div>
 
-                        {isLoading ? (
-                            <p className="py-8 text-center text-sm text-muted">Загрузка…</p>
-                        ) : (
-                            <TransactionsTable transactions={transactions} />
-                        )}
+                        {isLoading ? <TransactionsSkeleton /> : <TransactionsTable transactions={transactions} />}
 
                         {meta && meta.last_page > 1 && (
                             <div className="mt-4 flex items-center justify-center gap-4">

@@ -797,3 +797,29 @@ body {
     font-weight: 700;
     color: var(--color-orange-dark);
 }
+
+/*
+ * Скелетон загрузки — заменяет текстовые «Загрузка…»/прочерки везде, где контент
+ * подгружается асинхронно. Базовый блок .skeleton (серый фон + бегущий блик) —
+ * размер и форма задаются снаружи через Tailwind-классы (h-*, w-*, rounded-*),
+ * составные раскладки собраны в components/common/Skeleton.tsx по образу
+ * реальных карточек/строк, которые скелетон временно заменяет.
+ */
+.skeleton {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    background: var(--color-border);
+    vertical-align: middle;
+}
+.skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .6), transparent);
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+    100% { transform: translateX(100%); }
+}
