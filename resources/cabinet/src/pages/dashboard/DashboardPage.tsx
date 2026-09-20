@@ -4,6 +4,7 @@ import { fetchCards } from '../../api/cards';
 import { fetchTransactions } from '../../api/transactions';
 import type { Card, CardTransaction } from '../../api/types';
 import { CardsSidebar } from '../../components/cards/CardsSidebar';
+import { MobileCardsStrip } from '../../components/cards/MobileCardsStrip';
 import { NewCardIcon, PlusIcon } from '../../components/common/Icons';
 import { Skeleton, TransactionsSkeleton } from '../../components/common/Skeleton';
 import { TransactionsTable } from '../../components/transactions/TransactionsTable';
@@ -58,6 +59,8 @@ export function DashboardPage() {
             <CardsSidebar cards={cards} isLoading={cardsLoading} />
 
             <div className="flex flex-1 flex-col gap-8">
+                <MobileCardsStrip cards={cards} isLoading={cardsLoading} />
+
                 <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-4 lg:mt-[30px]">
                     <div className="stat-btn stat-btn-static">
                         {cardsLoading ? (

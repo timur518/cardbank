@@ -54,6 +54,32 @@ export function CardsListSkeleton({ rows = 3 }: { rows?: number }) {
     );
 }
 
+/** Строки горизонтальной ленты карт (MobileCardsStrip) над кнопками баланса на мобильных — те же
+ * строки, что и CardsListSkeleton, но фиксированной ширины. Без собственной обёртки —
+ * рендерится внутри общего flex-ряда MobileCardsStrip рядом с плашкой «+ Новая карта». */
+export function MobileCardsStripSkeleton({ items = 3 }: { items?: number }) {
+    return (
+        <>
+            {Array.from({ length: items }).map((_, index) => (
+                <div
+                    key={index}
+                    className="flex w-[220px] shrink-0 items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-3 py-3"
+                    aria-hidden="true"
+                >
+                    <div className="flex items-center gap-3">
+                        <Skeleton className="h-9 w-14 shrink-0 rounded-lg" />
+                        <Skeleton className="h-4 w-16" />
+                    </div>
+                    <div className="flex flex-col items-end gap-1.5">
+                        <Skeleton className="h-4 w-14" />
+                        <Skeleton className="h-3 w-10" />
+                    </div>
+                </div>
+            ))}
+        </>
+    );
+}
+
 /** Сетка карточек (CardGridCard) — CardsPage на время загрузки списка карт. */
 export function CardsGridSkeleton({ items = 6 }: { items?: number }) {
     return (
