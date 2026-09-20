@@ -838,3 +838,10 @@ body {
 .fade-in-up {
     animation: fade-in-up .35s cubic-bezier(.16, 1, .3, 1);
 }
+
+/* Переход между страницами личного кабинета (DashboardLayout, обёртка вокруг <Outlet />,
+ * перемонтируется по key={location.pathname}) — тот же плавный fade+slide, чтобы смена
+ * страницы не выглядела резким перепрыгом. */
+.page-transition {
+    animation: fade-in-up .35s cubic-bezier(.16, 1, .3, 1);
+}

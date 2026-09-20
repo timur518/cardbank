@@ -58,7 +58,7 @@ export function DashboardPage() {
             <CardsSidebar cards={cards} isLoading={cardsLoading} />
 
             <div className="flex flex-1 flex-col gap-8">
-                <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-4">
+                <div className="flex flex-nowrap gap-2 sm:flex-wrap sm:gap-4 lg:mt-[30px]">
                     <div className="stat-btn stat-btn-static">
                         {cardsLoading ? (
                             <Skeleton className="h-7 w-24" />
