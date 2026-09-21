@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { fetchCard, fetchCardRequisites } from '../../api/cards';
@@ -31,6 +32,9 @@ export function CardDetailPage() {
     const [requisites, setRequisites] = useState<CardRequisites | null>(null);
     const [requisitesLoading, setRequisitesLoading] = useState(false);
     const [requisitesError, setRequisitesError] = useState<string | null>(null);
+    // Карта ещё не выпущена провайдером (бэкенд отвечает 404 «Реквизиты карты ещё не готовы.») —
+    // в этом случае блок «Данные для оплаты» и сама эта ошибка на странице не показываются.
+    const [requisitesUnavailable, setRequisitesUnavailable] = useState(false);
     const [showCvv, setShowCvv] = useState(false);
 
     const [monthPurchases, setMonthPurchases] = useState<CardTransaction[] | null>(null);
@@ -45,6 +49,8 @@ export function CardDetailPage() {
         setCardLoading(true);
         setCardError(null);
         setRequisites(null);
+        setRequisitesError(null);
+        setRequisitesUnavailable(false);
         setShowCvv(false);
         setFlipped(false);
         setMonthPurchases(null);
@@ -120,7 +126,11 @@ export function CardDetailPage() {
             setRequisites(data);
             return data;
         } catch (error) {
-            setRequisitesError(extractErrorMessage(error, 'Не удалось загрузить реквизиты карты.'));
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                setRequisitesUnavailable(true);
+            } else {
+                setRequisitesError(extractErrorMessage(error, 'Не удалось загрузить реквизиты карты.'));
+            }
             return null;
         } finally {
             setRequisitesLoading(false);
@@ -175,17 +185,19 @@ export function CardDetailPage() {
                             />
                         </div>
 
-                        <div className="flex flex-col gap-2">
-                            <RequisitesPanel
-                                card={card}
-                                cardholderName={cardholderName}
-                                requisites={requisites}
-                                requisitesLoading={requisitesLoading}
-                                showCvv={showCvv}
-                                onShowCvv={handleShowCvv}
-                            />
-                            {requisitesError && <p className="form-error-banner">{requisitesError}</p>}
-                        </div>
+                        {!requisitesUnavailable && (
+                            <div className="flex flex-col gap-2">
+                                <RequisitesPanel
+                                    card={card}
+                                    cardholderName={cardholderName}
+                                    requisites={requisites}
+                                    requisitesLoading={requisitesLoading}
+                                    showCvv={showCvv}
+                                    onShowCvv={handleShowCvv}
+                                />
+                                {requisitesError && <p className="form-error-banner">{requisitesError}</p>}
+                            </div>
+                        )}
                     </div>
 
                     <CardTabsSection card={card} activeTab={activeTab} onTabChange={setActiveTab} />
