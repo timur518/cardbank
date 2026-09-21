@@ -177,6 +177,35 @@ html::-webkit-scrollbar {
     font-size: .78rem;
     color: #c94b0d;
 }
+.field-password-wrap {
+    position: relative;
+}
+.field-password-wrap input {
+    padding-right: 44px;
+}
+.field-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+}
+.field-password-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+.field-password-toggle:hover {
+    color: var(--color-ink);
+}
 
 .auth-panel {
     border-radius: 24px;
