@@ -768,12 +768,14 @@ html::-webkit-scrollbar {
 
 /*
  * Попап «Уведомления» (кнопка в шапке, слева от выхода) — два варианта одного и того же компонента
- * (NotificationsPanel, DashboardLayout): .notif-panel-desktop — выпадающий дропдаун под кнопкой,
- * .notif-panel-mobile — полноэкранный лист с z-index ниже шапки (30) и нижнего меню (40) — обе
- * рендерятся одновременно, видим только один (media-запрос ниже — обычный CSS вне @layer,
- * так же как и у .mobile-tabbar выше, чтобы надёжно побеждать Tailwind-утилиты, если бы они
- * тут были использованы). Анимация открытия/закрытия — тот же приём, что и у .modal-*:
- * класс is-visible навешивается через requestAnimationFrame после монтирования.
+ * (NotificationsPanel, DashboardLayout): .notif-panel-desktop — выпадающий дропдаун под кнопкой (свои
+ * классы ниже); мобильный вариант вообще не имеет своих классов вида — он переиспользует те же
+ * .modal-overlay/.modal-sheet-* (см. выше), что и обычные модалки (Modal.tsx/TopupModal) — чтобы
+ * выезжать снизу точно так же, как попап пополнения карты. Дополнительный класс .notif-mobile-overlay
+ * нужен, чтобы скрывать именно этот экземпляр на широких экранах (где виден desktop-дропдаун),
+ * не затрагивая другие модалки, которые тоже используют .modal-overlay (например TopupModal).
+ * Анимация открытия/закрытия — тот же приём, что и у .modal-*: класс is-visible навешивается
+ * через requestAnimationFrame после монтирования.
  */
 .notif-trigger {
     position: relative;
@@ -845,20 +847,13 @@ html::-webkit-scrollbar {
     transform: translateY(0) scale(1);
 }
 
-/* Мобильный вариант — полноэкранный лист, рендерится отдельным элементом вне <header> (см. комментарий в
-   DashboardLayout.tsx) — поэтому z-index сравнивается напрямую с .site-header (30) и .mobile-tabbar (40). */
-.notif-panel-mobile {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-    padding-top: calc(92px + env(safe-area-inset-top));
-    transform: translateY(-16px);
-}
-.notif-panel-mobile.is-visible {
-    transform: translateY(0);
-}
+/* Мобильный вариант — нижний лист на базе .modal-overlay/.modal-sheet-* (см. выше), без собственных размеров/
+   отступов — только скрытие на широких экранах (там виден desktop-дропдаун, .notif-panel-desktop).
+   Рендерится отдельным элементом вне <header> (см. комментарии в DashboardLayout.tsx), поэтому
+   z-index: 50 (от .modal-overlay) сравнивается напрямую с .site-header (30) и .mobile-tabbar (40) и
+   намеренно перекрывает их оба затемнением — точно так же, как любая другая модалка в приложении. */
 @media (min-width: 768px) {
-    .notif-panel-mobile { display: none; }
+    .notif-mobile-overlay { display: none; }
 }
 @media (max-width: 767px) {
     .notif-panel-desktop { display: none; }
