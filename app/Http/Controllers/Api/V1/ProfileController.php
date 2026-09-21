@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\NotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\UpdatePasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -48,6 +50,8 @@ class ProfileController extends Controller
         }
 
         $user->update(['password' => $request->validated('password')]);
+
+        Notification::notify($user, NotificationEvent::PasswordChanged, ['datetime' => now()->format('d.m.Y H:i')], '/profile');
 
         return response()->json(['message' => 'Пароль изменён']);
     }

@@ -7,11 +7,13 @@ use App\Enums\CardsProCallbackType;
 use App\Enums\CardStatus;
 use App\Enums\CardTransactionStatus;
 use App\Enums\CardTransactionType;
+use App\Enums\NotificationEvent;
 use App\Models\Card;
 use App\Models\CardProvider;
 use App\Models\CardProviderOperation;
 use App\Models\CardStatusHistory;
 use App\Models\CardTransaction;
+use App\Models\Notification;
 use App\Services\CardProviderOperationResolver;
 use Throwable;
 
@@ -155,14 +157,28 @@ class CardsProWebhookHandler
         }
 
         if ($status === 'DECLINED') {
-            CardTransaction::where('card_id', $card->id)
+            // Читаем строку через first()+update() (а не массовым update() по query), чтобы
+            // взять её amount/currency для уведомления — в самом payload отказа CardsPro сумма не
+            // гарантирована.
+            $pending = CardTransaction::where('card_id', $card->id)
                 ->where('provider_tx_id', $providerTxId)
                 ->where('status', CardTransactionStatus::Pending)
-                ->update([
-                    'type' => CardTransactionType::Decline,
-                    'status' => CardTransactionStatus::Declined,
-                    'decline_reason' => (string) ($payload['declineReason'] ?? $payload['message'] ?? 'Провайдер отклонил пополнение карты'),
-                ]);
+                ->first();
+
+            if (! $pending) {
+                return;
+            }
+
+            $pending->update([
+                'type' => CardTransactionType::Decline,
+                'status' => CardTransactionStatus::Declined,
+                'decline_reason' => (string) ($payload['declineReason'] ?? $payload['message'] ?? 'Провайдер отклонил пополнение карты'),
+            ]);
+
+            Notification::notify($card->user, NotificationEvent::TopupFailed, [
+                'last4' => $card->card_last4,
+                'amount' => NotificationEvent::money($pending->amount, $pending->currency),
+            ], '/cards/' . $card->uuid);
 
             return;
         }
@@ -191,9 +207,17 @@ class CardsProWebhookHandler
         );
 
         // Перезапрашиваем баланс у CardsPro только один раз, при первом переходе этой операции в
-        // Success — повторная доставка того же вебхука не должна дёргать апи впустую.
+        // Success — повторная доставка того же вебхука не должна дёргать апи впустую; по той же
+        // причине только там же шлём уведомление — чтобы клиент не получил его повторно на ретрай того же
+        // вебхука.
         if (! $wasAlreadySuccess) {
             $this->refreshCardBalance($card);
+
+            Notification::notify($card->user, NotificationEvent::TopupSuccess, [
+                'last4' => $card->card_last4,
+                'amount' => NotificationEvent::money($amount, $payload['params']['currency'] ?? $card->currency),
+                'balance' => NotificationEvent::money($card->balance, $card->currency),
+            ], '/cards/' . $card->uuid);
         }
     }
 
@@ -236,6 +260,17 @@ class CardsProWebhookHandler
         ]);
 
         $card->update(['status' => $newStatus]);
+
+        $event = match ($newStatus) {
+            CardStatus::Frozen => NotificationEvent::CardFrozen,
+            CardStatus::Active => NotificationEvent::CardUnfrozen,
+            CardStatus::Closed => NotificationEvent::CardClosed,
+            default => null,
+        };
+
+        if ($event) {
+            Notification::notify($card->user, $event, ['last4' => $card->card_last4]);
+        }
     }
 
     protected function handleTransaction(array $payload): void
@@ -281,6 +316,15 @@ class CardsProWebhookHandler
         // должна дёргать CardsPro впустую.
         if ($result['isNew'] && $balanceSign !== 0 && $amount > 0) {
             $this->refreshCardBalance($card);
+        }
+
+        // Тот же флаг isNew подстраховывает от повторного уведомления на ретрай того же вебхука.
+        if ($result['isNew'] && $status === CardTransactionStatus::Declined) {
+            Notification::notify($card->user, NotificationEvent::CardPurchaseDeclined, [
+                'last4' => $card->card_last4,
+                'amount' => NotificationEvent::money($amount, $payload['billCurrency'] ?? $card->currency),
+                'merchant' => $payload['merchantName'] ?? null,
+            ], '/cards/' . $card->uuid);
         }
     }
 

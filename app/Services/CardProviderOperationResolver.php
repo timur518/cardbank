@@ -6,11 +6,13 @@ use App\Enums\CardProviderOperationStatus;
 use App\Enums\CardProviderOperationType;
 use App\Enums\CardStatus;
 use App\Enums\ExpenseCategory;
+use App\Enums\NotificationEvent;
 use App\Models\Card;
 use App\Models\CardProvider;
 use App\Models\CardProviderOperation;
 use App\Models\CardStatusHistory;
 use App\Models\Expense;
+use App\Models\Notification;
 use App\Models\Setting;
 use App\Services\Integrations\ProviderIntegrationResolver;
 use Throwable;
@@ -36,6 +38,15 @@ class CardProviderOperationResolver
         }
 
         if ($outcome !== 'completed') {
+            // Асинхронный отказ пришёл по вебхуку CARD_ISSUE (не синхронный DECLINED в
+            // ответе issueCard(), тот уже обработан recordDeclinedIssue()) — единственное место,
+            // где клиент узнаёт об этом исходе — статус карты здесь намеренно не трогаем —
+            // это отдельный существующий пробел поведения, не связанный с уведомлениями.
+            if ($operation->type === CardProviderOperationType::Issue) {
+                $card = $operation->card_id ? Card::find($operation->card_id) : null;
+                Notification::notify($card?->user, NotificationEvent::CardIssueFailed);
+            }
+
             return;
         }
 
@@ -105,6 +116,8 @@ class CardProviderOperationResolver
         ]);
 
         $this->recordIssueExpenses($card, $operation);
+
+        Notification::notify($card->user, NotificationEvent::CardIssued, ['last4' => $card->card_last4], '/cards/' . $card->uuid);
     }
 
     /**
@@ -229,6 +242,8 @@ class CardProviderOperationResolver
 
         $card->update(['status' => CardStatus::Failed]);
 
+        Notification::notify($card->user, NotificationEvent::CardIssueFailed);
+
         return $operation;
     }
 
@@ -241,9 +256,9 @@ class CardProviderOperationResolver
      *
      * @param  array<string, mixed>  $raw
      */
-    public function recordDeclinedTopup(Card $card, CardProvider $provider, string $requestId, ?string $docid, array $raw): CardProviderOperation
+    public function recordDeclinedTopup(Card $card, CardProvider $provider, string $requestId, ?string $docid, array $raw, float $amount = 0): CardProviderOperation
     {
-        return CardProviderOperation::create([
+        $operation = CardProviderOperation::create([
             'provider_id' => $provider->id,
             'card_id' => $card->id,
             'type' => CardProviderOperationType::Topup,
@@ -254,6 +269,15 @@ class CardProviderOperationResolver
             'error' => (string) ($raw['declineReason'] ?? $raw['message'] ?? 'Провайдер отклонил пополнение карты'),
             'resolved_at' => now(),
         ]);
+
+        if ($amount > 0) {
+            Notification::notify($card->user, NotificationEvent::TopupFailed, [
+                'last4' => $card->card_last4,
+                'amount' => NotificationEvent::money($amount, $card->currency),
+            ], '/cards/' . $card->uuid);
+        }
+
+        return $operation;
     }
 
     protected function applyWithdraw(CardProviderOperation $operation): void
@@ -302,5 +326,7 @@ class CardProviderOperationResolver
         ]);
 
         $card->update(['status' => CardStatus::Closed, 'closed_at' => now()]);
+
+        Notification::notify($card->user, NotificationEvent::CardClosed, ['last4' => $card->card_last4]);
     }
 }

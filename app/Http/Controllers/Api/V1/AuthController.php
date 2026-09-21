@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\KycStatus;
+use App\Enums\NotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Models\Notification;
 use App\Models\User;
 use App\Notifications\NewPasswordNotification;
 use Illuminate\Http\JsonResponse;
@@ -80,6 +82,8 @@ class AuthController extends Controller
         // Роль customer явно блокирует доступ в /admin — см. User::canAccessPanel().
         $user->assignRole('customer');
 
+        Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
+
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
 
@@ -102,6 +106,7 @@ class AuthController extends Controller
             $newPassword = Str::password(12);
             $user->update(['password' => $newPassword]);
             $user->notify(new NewPasswordNotification($newPassword));
+            Notification::notify($user, NotificationEvent::PasswordResetRequested, ['email' => $user->email], '/profile');
         }
 
         // Одинаковый ответ независимо от того, найден аккаунт или нет.

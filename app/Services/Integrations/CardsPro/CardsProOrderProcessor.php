@@ -6,10 +6,12 @@ use App\Enums\CardProviderOperationStatus;
 use App\Enums\CardProviderOperationType;
 use App\Enums\CardTransactionStatus;
 use App\Enums\CardTransactionType;
+use App\Enums\NotificationEvent;
 use App\Models\Card;
 use App\Models\CardProvider;
 use App\Models\CardProviderOperation;
 use App\Models\CardTransaction;
+use App\Models\Notification;
 use App\Services\CardProviderOperationResolver;
 
 /**
@@ -46,6 +48,13 @@ class CardsProOrderProcessor
         ]);
 
         $this->recordOperation($card, $provider, CardProviderOperationType::Issue, $raw, ['topup_usd' => $topupUsd]);
+
+        // Синхронный DECLINED выше уже отправил своё уведомление (CardIssueFailed, см.
+        // CardProviderOperationResolver::recordDeclinedIssue()) — здесь только про case, когда заявка
+        // действительно принята в обработку (INPROCESS/EXECUTED).
+        if (($raw['status'] ?? null) !== 'DECLINED') {
+            Notification::notify($card->user, NotificationEvent::CardOrderAccepted, [], '/cards/' . $card->uuid);
+        }
     }
 
     /**
@@ -106,7 +115,7 @@ class CardsProOrderProcessor
         if (($raw['status'] ?? null) === 'DECLINED') {
             $type === CardProviderOperationType::Issue
                 ? $this->resolver->recordDeclinedIssue($card, $provider, $requestId, $docid, $raw)
-                : $this->resolver->recordDeclinedTopup($card, $provider, $requestId, $docid, $raw);
+                : $this->resolver->recordDeclinedTopup($card, $provider, $requestId, $docid, $raw, (float) ($payload['amount'] ?? 0));
 
             return;
         }
