@@ -2,12 +2,14 @@
 
 namespace App\Filament\Admin\Resources\CardProducts\Schemas;
 
+use App\Enums\CardNetwork;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Schema;
 
 class CardProductForm
@@ -16,6 +18,16 @@ class CardProductForm
     {
         return $schema
             ->components([
+                Section::make('Изображение карты')
+                    ->schema([
+                        FileUpload::make('skin')
+                            ->label('Оформление карты (изображение)')
+                            ->image()
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('card-skins'),
+                    ]),
+
                 Section::make('Основное')
                     ->columns(2)
                     ->schema([
@@ -28,12 +40,6 @@ class CardProductForm
                             ->label('Название')
                             ->required()
                             ->maxLength(255),
-                        FileUpload::make('skin')
-                            ->label('Оформление карты (изображение)')
-                            ->image()
-                            ->disk('public')
-                            ->visibility('public')
-                            ->directory('card-skins'),
                         TextInput::make('currency')
                             ->label('Валюта')
                             ->required()
@@ -41,6 +47,20 @@ class CardProductForm
                         Textarea::make('description')
                             ->label('Описание')
                             ->columnSpanFull(),
+                    ]),
+
+                Section::make('Карта и сеть')
+                    ->columns(3)
+                    ->schema([
+                        Select::make('network')
+                            ->label('Тип карты')
+                            ->options(CardNetwork::class),
+                        TextInput::make('card_country')
+                            ->label('Страна карты')
+                            ->maxLength(255),
+                        TextInput::make('bin')
+                            ->label('BIN карты')
+                            ->numeric(),
                     ]),
 
                 Section::make('Провайдер и стоимость')
@@ -72,6 +92,28 @@ class CardProductForm
                             ->numeric()
                             ->required()
                             ->prefix('₽'),
+                    ]),
+
+                Section::make('Комиссии и тарифы')
+                    ->columns(3)
+                    ->schema([
+                        TextInput::make('successful_payment_fee_usd')
+                            ->label('Успешная оплата, $')
+                            ->numeric()
+                            ->prefix('$'),
+                        TextInput::make('decline_fee_usd')
+                            ->label('Отказ в оплате, $')
+                            ->numeric()
+                            ->prefix('$'),
+                        TextInput::make('risk_operation_fee_usd')
+                            ->label('Рисковая операция, $')
+                            ->numeric()
+                            ->prefix('$'),
+                        TextInput::make('non_usd_payment_fee')
+                            ->label('Оплата не в $ (FX)')
+                            ->maxLength(255),
+                        Toggle::make('three_ds_supported')
+                            ->label('3DS коды'),
                     ]),
 
                 Section::make('Лимиты у провайдера')
@@ -109,7 +151,6 @@ class CardProductForm
 
                 Section::make('Платёжный адрес продукта')
                     ->columns(2)
-                    ->collapsed()
                     ->schema([
                         TextInput::make('billing_country')->label('Страна'),
                         TextInput::make('billing_city')->label('Город'),
@@ -130,6 +171,20 @@ class CardProductForm
                             ->label('Порядок отображения')
                             ->numeric()
                             ->default(0),
+                    ]),
+
+                Section::make('Запрещённые мерчанты')
+                    ->schema([
+                        RichEditor::make('restricted_merchants')
+                            ->label('')
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Все условия карты')
+                    ->schema([
+                        RichEditor::make('full_terms')
+                            ->label('')
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

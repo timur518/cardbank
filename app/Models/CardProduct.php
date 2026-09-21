@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CardNetwork;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,11 +18,19 @@ class CardProduct extends Model
         'description',
         'skin',
         'currency',
+        'network',
+        'card_country',
+        'bin',
         'provider_id',
         'provider_product_code',
         'provider_kyc_required',
         'provider_issue_cost_usd',
         'provider_topup_fee_percent',
+        'successful_payment_fee_usd',
+        'decline_fee_usd',
+        'non_usd_payment_fee',
+        'risk_operation_fee_usd',
+        'three_ds_supported',
         'issue_min_amount',
         'issue_max_amount',
         'topup_min_amount',
@@ -35,6 +44,8 @@ class CardProduct extends Model
         'billing_region',
         'billing_address',
         'billing_post_code',
+        'restricted_merchants',
+        'full_terms',
         'active',
         'coming_soon',
         'sort',
@@ -43,9 +54,14 @@ class CardProduct extends Model
     protected function casts(): array
     {
         return [
+            'network' => CardNetwork::class,
             'provider_kyc_required' => 'boolean',
             'provider_issue_cost_usd' => 'decimal:2',
             'provider_topup_fee_percent' => 'decimal:2',
+            'successful_payment_fee_usd' => 'decimal:2',
+            'decline_fee_usd' => 'decimal:2',
+            'risk_operation_fee_usd' => 'decimal:2',
+            'three_ds_supported' => 'boolean',
             'issue_min_amount' => 'decimal:2',
             'issue_max_amount' => 'decimal:2',
             'topup_min_amount' => 'decimal:2',
