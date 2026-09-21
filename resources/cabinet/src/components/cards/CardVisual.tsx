@@ -40,7 +40,11 @@ export function CardVisual({ card }: CardVisualProps) {
                             <p className="font-mono text-2xl font-extrabold">{formatBalanceHero(card.balance, card.currency)}</p>
                         </div>
                     ) : (
-                        <StatusPill label={CARD_STATUS_LABELS[card.status]} tone={CARD_STATUS_TONES[card.status]} />
+                        <StatusPill
+                            label={CARD_STATUS_LABELS[card.status]}
+                            tone={CARD_STATUS_TONES[card.status]}
+                            loading={card.status === 'pending'}
+                        />
                     )}
                     <p className="font-mono text-xs text-white/60">{card.expiry ?? '—/—'}</p>
                 </div>
