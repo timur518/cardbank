@@ -850,7 +850,7 @@ html::-webkit-scrollbar {
    вокруг кнопки в DashboardLayout — поэтому всегда точно под ней справа, без ручных calc(). */
 .notif-panel-desktop {
     position: absolute;
-    top: calc(100% + 14px);
+    top: calc(100% + 30px);
     right: 0;
     z-index: 20;
     width: 380px;
@@ -861,6 +861,7 @@ html::-webkit-scrollbar {
     transform: translateY(-10px) scale(.98);
 }
 .notif-panel-desktop.is-visible {
+    padding: 10px;
     transform: translateY(0) scale(1);
 }
 
