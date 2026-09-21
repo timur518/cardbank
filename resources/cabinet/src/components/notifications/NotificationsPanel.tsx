@@ -1,6 +1,7 @@
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState, type RefObject } from 'react';
 import type { AppNotification } from '../../api/types';
+import { groupByDate } from '../../utils/dateGroups';
 import { NotificationsSkeleton } from '../common/Skeleton';
 import { NotificationRow } from './NotificationRow';
 
@@ -69,7 +70,16 @@ export function NotificationsPanel({ mode, open, loading, items, onClose, panelR
                 ) : items.length === 0 ? (
                     <p className="notif-empty">Уведомлений пока нет.</p>
                 ) : (
-                    items.map((item) => <NotificationRow key={item.id} item={item} onNavigate={onClose} />)
+                    // Группировка по дате создания — та же логика и визуал заголовка (чёрточка-разделитель),
+                    // что и в списке операций (TransactionsTable, .tx-group-title в index.css).
+                    groupByDate(items, (item) => item.created_at).map((group) => (
+                        <div key={group.title} className="notif-group">
+                            <div className="tx-group-title">{group.title}</div>
+                            {group.items.map((item) => (
+                                <NotificationRow key={item.id} item={item} onNavigate={onClose} />
+                            ))}
+                        </div>
+                    ))
                 )}
             </div>
         </div>

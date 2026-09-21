@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import type { AppNotification } from '../../api/types';
+import { formatTime } from '../../utils/dateGroups';
 import { NOTIFICATION_TYPE_ICON_CLASSES, NOTIFICATION_TYPE_ICONS } from '../../utils/labels';
 
 const EXTERNAL_URL_RE = /^https?:\/\//i;
@@ -49,6 +50,7 @@ export function NotificationRow({ item, onNavigate }: { item: AppNotification; o
             <span className="notif-info">
                 <span className="notif-title">{item.title}</span>
                 {item.body && <span className="notif-body">{item.body}</span>}
+                <span className="notif-time">{formatTime(item.created_at)}</span>
             </span>
         </div>
     );

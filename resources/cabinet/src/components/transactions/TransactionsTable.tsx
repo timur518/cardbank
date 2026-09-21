@@ -1,69 +1,12 @@
 import type { CardTransaction } from '../../api/types';
 import { ClockIcon, DeclineIcon } from '../common/Icons';
 import { formatMoney } from '../../utils/format';
+import { groupByDate, formatTime } from '../../utils/dateGroups';
 import { TRANSACTION_TYPE_ICONS, TRANSACTION_TYPE_LABELS } from '../../utils/labels';
 
 interface TransactionsTableProps {
     transactions: CardTransaction[];
     emptyMessage?: string;
-}
-
-const MONTHS = [
-    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
-];
-
-function isSameDay(a: Date, b: Date): boolean {
-    return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-// Заголовок группы по дате выполнения операции: «Сегодня» / «Вчера» для последних
-// суток, «ДД месяц» для остальных операций текущего года, «ДД месяц ГГГГ» — для
-// операций прошлых лет.
-function groupTitle(occurredAt: string): string {
-    const date = new Date(occurredAt);
-    const now = new Date();
-    const yesterday = new Date(now);
-    yesterday.setDate(now.getDate() - 1);
-
-    if (isSameDay(date, now)) {
-        return 'Сегодня';
-    }
-    if (isSameDay(date, yesterday)) {
-        return 'Вчера';
-    }
-
-    const dayMonth = `${date.getDate()} ${MONTHS[date.getMonth()]}`;
-    return date.getFullYear() === now.getFullYear() ? dayMonth : `${dayMonth} ${date.getFullYear()}`;
-}
-
-function formatTime(occurredAt: string): string {
-    return new Date(occurredAt).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-}
-
-interface TransactionGroup {
-    title: string;
-    items: CardTransaction[];
-}
-
-// Список операций уже приходит с бэкенда отсортированным по occurred_at по убыванию,
-// поэтому группы формируются простым проходом по порядку — новая группа открывается
-// при смене заголовка даты у соседних операций.
-function groupTransactions(transactions: CardTransaction[]): TransactionGroup[] {
-    const groups: TransactionGroup[] = [];
-
-    for (const tx of transactions) {
-        const title = groupTitle(tx.occurred_at);
-        const current = groups[groups.length - 1];
-
-        if (current && current.title === title) {
-            current.items.push(tx);
-        } else {
-            groups.push({ title, items: [tx] });
-        }
-    }
-
-    return groups;
 }
 
 // Список операций по картам — переиспользуется и в блоке «последние операции» на
@@ -73,7 +16,7 @@ export function TransactionsTable({ transactions, emptyMessage = 'Операци
         return <p className="py-8 text-center text-sm text-muted">{emptyMessage}</p>;
     }
 
-    const groups = groupTransactions(transactions);
+    const groups = groupByDate(transactions, (tx) => tx.occurred_at);
 
     return (
         <div className="tx-list">

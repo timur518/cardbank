@@ -922,6 +922,18 @@ html::-webkit-scrollbar {
     line-height: 1.4;
     color: var(--color-muted);
 }
+.notif-time {
+    font-size: .7rem;
+    color: var(--color-muted);
+    opacity: .75;
+    margin-top: .1rem;
+}
+
+/* Группа уведомлений за одну дату — заголовок .tx-group-title переиспользуется как есть (та же
+   чёрточка-разделитель, что и в списке операций), здесь только отступ между группами. */
+.notif-group + .notif-group {
+    margin-top: 1rem;
+}
 
 /*
  * Нижнее меню на мобильных экранах (как в нативном приложении) — плавающая закруглённая панель с
