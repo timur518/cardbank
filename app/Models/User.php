@@ -106,6 +106,16 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
+     * Переопределяет одноимённый метод из трейта Notifiable (там это MorphMany на встроенный
+     * в Laravel \Illuminate\Notifications\DatabaseNotification, который мы не используем) — у нас
+     * своя таблица/модель {@see \App\Models\Notification} для ленты «Уведомления» в ЛК.
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
      * Является ли пользователь сотрудником (есть хотя бы одна роль).
      */
     public function isStaff(): bool
