@@ -16,8 +16,9 @@ class CardTransactionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'card_id' => $this->card_id,
+            // Клиенту отдаём uuid транзакции и карты, а не сквозные id в базе — аналогично CardResource/UserResource.
+            'id' => $this->uuid,
+            'card_id' => $this->card->uuid,
             'type' => $this->type->value,
             'amount' => number_format((float) $this->amount, 2, '.', ''),
             'currency' => $this->currency,

@@ -113,8 +113,9 @@ export interface TransactionMerchantInfo {
 
 // Транзакции по карте
 export interface CardTransaction {
-    id: number;
-    card_id: number;
+    // uuid, а не сквозные id в базе — аналогично Card.id.
+    id: string;
+    card_id: string;
     type: CardTransactionType;
     amount: string;
     currency: string;

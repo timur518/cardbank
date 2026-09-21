@@ -5,7 +5,7 @@ export interface TransactionsQuery {
     page?: number;
     per_page?: number;
     type?: string;
-    card_id?: number;
+    card_id?: string;
     date_from?: string;
     date_to?: string;
 }

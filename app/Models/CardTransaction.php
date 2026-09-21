@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 /**
  * Операция по карте. CardsPro отдаёт по каждой операции три суммы:
@@ -21,6 +22,13 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class CardTransaction extends Model
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::creating(function (CardTransaction $transaction): void {
+            $transaction->uuid ??= (string) Str::uuid();
+        });
+    }
 
     protected $fillable = [
         'card_id',

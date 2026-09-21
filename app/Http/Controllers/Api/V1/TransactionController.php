@@ -21,8 +21,8 @@ class TransactionController extends Controller
         $query = CardTransaction::query()
             ->whereHas('card', fn (Builder $q) => $q->where('user_id', $request->user()->id));
 
-        if ($cardId = $request->integer('card_id')) {
-            $query->where('card_id', $cardId);
+        if ($cardUuid = $request->string('card_id')->toString()) {
+            $query->whereHas('card', fn (Builder $q) => $q->where('uuid', $cardUuid));
         }
 
         return $this->paginate($query, $request);
@@ -41,7 +41,7 @@ class TransactionController extends Controller
 
     private function paginate(Builder|\Illuminate\Database\Eloquent\Relations\HasMany $query, Request $request): AnonymousResourceCollection
     {
-        $query->with('merchantRecord');
+        $query->with(['merchantRecord', 'card']);
 
         if ($type = $request->string('type')->toString()) {
             $query->where('type', $type);
