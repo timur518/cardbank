@@ -51,6 +51,7 @@ class ProfileController extends Controller
 
         $user->update(['password' => $request->validated('password')]);
 
+        //Отправка уведомления о смене пароля
         Notification::notify($user, NotificationEvent::PasswordChanged, ['datetime' => now()->format('d.m.Y H:i')], '/profile');
 
         return response()->json(['message' => 'Пароль изменён']);

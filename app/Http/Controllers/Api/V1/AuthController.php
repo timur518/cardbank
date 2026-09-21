@@ -82,6 +82,7 @@ class AuthController extends Controller
         // Роль customer явно блокирует доступ в /admin — см. User::canAccessPanel().
         $user->assignRole('customer');
 
+        //Отправка приветственного уведомления
         Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
 
         Auth::guard('web')->login($user);
@@ -106,6 +107,8 @@ class AuthController extends Controller
             $newPassword = Str::password(12);
             $user->update(['password' => $newPassword]);
             $user->notify(new NewPasswordNotification($newPassword));
+
+            //Отправка уведомления о смене пароля
             Notification::notify($user, NotificationEvent::PasswordResetRequested, ['email' => $user->email], '/profile');
         }
 

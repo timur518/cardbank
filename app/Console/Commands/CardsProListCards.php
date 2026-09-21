@@ -11,6 +11,7 @@ use App\Services\Integrations\CardsPro\Exceptions\CardsProException;
 use Illuminate\Console\Command;
 
 /**
+ * Получить список выпущенных карт
  * php artisan cardspro:cards [код_провайдера] [--details] [--json] [--sync] [--user=1]
  *
  * Без --sync команда ничего не пишет в базу, чистый просмотр.

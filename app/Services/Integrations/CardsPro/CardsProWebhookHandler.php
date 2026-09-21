@@ -213,6 +213,7 @@ class CardsProWebhookHandler
         if (! $wasAlreadySuccess) {
             $this->refreshCardBalance($card);
 
+            //Отправка уведомления об успешном пополнении баланса
             Notification::notify($card->user, NotificationEvent::TopupSuccess, [
                 'last4' => $card->card_last4,
                 'amount' => NotificationEvent::money($amount, $payload['params']['currency'] ?? $card->currency),
@@ -269,6 +270,7 @@ class CardsProWebhookHandler
         };
 
         if ($event) {
+            //Универсальный отправитель уведомлений
             Notification::notify($card->user, $event, ['last4' => $card->card_last4]);
         }
     }
@@ -320,6 +322,8 @@ class CardsProWebhookHandler
 
         // Тот же флаг isNew подстраховывает от повторного уведомления на ретрай того же вебхука.
         if ($result['isNew'] && $status === CardTransactionStatus::Declined) {
+
+            //Отправка уведомления об неуспешной оплате
             Notification::notify($card->user, NotificationEvent::CardPurchaseDeclined, [
                 'last4' => $card->card_last4,
                 'amount' => NotificationEvent::money($amount, $payload['billCurrency'] ?? $card->currency),

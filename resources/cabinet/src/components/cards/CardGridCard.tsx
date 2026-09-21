@@ -1,4 +1,3 @@
-import { MapPinIcon } from '@heroicons/react/24/outline';
 import { Link } from 'react-router-dom';
 import type { Card } from '../../api/types';
 import { formatMoney } from '../../utils/format';
@@ -11,17 +10,7 @@ interface CardGridCardProps {
     monthSpend: number | null;
 }
 
-function hasAddress(card: Card): boolean {
-    return Boolean(card.billing_address.address || card.billing_address.city || card.billing_address.country);
-}
-
-function shortAddress(card: Card): string | null {
-    return card.billing_address.address ?? card.billing_address.city ?? card.billing_address.country;
-}
-
-// Карточка одной карты в сетке страницы «Мои карты»: сверху — тёмный визуал
-// (иконка + название продукта, маска номера, баланс/статус, срок действия),
-// снизу — название, маска+валюта, статус, траты за месяц и платёжный адрес.
+// Карточка одной карты в сетке страницы «Мои карты»
 export function CardGridCard({ card, monthSpend }: CardGridCardProps) {
     const isActive = card.status === 'active';
 
@@ -46,15 +35,6 @@ export function CardGridCard({ card, monthSpend }: CardGridCardProps) {
                         <span className="text-muted">Потрачено в этом месяце</span>
                         <span className="font-semibold text-ink">
                             {monthSpend === null ? '…' : formatMoney(monthSpend, card.currency)}
-                        </span>
-                    </div>
-                )}
-
-                {hasAddress(card) && (
-                    <div className="flex items-center gap-2 border-t border-border pt-3 text-sm text-muted">
-                        <MapPinIcon className="h-4 w-4 shrink-0" />
-                        <span className="truncate">
-                            <span className="font-semibold text-ink">Адрес</span> · {shortAddress(card)}
                         </span>
                     </div>
                 )}

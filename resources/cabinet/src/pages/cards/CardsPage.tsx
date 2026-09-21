@@ -95,7 +95,7 @@ export function CardsPage() {
                     <MagnifyingGlassIcon className="h-4 w-4 shrink-0" />
                     <input
                         type="text"
-                        placeholder="Поиск по названию, последним 4 цифрам, валюте…"
+                        placeholder="Поиск по картам"
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                     />

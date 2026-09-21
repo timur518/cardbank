@@ -44,6 +44,7 @@ class CardProviderOperationResolver
             // это отдельный существующий пробел поведения, не связанный с уведомлениями.
             if ($operation->type === CardProviderOperationType::Issue) {
                 $card = $operation->card_id ? Card::find($operation->card_id) : null;
+                //Отправка уведомления об ошибке при выпуске карты
                 Notification::notify($card?->user, NotificationEvent::CardIssueFailed);
             }
 
@@ -117,6 +118,7 @@ class CardProviderOperationResolver
 
         $this->recordIssueExpenses($card, $operation);
 
+        //Отправка уведомления об успешном выпуске карты
         Notification::notify($card->user, NotificationEvent::CardIssued, ['last4' => $card->card_last4], '/cards/' . $card->uuid);
     }
 
@@ -242,6 +244,7 @@ class CardProviderOperationResolver
 
         $card->update(['status' => CardStatus::Failed]);
 
+        //Отправка уведомления об отказе в выпуске карты
         Notification::notify($card->user, NotificationEvent::CardIssueFailed);
 
         return $operation;
@@ -271,6 +274,7 @@ class CardProviderOperationResolver
         ]);
 
         if ($amount > 0) {
+            //Отправка уведомления об неудачном пополнении баланса карты
             Notification::notify($card->user, NotificationEvent::TopupFailed, [
                 'last4' => $card->card_last4,
                 'amount' => NotificationEvent::money($amount, $card->currency),
@@ -326,7 +330,7 @@ class CardProviderOperationResolver
         ]);
 
         $card->update(['status' => CardStatus::Closed, 'closed_at' => now()]);
-
+        //Отправляем уведомление о блокировке карты
         Notification::notify($card->user, NotificationEvent::CardClosed, ['last4' => $card->card_last4]);
     }
 }
