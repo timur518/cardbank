@@ -5,12 +5,14 @@ namespace App\Services;
 use App\Enums\CardProviderOperationStatus;
 use App\Enums\CardProviderOperationType;
 use App\Enums\CardStatus;
+use App\Enums\CardTransactionStatus;
 use App\Enums\ExpenseCategory;
 use App\Enums\NotificationEvent;
 use App\Models\Card;
 use App\Models\CardProvider;
 use App\Models\CardProviderOperation;
 use App\Models\CardStatusHistory;
+use App\Models\CardTransaction;
 use App\Models\Expense;
 use App\Models\Notification;
 use App\Models\Setting;
@@ -208,6 +210,42 @@ class CardProviderOperationResolver
 
         $this->refreshCardBalance($card);
         $this->recordTopupExpense($card, $operation, $amount, "Пополнение карты с комиссией провайдера (авто, операция #{$operation->id})");
+        $this->resolvePendingTopupTransaction($card, $operation);
+    }
+
+    /**
+     * Эта ветка — страховка на случай, если вебхук CARD_TOPUP от CardsPro так и не дошёл
+     * ({@see \App\Services\Integrations\CardsPro\CardsProWebhookHandler::handleTopup()} делает то же самое,
+     * если дошёл) — без неё строка CardTransaction, заведённая ещё при
+     * инициации пополнения ({@see \App\Services\Integrations\CardsPro\CardsProOrderProcessor::recordPendingTransaction()}),
+     * навсегда остаётся Pending, а клиент никогда не получит TopupSuccess. `docid`
+     * у CardProviderOperation и `provider_tx_id` у CardTransaction — одно и то же значение из одного
+     * и того же ответа `orders/topup` (см. `recordOperation()` и `recordPendingTransaction()`).
+     */
+    protected function resolvePendingTopupTransaction(Card $card, CardProviderOperation $operation): void
+    {
+        $providerTxId = $operation->docid ?? $operation->request_id;
+
+        if (! $providerTxId) {
+            return;
+        }
+
+        $transaction = CardTransaction::where('card_id', $card->id)
+            ->where('provider_tx_id', $providerTxId)
+            ->where('status', CardTransactionStatus::Pending)
+            ->first();
+
+        if (! $transaction) {
+            return;
+        }
+
+        $transaction->update(['status' => CardTransactionStatus::Success]);
+
+        Notification::notify($card->user, NotificationEvent::TopupSuccess, [
+            'last4' => $card->card_last4,
+            'amount' => NotificationEvent::money($transaction->amount, $transaction->currency),
+            'balance' => NotificationEvent::money($card->balance, $card->currency),
+        ], '/cards/' . $card->uuid);
     }
 
     /**

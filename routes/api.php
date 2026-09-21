@@ -45,6 +45,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Раздел 3. Оформление заказа.
         Route::post('/orders/issue', [OrderController::class, 'issue'])->name('orders.issue');
         Route::post('/orders/topup', [OrderController::class, 'topup'])->name('orders.topup');
+        Route::post('/orders/topup/quote', [OrderController::class, 'quote'])->name('orders.topup.quote');
 
         // Раздел 4. Карты и история операций.
         // Связывание модели по uuid, а не сквозному cards.id — чтобы номер карты в базе не светился в URL ЛК.

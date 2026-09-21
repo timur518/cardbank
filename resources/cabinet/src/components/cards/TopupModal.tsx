@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { fetchPaymentMethods } from '../../api/catalog';
 import { extractErrorMessage } from '../../api/client';
 import { topupOrder } from '../../api/orders';
 import type { CardDetail, PaymentMethod } from '../../api/types';
+import { useTopupQuote } from '../../hooks/useTopupQuote';
+import { formatRub } from '../../utils/format';
 import { Modal } from '../common/Modal';
 import { PaymentMethodsSkeleton } from '../common/Skeleton';
 import { PaymentMethodOption } from '../orders/PaymentMethodOption';
@@ -33,6 +35,9 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const parsedAmount = useMemo(() => parseAmount(amount), [amount]);
+    const { totalRub } = useTopupQuote({ cardId: card.id, amount: parsedAmount, currency });
 
     useEffect(() => {
         fetchPaymentMethods()
@@ -140,7 +145,11 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
                         {error && <p className="form-error-banner mt-5">{error}</p>}
 
                     <button type="submit" className="btn btn-primary apply-submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Оформляем…' : 'Оплатить'}
+                        {isSubmitting
+                            ? 'Оформляем…'
+                            : totalRub !== null
+                              ? `Оплатить • ${formatRub(totalRub)}`
+                              : 'Оплатить'}
                     </button>
                 </form>
             )}

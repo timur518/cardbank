@@ -8,6 +8,7 @@ use App\Enums\IncomeType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\IssueOrderRequest;
 use App\Http\Requests\Api\V1\TopupOrderRequest;
+use App\Http\Requests\Api\V1\TopupQuoteRequest;
 use App\Models\Card;
 use App\Models\CardProduct;
 use App\Models\Income;
@@ -51,7 +52,7 @@ class OrderController extends Controller
         }
 
         $product = CardProduct::findOrFail($data['card_product_id']);
-        [$topupUsd, $topupRub] = $this->convertTopup((float) $data['topup_amount'], $data['topup_currency']);
+        [$topupUsd, $topupRub] = $this->convertTopup((float) $data['topup_amount'], $data['topup_currency'], $product);
 
         if ($topupUsd < (float) $product->topup_min_amount || $topupUsd > (float) $product->topup_max_amount) {
             throw ValidationException::withMessages([
@@ -120,9 +121,8 @@ class OrderController extends Controller
         abort_if($card->user_id !== $request->user()->id, 403);
         abort_if($card->status !== CardStatus::Active, 422, 'Карта недоступна для пополнения.');
 
-        [$topupUsd, $topupRub] = $this->convertTopup((float) $data['amount'], $data['currency']);
-
         $product = $card->cardProduct;
+        [$topupUsd, $topupRub] = $this->convertTopup((float) $data['amount'], $data['currency'], $product);
 
         if ($topupUsd < (float) $product->topup_min_amount || $topupUsd > (float) $product->topup_max_amount) {
             throw ValidationException::withMessages([
@@ -153,21 +153,59 @@ class OrderController extends Controller
     }
 
     /**
-     * @return array{0: float, 1: float} [topup_usd, topup_rub]
+     * Комиссия CardsPro за пополнение (`CardProduct.provider_topup_fee_percent`) до сих пор списывалась
+     * только с нашего мастер-счёта у провайдера и шла в `Expense` (см.
+     * CardProviderOperationResolver::recordTopupExpense()) — клиент её нигде не видел и не оплачивал,
+     * мы просто теряли её как собственную маржу. Здесь она теперь добавляется к сумме
+     * к оплате в рублях — карта всё равно получает ровно `topup_usd` (он идёт дальше в
+     * `CardsProOrderProcessor::initiateTopup()`/`initiateIssue()` без изменений), но клиент теперь оплачивает
+     * рублёвый эквивалент `topup_usd + комиссия`, а не один `topup_usd` — иначе эту
+     * комиссию всегда негласно покрывал банк, а не клиент.
+     *
+     * @return array{0: float, 1: float} [topup_usd, total_rub]
      */
-    private function convertTopup(float $amount, string $currency): array
+    private function convertTopup(float $amount, string $currency, CardProduct $product): array
     {
         $sellRateUsd = $this->rates->sellRate('usd');
 
-        if ($currency === 'USD') {
-            $topupUsd = round($amount, 2);
-            $topupRub = round($topupUsd * $sellRateUsd, 2);
+        $topupUsd = $currency === 'USD'
+            ? round($amount, 2)
+            : ($sellRateUsd > 0 ? round($amount / $sellRateUsd, 2) : 0.0);
+
+        $feeUsd = round($topupUsd * (float) $product->provider_topup_fee_percent / 100, 2);
+        $totalRub = round(($topupUsd + $feeUsd) * $sellRateUsd, 2);
+
+        return [$topupUsd, $totalRub];
+    }
+
+    /**
+     * Живой предрасчёт суммы к оплате без создания заказа — для кнопки «Оплатить
+     * • {сумма} ₽» в TopupModal и NewCardOrderPage, пересчитывается по мере ввода суммы.
+     * Счёт тот же convertTopup(), что и у самих заказов — показанный итог всегда совпадает с
+     * тем, что реально спишется после отправки формы. `provider_topup_fee_percent` в ответе
+     * намеренно не светится отдельно — это внутренняя себестоимость, как и у остальных
+     * `provider_*` полей CardProduct.
+     */
+    public function quote(TopupQuoteRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        if (! empty($data['card_id'])) {
+            $card = Card::with('cardProduct')->where('uuid', $data['card_id'])->firstOrFail();
+            abort_if($card->user_id !== $request->user()->id, 403);
+            $product = $card->cardProduct;
         } else {
-            $topupRub = round($amount, 2);
-            $topupUsd = $sellRateUsd > 0 ? round($topupRub / $sellRateUsd, 2) : 0.0;
+            $product = CardProduct::findOrFail($data['card_product_id']);
         }
 
-        return [$topupUsd, $topupRub];
+        [$topupUsd, $totalRub] = $this->convertTopup((float) $data['amount'], $data['currency'], $product);
+
+        return response()->json([
+            'data' => [
+                'topup_usd' => number_format($topupUsd, 2, '.', ''),
+                'topup_total_rub' => number_format($totalRub, 2, '.', ''),
+            ],
+        ]);
     }
 
     private function issueResponse(Card $card, Income $income, string $idempotencyKey): JsonResponse

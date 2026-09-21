@@ -231,6 +231,20 @@ export interface TopupOrderResult {
     idempotency_key: string;
 }
 
+// Живой предрасчёт суммы к оплате (OrderController::quote()) — ровно один из
+// card_id/card_product_id.
+export interface TopupQuotePayload {
+    card_id?: string;
+    card_product_id?: number;
+    amount: number;
+    currency: 'USD' | 'RUB';
+}
+
+export interface TopupQuoteResult {
+    topup_usd: string;
+    topup_total_rub: string;
+}
+
 // Категория уведомления — зеркалит App\Enums\NotificationType на бэкенде; определяет
 // иконку/цвет кружочка слева от уведомления в попапе (NotificationsPanel).
 export type AppNotificationType = 'system' | 'card' | 'payment' | 'security' | 'promo';

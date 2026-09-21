@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { fetchCardProducts, fetchPaymentMethods } from '../../api/catalog';
 import { extractErrorMessage } from '../../api/client';
 import { issueOrder } from '../../api/orders';
-import { fetchCurrencyRates } from '../../api/settings';
 import type { CardProduct, PaymentMethod } from '../../api/types';
 import { CardProductsSkeleton, PaymentMethodsSkeleton } from '../../components/common/Skeleton';
 import { CardProductOption } from '../../components/orders/CardProductOption';
 import { PaymentMethodOption } from '../../components/orders/PaymentMethodOption';
+import { useTopupQuote } from '../../hooks/useTopupQuote';
 import { formatRub } from '../../utils/format';
 
 type AmountCurrency = 'USD' | 'RUB';
@@ -29,7 +29,6 @@ export function NewCardOrderPage() {
 
     const [products, setProducts] = useState<CardProduct[]>([]);
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
-    const [usdRate, setUsdRate] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -41,11 +40,10 @@ export function NewCardOrderPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        Promise.all([fetchCardProducts(), fetchPaymentMethods(), fetchCurrencyRates()])
-            .then(([loadedProducts, loadedMethods, rates]) => {
+        Promise.all([fetchCardProducts(), fetchPaymentMethods()])
+            .then(([loadedProducts, loadedMethods]) => {
                 setProducts(loadedProducts);
                 setMethods(loadedMethods);
-                setUsdRate(Number(rates.usd));
                 setSelectedProductId(loadedProducts.find((p) => !p.coming_soon)?.id ?? loadedProducts[0]?.id ?? null);
                 setSelectedMethodId(loadedMethods[0]?.id ?? null);
             })
@@ -58,16 +56,15 @@ export function NewCardOrderPage() {
         [products, selectedProductId],
     );
 
-    const totalRub = useMemo(() => {
-        if (!selectedProduct) {
-            return 0;
-        }
-
-        const raw = parseAmount(amount);
-        const topupRub = currency === 'USD' ? raw * usdRate : raw;
-
-        return Number(selectedProduct.price_rub) + topupRub;
-    }, [selectedProduct, amount, currency, usdRate]);
+    const parsedAmount = useMemo(() => parseAmount(amount), [amount]);
+    // topup_total_rub уже включает комиссию провайдера за пополнение (см. OrderController::quote()) —
+    // цена самой карты к ней не относится, плюсуем отдельно.
+    const { totalRub: topupTotalRub } = useTopupQuote({
+        cardProductId: selectedProduct?.id ?? null,
+        amount: parsedAmount,
+        currency,
+    });
+    const totalRub = (selectedProduct ? Number(selectedProduct.price_rub) : 0) + (topupTotalRub ?? 0);
 
     async function handleSubmit(event: FormEvent) {
         event.preventDefault();
