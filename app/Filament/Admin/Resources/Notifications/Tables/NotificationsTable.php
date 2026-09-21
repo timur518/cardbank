@@ -56,9 +56,9 @@ class NotificationsTable
                     ->nullable(),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ViewAction::make()->label(''),
+                EditAction::make()->label(''),
+                DeleteAction::make()->label(''),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
