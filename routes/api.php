@@ -46,10 +46,11 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/orders/topup', [OrderController::class, 'topup'])->name('orders.topup');
 
         // Раздел 4. Карты и история операций.
+        // Связывание модели по uuid, а не сквозному cards.id — чтобы номер карты в базе не светился в URL ЛК.
         Route::get('/cards', [CardController::class, 'index'])->name('cards.index');
-        Route::get('/cards/{card}', [CardController::class, 'show'])->name('cards.show');
-        Route::get('/cards/{card}/requisites', [CardController::class, 'requisites'])->name('cards.requisites');
-        Route::get('/cards/{card}/transactions', [TransactionController::class, 'forCard'])->name('cards.transactions');
+        Route::get('/cards/{card:uuid}', [CardController::class, 'show'])->name('cards.show');
+        Route::get('/cards/{card:uuid}/requisites', [CardController::class, 'requisites'])->name('cards.requisites');
+        Route::get('/cards/{card:uuid}/transactions', [TransactionController::class, 'forCard'])->name('cards.transactions');
         Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
     });
 });

@@ -16,7 +16,7 @@ class TopupOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'card_id' => ['required', 'integer', 'exists:cards,id'],
+            'card_id' => ['required', 'string', 'exists:cards,uuid'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'currency' => ['required', Rule::in(['USD', 'RUB'])],
             'payment_method_id' => [

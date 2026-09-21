@@ -14,7 +14,8 @@ class CardResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            // Клиенту отдаём uuid, а не сквозной cards.id — чтобы не раскрывать номер карты в базе через URL ЛК (аналогично UserResource).
+            'id' => $this->uuid,
             'card_product' => [
                 'key' => $this->cardProduct->key,
                 'name' => $this->cardProduct->name,

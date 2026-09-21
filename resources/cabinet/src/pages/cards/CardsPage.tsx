@@ -24,7 +24,7 @@ export function CardsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-    const [monthSpend, setMonthSpend] = useState<Record<number, number | null>>({});
+    const [monthSpend, setMonthSpend] = useState<Record<string, number | null>>({});
 
     useEffect(() => {
         fetchCards()

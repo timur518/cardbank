@@ -115,7 +115,7 @@ class OrderController extends Controller
             return $this->topupResponse($existing, $idempotencyKey);
         }
 
-        $card = Card::with('cardProduct')->findOrFail($data['card_id']);
+        $card = Card::with('cardProduct')->where('uuid', $data['card_id'])->firstOrFail();
 
         abort_if($card->user_id !== $request->user()->id, 403);
         abort_if($card->status !== CardStatus::Active, 422, 'Карта недоступна для пополнения.');

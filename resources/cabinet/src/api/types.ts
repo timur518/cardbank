@@ -65,7 +65,8 @@ export type CardStatus = 'waiting' | 'pending' | 'active' | 'frozen' | 'closed' 
 
 // Информация о карте которая еще не выпущена.
 export interface Card {
-    id: number;
+    // uuid, а не сквозной id в базе — чтобы номер карты не светился в URL ЛК.
+    id: string;
     card_product: CardProductSummary;
     status: CardStatus;
     currency: string;
@@ -209,7 +210,7 @@ export interface IssueOrderResult {
 }
 
 export interface TopupOrderPayload {
-    card_id: number;
+    card_id: string;
     amount: number;
     currency: 'USD' | 'RUB';
     payment_method_id: number;
