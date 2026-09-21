@@ -61,8 +61,21 @@ export function NotificationsPanel({ mode, open, loading, items, onClose, panelR
     useEffect(() => {
         if (open) {
             setMounted(true);
-            const raf = requestAnimationFrame(() => setVisible(true));
-            return () => cancelAnimationFrame(raf);
+            // Двойной rAF (вместо одиночного, как в Modal.tsx) — надёжно именно здесь, потому что в
+            // отличие от TopupModal (где <Modal> монтируется/размонтируется целиком через условный
+            // рендер родителя), этот компонент постоянный — открытие это просто переключение
+            // его собственного состояния, без дорогостоящего монтирования нового DOM-узла —
+            // оба обновления (mounted=true и затем visible=true) могут успеть схлопнуться в один
+            // кадр отрисовки, если ждать только один rAF — тогда браузер никогда не отрисует
+            // промежуточное «закрытое» положение, и transition не сыграет — попап появляется резко.
+            let raf2 = 0;
+            const raf1 = requestAnimationFrame(() => {
+                raf2 = requestAnimationFrame(() => setVisible(true));
+            });
+            return () => {
+                cancelAnimationFrame(raf1);
+                cancelAnimationFrame(raf2);
+            };
         }
 
         setVisible(false);
