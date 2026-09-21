@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\CardStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\CardDetailResource;
 use App\Http\Resources\Api\V1\CardRequisitesResource;
@@ -15,10 +16,16 @@ class CardController extends Controller
 {
     /**
      * Список карт текущего клиента (активные и архивные), новые впереди.
+     * Карты со статусом "Отменён" и "Ошибка выпуска" в ЛК не показываем —
+     * это неудавшиеся выпуски, клиенту в них смотреть незачем.
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        $cards = $request->user()->cards()->with('cardProduct')->latest()->get();
+        $cards = $request->user()->cards()
+            ->with('cardProduct')
+            ->whereNotIn('status', [CardStatus::Cancelled, CardStatus::Failed])
+            ->latest()
+            ->get();
 
         return CardResource::collection($cards);
     }
