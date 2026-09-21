@@ -873,7 +873,7 @@ html::-webkit-scrollbar {
     display: flex;
     align-items: flex-start;
     gap: .75rem;
-    padding: .7rem .5rem;
+    padding: .7rem 0rem;
     border-radius: 16px;
     text-align: left;
     width: 100%;
@@ -951,7 +951,7 @@ html::-webkit-scrollbar {
     display: flex;
     align-items: flex-end;
     justify-content: space-around;
-    padding: 6px;
+    padding: 6px 0 6px 0;
     border-radius: 999px;
     background: rgb(0 0 0 / 60%);
     color: #d0c1ad;
@@ -976,7 +976,7 @@ html::-webkit-scrollbar {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 73px;
+    min-width: 61px;
     min-height: 54px;
     border-radius: 360px;
     padding: 4px 6px;
