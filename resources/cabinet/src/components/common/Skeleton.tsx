@@ -111,6 +111,23 @@ export function CardDetailSkeleton() {
     );
 }
 
+/** Список уведомлений (NotificationsPanel) — на время первого запроса в попапе. */
+export function NotificationsSkeleton({ rows = 4 }: { rows?: number }) {
+    return (
+        <div aria-hidden="true">
+            {Array.from({ length: rows }).map((_, index) => (
+                <div key={index} className="notif-row">
+                    <Skeleton className="h-10 w-10 shrink-0 rounded-full" />
+                    <div className="flex min-w-0 flex-1 flex-col gap-2">
+                        <Skeleton className="h-3.5 w-32" />
+                        <Skeleton className="h-3 w-full max-w-[220px]" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
 /** Список способов оплаты (PaymentMethodOption, apply-pay-option) — TopupModal
  * и NewCardOrderPage на время загрузки способов оплаты. */
 export function PaymentMethodsSkeleton({ rows = 2 }: { rows?: number }) {

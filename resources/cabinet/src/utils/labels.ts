@@ -1,6 +1,17 @@
-import type { CardStatus, CardTransactionStatus, CardTransactionType } from '../api/types';
+import type { AppNotificationType, CardStatus, CardTransactionStatus, CardTransactionType } from '../api/types';
 import type { ComponentType } from 'react';
-import { DeclineIcon, FeeIcon, PurchaseIcon, RefundIcon, TopupTxIcon } from '../components/common/Icons';
+import {
+    CardNotificationIcon,
+    DeclineIcon,
+    FeeIcon,
+    PaymentNotificationIcon,
+    PromoNotificationIcon,
+    PurchaseIcon,
+    RefundIcon,
+    SecurityNotificationIcon,
+    SystemNotificationIcon,
+    TopupTxIcon,
+} from '../components/common/Icons';
 import type { StatusTone } from '../components/common/StatusPill';
 
 // Зеркалит getLabel() соответствующих PHP-энамов (CardStatus, CardTransactionType,
@@ -55,4 +66,31 @@ export const TRANSACTION_TYPE_ICONS: Record<CardTransactionType, ComponentType> 
     fee: FeeIcon,
     refund: RefundIcon,
     decline: DeclineIcon,
+};
+
+// Зеркалит getLabel() энама App\Enums\NotificationType на бэкенде.
+export const NOTIFICATION_TYPE_LABELS: Record<AppNotificationType, string> = {
+    system: 'Системное',
+    card: 'Карта',
+    payment: 'Платежи',
+    security: 'Безопасность',
+    promo: 'Акции и предложения',
+};
+
+// Иконка в кружочке слева от уведомления (NotificationsPanel) — по AppNotificationType.
+export const NOTIFICATION_TYPE_ICONS: Record<AppNotificationType, ComponentType> = {
+    system: SystemNotificationIcon,
+    card: CardNotificationIcon,
+    payment: PaymentNotificationIcon,
+    security: SecurityNotificationIcon,
+    promo: PromoNotificationIcon,
+};
+
+// Цвет кружочка с иконкой — зеркалит getColor() того же энама (классы .notif-icon-* в index.css).
+export const NOTIFICATION_TYPE_ICON_CLASSES: Record<AppNotificationType, string> = {
+    system: 'notif-icon-gray',
+    card: 'notif-icon-brand',
+    payment: 'notif-icon-success',
+    security: 'notif-icon-danger',
+    promo: 'notif-icon-warning',
 };

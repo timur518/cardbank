@@ -1,8 +1,10 @@
-import { ArrowRightStartOnRectangleIcon } from '@heroicons/react/24/outline';
+import { ArrowRightStartOnRectangleIcon, BellIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotifications } from '../../hooks/useNotifications';
 import { BrandLogo } from '../common/BrandLogo';
+import { NotificationsPanel } from '../notifications/NotificationsPanel';
 import { MobileTabBar } from './MobileTabBar';
 
 const NAV_ITEMS = [
@@ -21,6 +23,7 @@ export function DashboardLayout() {
     const { profile, logout } = useAuth();
     const location = useLocation();
     const [scrolled, setScrolled] = useState(false);
+    const notifications = useNotifications();
 
     useEffect(() => {
         function updateScrolled() {
@@ -55,19 +58,55 @@ export function DashboardLayout() {
                         ))}
                     </nav>
 
-                    <div className="flex items-center gap-3">
+                    <div className="relative flex items-center gap-3">
                         <NavLink
                             to="/profile"
                             className="hidden text-sm font-semibold text-ink hover:text-orange-dark sm:inline"
                         >
                             {profile?.first_name} {profile?.last_name}
                         </NavLink>
+                        <button
+                            ref={notifications.triggerRef}
+                            type="button"
+                            className="icon-btn notif-trigger"
+                            title="Уведомления"
+                            aria-label="Уведомления"
+                            onClick={notifications.toggle}
+                        >
+                            <BellIcon className="h-[18px] w-[18px]" />
+                            {notifications.unreadCount > 0 && <span className="notif-badge-dot" />}
+                        </button>
+                        {/* Десктопный попап — абсолютно позиционирован от этого же relative-блока (точно под
+                            кнопкой, без ручных расчётов координат); мобильная версия намеренно вынесена за
+                            пределы шапки — см. комментарий у NotificationsPanel ниже. */}
+                        <NotificationsPanel
+                            mode="desktop"
+                            open={notifications.open}
+                            loading={notifications.loading}
+                            items={notifications.items}
+                            onClose={notifications.close}
+                            panelRef={notifications.desktopPanelRef}
+                        />
                         <button type="button" className="icon-btn" title="Выйти" aria-label="Выйти" onClick={() => logout()}>
                             <ArrowRightStartOnRectangleIcon className="h-[18px] w-[18px]" />
                         </button>
                     </div>
                 </div>
             </header>
+
+            {/* Мобильный попап уведомлений — отдельным элементом вне <header>, а не вложен в него: внутри шапки
+                его z-index всё равно был бы ограничен стекинг-контекстом .site-header (z-30), но как дочерний
+                элемент он всё равно красился бы поверх фона .nav-pill (дети всегда поверх фона своего родителя).
+                Здесь же, как отдельный sibling с z-index: 20 (index.css, .notif-panel-mobile), он гарантированно
+                ниже шапки (z-30) и нижнего меню (z-40, MobileTabBar) — как требуется по ТЗ. */}
+            <NotificationsPanel
+                mode="mobile"
+                open={notifications.open}
+                loading={notifications.loading}
+                items={notifications.items}
+                onClose={notifications.close}
+                panelRef={notifications.mobilePanelRef}
+            />
 
             {/* key={location.pathname} — заставляет React перемонтировать этот div при каждом переходе между
                 страницами, чтобы .page-transition запускалась заново каждый раз, а не только один

@@ -129,6 +129,8 @@ export interface PaginationMeta {
     current_page: number;
     last_page: number;
     total: number;
+    // Только в ответе GET /notifications — счётчик непрочитанных по всем записям, а не только по текущей странице.
+    unread_count?: number;
 }
 
 export interface Paginated<T> {
@@ -227,4 +229,23 @@ export interface TopupOrderResult {
     payment_transaction_id: string | null;
     payment_url: string | null;
     idempotency_key: string;
+}
+
+// Категория уведомления — зеркалит App\Enums\NotificationType на бэкенде; определяет
+// иконку/цвет кружочка слева от уведомления в попапе (NotificationsPanel).
+export type AppNotificationType = 'system' | 'card' | 'payment' | 'security' | 'promo';
+
+// Уведомление в ленте ЛК (попап из шапки) — заводится в админке,
+// отдаётся GET /notifications. Назван не `Notification`, чтобы не пересекаться
+// с глобальным DOM-типом Notification (browser push API).
+export interface AppNotification {
+    // uuid, а не сквозной id в базе — аналогично Card.id/CardTransaction.id.
+    id: string;
+    type: AppNotificationType;
+    title: string;
+    body: string | null;
+    // Маршрут SPA (например /cards/{uuid}) или внешняя ссылка — null, если уведомление не кликабельно.
+    action_url: string | null;
+    is_read: boolean;
+    created_at: string;
 }

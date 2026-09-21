@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CardController;
 use App\Http\Controllers\Api\V1\CardProductController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PaymentMethodController;
 use App\Http\Controllers\Api\V1\ProfileController;
@@ -52,5 +53,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/cards/{card:uuid}/requisites', [CardController::class, 'requisites'])->name('cards.requisites');
         Route::get('/cards/{card:uuid}/transactions', [TransactionController::class, 'forCard'])->name('cards.transactions');
         Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+
+        // Раздел 5. Уведомления — заводятся в админке, сюда только читают/отмечают прочитанными.
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/mark-read', [NotificationController::class, 'markRead'])->name('notifications.mark-read');
     });
 });

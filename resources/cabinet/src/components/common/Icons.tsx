@@ -21,4 +21,11 @@ export {
     XCircleIcon as DeclineIcon,
     // Пометка операций в статусе pending («в обработке на стороне эмитента»).
     ClockIcon,
+    // Кнопка «Уведомления» в шапке (DashboardLayout) и иконки строк в попапе — по одной на AppNotificationType.
+    BellIcon,
+    BellAlertIcon as SystemNotificationIcon,
+    CreditCardIcon as CardNotificationIcon,
+    BanknotesIcon as PaymentNotificationIcon,
+    ShieldExclamationIcon as SecurityNotificationIcon,
+    GiftIcon as PromoNotificationIcon,
 } from '@heroicons/react/24/outline';
