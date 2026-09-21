@@ -66,13 +66,17 @@ export function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center px-4 py-10">
+        <div className="flex min-h-screen flex-col items-center px-4 py-10">
+            <div className="mb-10">
+                <BrandLogo />
+            </div>
+
+            <div className="flex w-full flex-1 items-center justify-center">
             <div className="relative w-full max-w-[900px] lg:h-[550px]">
                 {/* Карточка входа — поверх видео-панели (z-10), фиксированная высота 550px только от lg. */}
                 <div className="auth-panel relative z-10 mx-auto flex w-full max-w-[440px] flex-col p-8 sm:p-10 lg:mx-0 lg:h-full">
                     <div>
-                        <BrandLogo />
-                        <h1 className="mt-6 text-2xl font-extrabold tracking-tight text-ink">Вход в личный кабинет</h1>
+                        <h1 className="text-2xl font-extrabold tracking-tight text-ink">Вход в личный кабинет</h1>
                     </div>
 
                     <div className="flex flex-1 flex-col justify-center py-6">
@@ -108,6 +112,14 @@ export function LoginPage() {
 
                                     <FormField
                                         label="Пароль"
+                                        labelAction={
+                                            <Link
+                                                to="/forgot-password"
+                                                className="text-xs font-semibold text-muted hover:text-orange-dark"
+                                            >
+                                                Забыли пароль?
+                                            </Link>
+                                        }
                                         name="password"
                                         type="password"
                                         autoComplete="current-password"
@@ -116,16 +128,10 @@ export function LoginPage() {
                                         onChange={(e) => setValues((prev) => ({ ...prev, password: e.target.value }))}
                                         required
                                     />
-
-                                    <div className="text-right text-sm">
-                                        <Link to="/forgot-password" className="font-semibold text-muted hover:text-orange-dark">
-                                            Забыли пароль?
-                                        </Link>
-                                    </div>
                                 </div>
                             )}
 
-                            <button type="submit" className="btn btn-primary btn-block" disabled={isSubmitting}>
+                            <button type="submit" className="btn btn-orange btn-block" disabled={isSubmitting}>
                                 {isSubmitting ? 'Входим…' : 'Войти'}
                             </button>
 
@@ -141,7 +147,7 @@ export function LoginPage() {
                     </div>
 
                     <div className="text-center text-sm text-muted">
-                        Ещё нет аккаунта? <Link to="/register" className="font-bold text-orange-dark">Зарегистрироваться</Link>
+                        Ещё нет аккаунта? <Link to="/register" className="font-bold text-orange-dark">Стать клиентом</Link>
                     </div>
                 </div>
 
@@ -158,6 +164,7 @@ export function LoginPage() {
                         playsInline
                     />
                 </div>
+            </div>
             </div>
         </div>
     );

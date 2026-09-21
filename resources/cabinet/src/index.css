@@ -148,6 +148,12 @@ html::-webkit-scrollbar {
     color: var(--color-orange-dark);
 }
 
+.field-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
 .field label {
     font-size: .8rem;
     font-weight: 700;

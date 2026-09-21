@@ -1,23 +1,28 @@
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { useState, type InputHTMLAttributes } from 'react';
+import { useState, type InputHTMLAttributes, type ReactNode } from 'react';
 
 interface FormFieldProps extends InputHTMLAttributes<HTMLInputElement> {
     label: string;
     error?: string;
+    /** Доп. элемент в строке лейбла справа (например, ссылка «Забыли пароль?»). */
+    labelAction?: ReactNode;
 }
 
 /**
  * Для type="password" добавляем «глазок» справа, переключающий видимость
  * введённого пароля (input type="password" <-> "text").
  */
-export function FormField({ label, error, id, type, ...inputProps }: FormFieldProps) {
+export function FormField({ label, error, id, type, labelAction, ...inputProps }: FormFieldProps) {
     const fieldId = id ?? inputProps.name;
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const isPassword = type === 'password';
 
     return (
         <div className="field flex flex-col gap-1.5">
-            <label htmlFor={fieldId}>{label}</label>
+            <div className="field-label-row">
+                <label htmlFor={fieldId}>{label}</label>
+                {labelAction}
+            </div>
             {isPassword ? (
                 <div className="field-password-wrap">
                     <input id={fieldId} type={isPasswordVisible ? 'text' : 'password'} {...inputProps} />
