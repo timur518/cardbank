@@ -371,6 +371,7 @@ html::-webkit-scrollbar {
         flex: 1 1 0;
         min-width: 0;
         align-items: center;
+        justify-content: center;
         gap: .2rem;
         border-radius: 16px;
         padding: .7rem .35rem;
