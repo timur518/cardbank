@@ -707,9 +707,15 @@ html::-webkit-scrollbar {
     align-items: flex-end;
     justify-content: center;
     background: rgba(15, 15, 15, 0);
-    transition: background .28s ease;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition: background .28s ease, backdrop-filter .28s ease, -webkit-backdrop-filter .28s ease;
 }
-.modal-overlay.is-visible { background: rgba(15, 15, 15, .45); }
+.modal-overlay.is-visible {
+    background: rgba(15, 15, 15, .45);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
 
 .modal-sheet {
     display: flex;
