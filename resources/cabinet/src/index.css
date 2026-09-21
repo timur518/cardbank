@@ -147,6 +147,16 @@ html::-webkit-scrollbar {
     background: #fdf1e7;
     color: var(--color-orange-dark);
 }
+/* На мобильных экранах .cards-search (flex: 1 1 320px) обычно не вмещается рядом с табами
+   в общем flex-wrap ряду (CardsPage.tsx) — табы переносятся на свою строку и без
+   этого прижимаются к левому краю (justify-content: flex-start по умолчанию у родителя) —
+   растягиваем блок на всю ширину строки и центрируем табы внутри него. */
+@media (max-width: 640px) {
+    .cards-filter-tabs {
+        width: 100%;
+        justify-content: center;
+    }
+}
 
 .field-label-row {
     display: flex;
