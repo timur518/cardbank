@@ -3,7 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>[Бренд] — виртуальные карты для платежей по всему миру</title>
+    <title>Mojno — виртуальные карты для платежей по всему миру</title>
+    <link rel="icon" href="assets/images/favicon.svg" sizes="32x32" type="image/png">
+    <link rel="icon" href="assets/images/favicon.svg" sizes="16x16" type="image/png">
     <meta name="description" content="Виртуальные карты для оплаты сервисов, подписок и покупок по всему миру. Управление картами полностью онлайн.">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=sofia-sans:400,500,600,700,800&display=swap" rel="stylesheet" />
@@ -128,14 +130,25 @@
                     [
                         'class'=>'product-black', 'eyebrow'=>'Карта BLACK', 'title'=>'Для интернета. Подписок. Сервисов.',
                         'desc'=>'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов',
-                        'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'], 'bgImage'=>'blackcardbg.png', 'cta'=>'Оформить карту Black',
+                        'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'],
+                        'bgImage'=>'blackcardbg.png',
+                        'cta'=>'Оформить карту Black',
                         'price' => '990',
                     ],
                     [
                         'class'=>'product-orange', 'eyebrow'=>'Карта ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-                        'points'=>['Поддерживает привязку к Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'], 'bgImage'=>'orangecardbg.png', 'cta'=>'Оформить карту Orange',
+                        'points'=>['Поддерживает привязку к Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'],
+                        'bgImage'=>'orangecardbg.png',
+                        'cta'=>'Оформить карту Orange',
                         'price' => '3 490',
+                    ],
+                    [
+                        'class'=>'product-white', 'eyebrow'=>'Карта WHITE', 'title'=>'Универсальная',
+                        'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
+                        'points'=>['Поддерживает привязку к Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'],
+                        'bgImage'=>'whitecardbg.png', 'cta'=>'Оформить карту White',
+                        'price' => '4 990',
                     ],
                 ];
             @endphp
@@ -485,8 +498,8 @@
                 </ul>
             </div>
         </div>
-        <p class="mt-16 max-w-4xl text-xs leading-relaxed text-[#141413]/35">[Бренд] не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p>
-        <p class="mt-5 text-xs text-[#141413]/30">© {{ date('Y') }} [Бренд]. Все права защищены.</p>
+        <p class="mt-16 max-w-4xl text-xs leading-relaxed text-[#141413]/35">Можно не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p>
+        <p class="mt-5 text-xs text-[#141413]/30">© {{ date('Y') }} Можно. Все права защищены.</p>
     </div>
 </footer>
 </body>

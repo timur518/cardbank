@@ -66,7 +66,7 @@ export function DashboardPage() {
                             {balanceText}
                         </span>
                     )}
-                    <span className="stat-btn-value">Текущий остаток</span>
+                    <span className="stat-btn-value">Можно тратить</span>
                 </div>
 
                 <Link to="/topup" className="stat-btn">
