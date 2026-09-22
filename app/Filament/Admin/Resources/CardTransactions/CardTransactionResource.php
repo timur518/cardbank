@@ -19,7 +19,7 @@ class CardTransactionResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArrowsRightLeft;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Финансы';
+    protected static string|\UnitEnum|null $navigationGroup = 'Карты';
 
     protected static ?string $navigationLabel = 'Транзакции по картам';
 
@@ -27,7 +27,7 @@ class CardTransactionResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Транзакции по картам';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
     public static function infolist(Schema $schema): Schema
     {

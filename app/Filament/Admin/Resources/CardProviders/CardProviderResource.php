@@ -25,7 +25,7 @@ class CardProviderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingLibrary;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Карты';
+    protected static string|\UnitEnum|null $navigationGroup = 'Настройки';
 
     protected static ?string $navigationLabel = 'Провайдеры карт';
 
@@ -33,7 +33,7 @@ class CardProviderResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Провайдеры карт';
 
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {
