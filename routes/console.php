@@ -12,12 +12,12 @@ Artisan::command('inspire', function () {
 // раздел «Фоновая синхронизация»). На сервере нужен один крон-энтри:
 //   * * * * * cd /path/to/cardbank && php artisan schedule:run >> /dev/null 2>&1
 Schedule::command('providers:sync-card-transactions')
-    ->everyFifteenMinutes()
+    ->everyThreeMinutes()
     ->withoutOverlapping()
     ->runInBackground();
 
 Schedule::command('providers:sync-card-balances')
-    ->everyFifteenMinutes()
+    ->everyThreeMinutes()
     ->withoutOverlapping()
     ->runInBackground();
 
@@ -26,7 +26,7 @@ Schedule::command('providers:sync-pending-operations')
     ->withoutOverlapping();
 
 Schedule::command('providers:sync-account-balances')
-    ->hourly()
+    ->everyThreeMinutes()
     ->withoutOverlapping();
 
 Schedule::command('providers:sync-card-catalog')
