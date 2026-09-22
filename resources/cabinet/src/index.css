@@ -523,7 +523,7 @@ html::-webkit-scrollbar {
     color: #1e7a3c;
 }
 .tx-amount-danger {
-    color: var(--color-orange-dark);
+    color: #800808;
 }
 
 .status-pill {
