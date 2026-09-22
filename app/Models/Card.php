@@ -46,11 +46,11 @@ class Card extends Model
         'history_checked_at',
     ];
 
-    protected $hidden = [
-        'card_number',
-        'expiry',
-        'cvv',
-    ];
+//    protected $hidden = [
+//        'card_number',
+//        'expiry',
+//        'cvv',
+//    ];
 
     protected function casts(): array
     {
