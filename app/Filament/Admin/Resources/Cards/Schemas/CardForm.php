@@ -82,7 +82,6 @@ class CardForm
                         TextInput::make('fee_debt')
                             ->label('Долг по комиссии')
                             ->numeric()
-                            ->disabled()
                             ->dehydrated(),
                     ]),
 
