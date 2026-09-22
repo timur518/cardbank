@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\CardProducts\Schemas;
 
+use App\Enums\CardCountry;
 use App\Enums\CardNetwork;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -65,9 +66,9 @@ class CardProductForm
                                         Select::make('network')
                                             ->label('Тип карты')
                                             ->options(CardNetwork::class),
-                                        TextInput::make('card_country')
+                                        Select::make('card_country')
                                             ->label('Страна карты')
-                                            ->maxLength(255),
+                                            ->options(CardCountry::class),
                                         TextInput::make('bin')
                                             ->label('BIN карты')
                                             ->numeric(),

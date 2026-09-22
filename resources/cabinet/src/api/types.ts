@@ -57,6 +57,10 @@ export interface CardProductSummary {
     key: string;
     name: string;
     skin: string | null;
+    network: string | null;
+    card_country: string | null;
+    card_country_label: string | null;
+    card_country_flag: string | null;
     topup_min_amount?: string;
     topup_max_amount?: string;
 }
@@ -168,6 +172,12 @@ export interface CardProduct {
     description: string | null;
     skin: string | null;
     currency: string;
+    network: string | null;
+    card_country: string | null;
+    card_country_label: string | null;
+    card_country_flag: string | null;
+    restricted_merchants: string | null;
+    full_terms: string | null;
     price_rub: string;
     provider_kyc_required: boolean;
     apple_pay_enabled: boolean;

@@ -1,5 +1,6 @@
 import { CheckIcon } from '@heroicons/react/24/outline';
 import type { CardProduct } from '../../api/types';
+import { NetworkBadge } from '../common/NetworkBadge';
 import { formatRub } from '../../utils/format';
 
 interface CardProductChoiceProps {
@@ -43,9 +44,15 @@ export function CardProductChoice({ product, onSelect }: CardProductChoiceProps)
             )}
 
             <div className="mt-5 flex flex-1 flex-col">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-base font-extrabold tracking-tight text-ink">Карта {product.name}</h3>
                     <span className="apply-card-badge">{product.currency}</span>
+                    <NetworkBadge network={product.network} />
+                    {product.card_country_flag && (
+                        <span className="text-sm leading-none" title={product.card_country_label ?? undefined}>
+                            {product.card_country_flag}
+                        </span>
+                    )}
                     {product.coming_soon && <span className="apply-card-badge">Скоро</span>}
                 </div>
 
