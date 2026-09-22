@@ -39,7 +39,7 @@ export interface SplitFio {
 
 /**
  * Разбивает одно поле ФИО (в порядке "Фамилия Имя Отчество", как на лендинге,
- * placeholder "Халяпов Тимур Рамилевич") на три части для API — RegisterRequest
+ * placeholder "Ivanov Ivan Ivanovich") на три части для API — RegisterRequest
  * ждёт first_name/last_name/middle_name отдельными полями.
  */
 export function splitFio(fio: string): SplitFio {

@@ -346,7 +346,7 @@
                     <form data-apply-form novalidate class="apply-step is-current" data-apply-step="register">
                         <div class="apply-field">
                             <label for="apply-fio">Введите ваше ФИО</label>
-                            <input type="text" id="apply-fio" name="fio" data-translit-input autocomplete="name" placeholder="Халяпов Тимур Рамилевич" required>
+                            <input type="text" id="apply-fio" name="fio" data-translit-input autocomplete="name" placeholder="Ivanov Ivan Ivanovich" required>
                             <p class="apply-hint">Можно на русском — поле само переведёт в английскую транскрипцию</p>
                         </div>
                         <div class="apply-grid-2">

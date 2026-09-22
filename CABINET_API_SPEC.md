@@ -56,9 +56,9 @@ Filament-админки, ходит в общий Laravel-бэкенд по REST
 **Запрос:**
 ```json
 {
-  "first_name": "Тимур",
-  "last_name": "Халяпов",
-  "middle_name": "Рамилевич",
+  "first_name": "Ivanov",
+  "last_name": "Ivan",
+  "middle_name": "Ivanovich",
   "phone": "+7(999)123-45-67",
   "email": "you@example.com",
   "date_of_birth": "01.01.1990",
@@ -102,9 +102,9 @@ Filament-админки, ходит в общий Laravel-бэкенд по REST
 {
   "data": {
     "id": "018f2c9e-3d7a-7b52-9c76-1a2b3c4d5e6f",
-    "first_name": "Тимур",
-    "last_name": "Халяпов",
-    "middle_name": "Рамилевич",
+    "first_name": "Ivanov",
+    "last_name": "Ivan",
+    "middle_name": "Ivanovich",
     "phone": "+79991234567",
     "email": "you@example.com",
     "date_of_birth": "1990-01-01",

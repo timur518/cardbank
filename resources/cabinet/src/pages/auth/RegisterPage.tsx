@@ -104,7 +104,7 @@ export function RegisterPage() {
                 <FormField
                     label="ФИО"
                     name="fio"
-                    placeholder="Халяпов Тимур Рамилевич"
+                    placeholder="Ivanov Ivan Ivanovich"
                     autoComplete="name"
                     value={values.fio}
                     onChange={(e) => setField('fio', transliterateFio(e.target.value))}
