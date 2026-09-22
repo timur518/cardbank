@@ -18,15 +18,22 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Models\Setting;
+use Illuminate\Support\Facades\Schema;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        $siteSettings = Schema::hasTable('site_settings')
+            ? Setting::query()->first()
+            : null;
+
         return $panel
             ->id('admin')
             ->path('admin')
             ->login()
+            ->BrandLogo($siteSettings?->brand_logo)
             ->colors([
                 'primary' => Color::Amber,
             ])
