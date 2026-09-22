@@ -77,7 +77,6 @@ class CardForm
                         TextInput::make('balance')
                             ->label('Текущий баланс')
                             ->numeric()
-                            ->disabled()
                             ->helperText('Меняется только через действие «Поправить баланс» в списке карт.')
                             ->dehydrated(),
                         TextInput::make('fee_debt')
@@ -87,9 +86,9 @@ class CardForm
                             ->dehydrated(),
                     ]),
 
+                //->visible(fn () => auth()->user()?->can('view_card_sensitive_data'))
                 Section::make('Реквизиты карты')
                     ->columns(2)
-                    ->visible(fn () => auth()->user()?->can('view_card_sensitive_data'))
                     ->schema([
                         TextInput::make('provider_card_id')
                             ->label('Идентификатор карты у провайдера'),
@@ -104,7 +103,6 @@ class CardForm
 
                 Section::make('Платёжный адрес карты')
                     ->columns(2)
-                    ->collapsed()
                     ->schema([
                         TextInput::make('billing_country')->label('Страна'),
                         TextInput::make('billing_city')->label('Город'),
