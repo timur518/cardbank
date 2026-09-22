@@ -23,7 +23,7 @@
             <a href="#partners" class="nav-link">Партнёрам</a>
             <a href="#faq" class="nav-link">Вопросы</a>
         </nav>
-        <div class="hidden lg:flex"><a href="#" class="btn btn-primary btn-small">Личный кабинет</a></div>
+        <div class="hidden lg:flex"><a href="https://mne.mojno.cc/" class="btn btn-primary btn-small">Личный кабинет</a></div>
         <button data-menu-toggle type="button" aria-expanded="false" aria-controls="mobile-menu" class="flex h-10 w-10 items-center justify-center rounded-full bg-black/5 lg:hidden">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
@@ -34,7 +34,7 @@
         <a href="#how" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Как это работает</a>
         <a href="#partners" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Партнёрам</a>
         <a href="#faq" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Вопросы</a>
-        <a href="#" class="btn btn-primary mt-2 justify-center text-sm">Личный кабинет</a>
+        <a href="https://mne.mojno.cc/" class="btn btn-primary mt-2 justify-center text-sm">Личный кабинет</a>
     </div>
 </header>
 
@@ -55,9 +55,9 @@
 
                 <div class="relative w-full px-6 pb-10 sm:px-10 sm:pb-12 lg:px-14 lg:pb-16">
                     <div data-reveal class="max-w-[620px]">
-                        <span class="eyebrow !text-white/80">[Бренд]</span>
+                        <span class="eyebrow !text-white/80">МОЖНО</span>
                         <h1 class="mt-5 text-[clamp(2.5rem,5.5vw,4.5rem)] font-medium leading-[0.98] tracking-[-0.03em] text-white">
-                            Платежи без границ
+                            Платить без границ
                         </h1>
                         <p class="mt-6 max-w-lg text-lg leading-relaxed text-white/80">
                             Виртуальные банковские карты для оплаты сервисов, подписок и покупок за рубежом —
@@ -66,7 +66,7 @@
 
                         <div class="mt-8 flex flex-wrap items-center gap-4">
                             <a href="#products" class="btn btn-hero-orange">Оформить карту онлайн</a>
-                            <a href="#" class="btn btn-hero-black">Войти в аккаунт</a>
+                            <a href="https://mne.mojno.cc/" class="btn btn-hero-black">Войти в аккаунт</a>
                         </div>
                     </div>
                 </div>
@@ -186,7 +186,7 @@
                 <div data-reveal><span class="eyebrow !text-[#f37338]">Онлайн за 3 минуты</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em] text-white">Простое и быстрое оформление карт</h2></div>
                 <div data-reveal>
                     <p class="text-lg leading-relaxed text-white/55">Никаких офисов и пластика. Всё необходимое — здесь.</p>
-                    <a href="#" class="btn btn-hero-orange mt-8">Зарегистрироваться</a>
+                    <a href="https://mne.mojno.cc/register?utm_source=mojno&utm_capaign=land&utm_medium=prosto" class="btn btn-hero-orange mt-8">Зарегистрироваться</a>
                 </div>
             </div>
             <div class="mt-20 grid gap-px overflow-hidden rounded-[32px] bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
@@ -254,7 +254,7 @@
     <section class="mt-[150px] px-6 lg:px-10">
         <div class="app-panel mx-auto max-w-[1400px] overflow-hidden rounded-[40px] bg-white">
             <div class="grid lg:grid-cols-[1fr_.75fr]">
-                <div data-reveal class="px-5 py-10 sm:p-14 lg:p-20"><span class="eyebrow">Личный кабинет</span><h2 class="mt-5 max-w-2xl text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Удобный и простой личный кабинет</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#141413]/60">Выпускайте карты в пару кликов, отслеживайте актуальный баланс и историю своих платежей из одного места.</p><div class="mt-9 grid gap-4 sm:grid-cols-2">@foreach(['Быстрый выпуск карт','История операций','Пополнение баланса из России','Push-уведомления'] as $item)<div class="rounded-2xl bg-[#f3f0ee] p-5 text-sm font-semibold">{{ $item }}</div>@endforeach</div><div class="mt-8 flex flex-wrap gap-4"><a href="#" class="btn btn-hero-orange">Зарегистрироваться</a><a href="#" class="btn btn-hero-black">Авторизоваться</a></div></div>
+                <div data-reveal class="px-5 py-10 sm:p-14 lg:p-20"><span class="eyebrow">Личный кабинет</span><h2 class="mt-5 max-w-2xl text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Удобный и простой личный кабинет</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#141413]/60">Выпускайте карты в пару кликов, отслеживайте актуальный баланс и историю своих платежей из одного места.</p><div class="mt-9 grid gap-4 sm:grid-cols-2">@foreach(['Быстрый выпуск карт','История операций','Пополнение баланса из России','Push-уведомления'] as $item)<div class="rounded-2xl bg-[#f3f0ee] p-5 text-sm font-semibold">{{ $item }}</div>@endforeach</div><div class="mt-8 flex flex-wrap gap-4"><a href="https://mne.mojno.cc/register?utm_source=mojno&utm_capaign=land&utm_medium=lk" class="btn btn-hero-orange">Зарегистрироваться</a><a href="https://mne.mojno.cc/" class="btn btn-hero-black">Авторизоваться</a></div></div>
                 <div data-reveal class="app-visual" style="background-image:url('{{ asset('assets/images/iphone.png') }}');background-position:center;background-repeat:no-repeat;background-size: cover;"></div>
             </div>
         </div>
@@ -263,7 +263,7 @@
     {{-- ================= PARTNERS ================= --}}
     <section id="partners" class="mt-[150px] px-6 lg:px-10">
         <div class="mx-auto max-w-[1400px] rounded-[40px] bg-[#f37338] px-5 py-10 text-white sm:px-12 sm:py-16 lg:px-20 lg:py-24">
-            <div class="grid gap-12 lg:grid-cols-[1fr_.8fr] lg:items-end"><div data-reveal><span class="eyebrow !text-white">Вместе выгодней</span><h2 class="mt-5 max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Пользуйтесь сами и приглашайте знакомых</h2></div><div data-reveal><p class="text-lg leading-relaxed text-white/70">Зарабатывайте с каждого приглашенного и со всех его платежей.</p><a href="#" class="btn btn-primary mt-8">Зарегистрироваться</a></div></div>
+            <div class="grid gap-12 lg:grid-cols-[1fr_.8fr] lg:items-end"><div data-reveal><span class="eyebrow !text-white">Вместе выгодней</span><h2 class="mt-5 max-w-4xl text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Пользуйтесь сами и приглашайте знакомых</h2></div><div data-reveal><p class="text-lg leading-relaxed text-white/70">Зарабатывайте с каждого приглашенного и со всех его платежей.</p><a href="https://mne.mojno.cc/register?utm_source=mojno&utm_capaign=land&utm_medium=partner" class="btn btn-primary mt-8">Зарегистрироваться</a></div></div>
             <div class="mt-16 grid gap-px overflow-hidden rounded-3xl bg-black/10 sm:grid-cols-3">@foreach ([['1%','с каждого пополнения'],['20%','с выпуска карты'],['24/7','автоматические начисления']] as $stat)<div class="bg-white/15 p-8"><p class="text-5xl font-semibold tracking-[-.04em]">{{ $stat[0] }}</p><p class="mt-3 text-sm font-semibold opacity-60">{{ $stat[1] }}</p></div>@endforeach</div>
         </div>
     </section>
