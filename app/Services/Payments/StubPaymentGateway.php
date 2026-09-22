@@ -9,30 +9,26 @@ use Throwable;
 
 /**
  * Заглушка платёжной системы: настоящий шлюз ещё не выбран/не подключён. Всегда
- * "успешно" создаёт платёж и возвращает фиктивную ссылку на оплату, ведущую на
- * несуществующий хост (на реальном шлюзе клиент ушёл бы по ней оплачивать заказ).
+ * «успешно» создаёт платёж и возвращает фиктивную ссылку на оплату, ведущую на
+ * несуществующий хост.
  *
- * Чтобы выпуск/пополнение всё равно можно было проверить end-to-end без реального
- * шлюза, `initiate()` сама себе эмулирует его успешный вебхук (`autoConfirm()`,
- * вызывает тот же PaymentWebhookHandler::handle(), что и реальный вебхук на
- * `POST /api/webhooks/payment/{paymentMethod}`) сразу после ответа клиенту — к этому
- * моменту OrderController уже успеет сохранить `payment_transaction_id` в Income, так что
- * хендлер найдёт заказ по нему. Это единственное отличие заглушки от реальной
- * интеграции, живёт только внутри этого класса, не затрагивает OrderController,
- * интерфейс и сам PaymentWebhookHandler — при подключении настоящего шлюза
- * (замена бинда `PaymentGatewayContract` в AppServiceProvider на его реализацию) эта
- * эмуляция просто перестаёт вызываться вместе с остальным StubPaymentGateway.
+ * Чтобы выпуск/пополнение можно было проверить целиком без реального шлюза,
+ * `initiate()` сама эмулирует его успешный вебхук (`autoConfirm()`, вызывает тот же
+ * PaymentWebhookHandler::handle(), что и реальный вебхук на
+ * `POST /api/webhooks/payment/{paymentMethod}`) сразу после ответа клиенту. Это
+ * единственное отличие заглушки от реальной интеграции — при подключении настоящего
+ * шлюза (замена бинда `PaymentGatewayContract` в AppServiceProvider) эта эмуляция
+ * просто перестаёт вызываться вместе с остальным StubPaymentGateway.
  *
- * Формат вебхука (`parseWebhookPayload()`) — наш собственный придуманный контракт,
- * рассчитанный на ручное тестирование ({@see routes/api.php}, `POST
- * /api/webhooks/payment/{paymentMethod}`):
+ * Формат вебхука (`parseWebhookPayload()`) — собственный простой контракт для
+ * ручного тестирования (`POST /api/webhooks/payment/{paymentMethod}`):
  *
  *     {"transaction_id": "pt_...", "status": "paid"}   // или "status": "failed"
  *
- * При подключении реального провайдера нужно заменить именно эти два метода
- * (`verifyWebhookSignature()` и `parseWebhookPayload()`) на разбор его настоящего
- * формата — остальной код (PaymentWebhookController, PaymentWebhookHandler,
- * CardsProOrderProcessor) их не касается.
+ * При подключении реального провайдера нужно заменить `verifyWebhookSignature()` и
+ * `parseWebhookPayload()` на разбор его настоящего формата — остальной код
+ * (PaymentWebhookController, PaymentWebhookHandler, CardsProOrderProcessor) его
+ * не касается.
  */
 class StubPaymentGateway implements PaymentGatewayContract
 {
@@ -49,16 +45,13 @@ class StubPaymentGateway implements PaymentGatewayContract
     }
 
     /**
-     * Самоэмуляция боевой оплаты для этой заглушки: откладывает вызов того же
-     * PaymentWebhookHandler, что и реальный вебхук, до afterResponse() — чтобы OrderController уже
-     * успел сохранить `payment_transaction_id` в Income до того, как хендлер попытается
-     * найти заказ по нему. Работает вне очереди (QUEUE_CONNECTION не важен) —
-     * dispatchAfterResponse() выполняет замыкание синхронно в том же процессе, сразу после
-     * отправки ответа клиенту. Сам вызов вне транзакции и try/catch, как у реального
-     * PaymentWebhookController — ошибка (например, CardsPro временно недоступен) только
-     * логируется — к этому моменту ответ клиенту уже отправлен, ронять её
-     * нечем — а необработанное исключение внутри dispatchAfterResponse() не должно ломать
-     * завершение запроса.
+     * Эмулирует боевой вебхук об оплате: вызывает тот же PaymentWebhookHandler, что и
+     * реальный вебхук, но откладывает вызов до afterResponse() — чтобы OrderController
+     * уже успел сохранить `payment_transaction_id` в Income до того, как хендлер начнёт
+     * искать заказ по нему. Работает без очереди — dispatch()->afterResponse() выполняет
+     * замыкание синхронно в том же процессе сразу после отправки ответа клиенту. Ошибка
+     * (например, CardsPro временно недоступен) только логируется — ответ клиенту к этому
+     * моменту уже отправлен.
      */
     private function autoConfirm(string $transactionId): void
     {

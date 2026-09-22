@@ -28,7 +28,7 @@ use Throwable;
  * с таким `request_id` (её должна создавать та часть админки/API, которая инициирует
  * выпуск через `issueCard()`, с уже известным `card_id` — `Card` заводится до оплаты,
  * ещё до вызова `issueCard()`). Без такой записи событие по-прежнему
- * только логируется. Подробности — в docs/integrations/cardspro.md, раздел «Вебхуки».
+ * только логируется.
  */
 class CardsProWebhookHandler
 {
@@ -132,19 +132,17 @@ class CardsProWebhookHandler
     }
 
     /**
-     * CARD_TOPUP, в отличие от вывода средств, ещё и реальная оплатная операция клиента, поэтому
-     * кроме баланса также записываем её в «Транзакции по картам» (тип Topup) — иначе она нигде
-     * не видна и выпадает из оборота по картам.
+     * Обрабатывает вебхук CARD_TOPUP: помимо обновления баланса также записывает
+     * пополнение в «Транзакции по картам» (тип Topup), чтобы операция была видна в обороте
+     * по карте.
      *
-     * Строка чаще всего уже существует к этому моменту со status=Pending — её заводит
+     * Строка транзакции обычно уже существует к этому моменту со status=Pending — её заводит
      * {@see \App\Services\Integrations\CardsPro\CardsProOrderProcessor::recordPendingTransaction()} сразу
-     * после запроса `orders/topup` (чтобы клиент видел «в обработке» сразу после оплаты, а не
-     * только после этого вебхука). Здесь она по тому же `docid`/`request_id` переводится в
-     * Success (EXECUTED) или Declined (DECLINED), а не создаётся вторая. Если по какой-топричине
-     * pending-строки не оказалось (старые данные до этой доработки/нет docid в ответе на `orders/topup`) —
-     * EXECUTED всё равно создаёт строку сразу как Success (старое поведение), а DECLINED просто игнорируется
-     * (связывать отказ нечем). Идемпотентно по `docid`/`request_id` (в теле CARD_TOPUP нет
-     * своего `txId`, как у CARD_TRANSACTION).
+     * после запроса `orders/topup`. Здесь она по тому же `docid`/`request_id` переводится в
+     * Success (при EXECUTED) или Declined (при DECLINED), а не создаётся вторая. Если pending-строки
+     * нет (например в ответе на `orders/topup` не было docid), EXECUTED всё равно создаёт строку
+     * сразу как Success, а DECLINED просто игнорируется (связывать отказ нечем). Идемпотентно по
+     * `docid`/`request_id` — в теле CARD_TOPUP нет своего `txId`, как у CARD_TRANSACTION.
      */
     protected function handleTopup(array $payload): void
     {
@@ -195,11 +193,9 @@ class CardsProWebhookHandler
             ->where('status', CardTransactionStatus::Success)
             ->exists();
 
-        // amount остаётся без комиссии — ровно тому, на сколько реально увеличивается баланс карты (и то, что
-        // видит клиент в ЛК — CardTransactionResource отдаёт сырой amount, и он не должен расходиться с
-        // видимым изменением баланса). Комиссия CardsPro списывается с нашего мастер-счёта, не с карты,
-        // поэтому её видно только в внутреннем commission_amount (админка, CardTransactionResource его клиенту не отдаёт).
-        // То же самое provider_topup_fee_percent, что и в OrderController::convertTopup()/CardsProOrderProcessor::recordPendingTransaction().
+        // amount остаётся без комиссии: это то, на сколько реально увеличивается баланс карты и что
+        // видит клиент в ЛК. Комиссия CardsPro списывается с нашего мастер-счёта, не с карты, поэтому
+        // хранится отдельно в commission_amount — внутреннем поле только для админки.
         $feeUsd = $card->cardProduct?->topupCommissionUsd($amount) ?? 0.0;
 
         CardTransaction::updateOrCreate(
@@ -301,9 +297,9 @@ class CardsProWebhookHandler
         $costAmount = isset($payload['billAmount']) ? (float) $payload['billAmount'] : null;
         $amount = ($costAmount ?? (float) ($payload['txAmount'] ?? 0)) + $fee;
 
-        // originTxnId — id холда (authorization), который расчитывает эта операция (см.
-        // docs.cardspro.com/api/operations-callbacks) — upsertFromProvider() сольёт расчёт
-        // с его холдом в одну запись вместо второй строки на ту же покупку.
+        // originTxnId — id холда (authorization), который расчитывает эта операция
+        // (подробное описание полей — docs.cardspro.com/api/operations-callbacks). upsertFromProvider()
+        // сольёт расчёт с его холдом в одну запись вместо второй строки на ту же покупку.
         $originTxId = ($payload['originTxnId'] ?? null) !== null ? (string) $payload['originTxnId'] : null;
 
         $result = CardTransaction::upsertFromProvider($card->id, [
@@ -317,9 +313,8 @@ class CardsProWebhookHandler
             'merchant' => $payload['merchantName'] ?? null,
             'status' => $status,
             'decline_reason' => $payload['declineReason'] ?? null,
-            // CardsPro отдаёт txDate без явного offset/`Z`, но фактически это UTC — без
-            // parseProviderTimestamp() (трактует как UTC, конвертирует в app.timezone) операция в ЛК
-            // показывалась на 3 часа раньше реального времени.
+            // CardsPro отдаёт txDate без явного offset/`Z`, но фактически это всегда UTC —
+            // parseProviderTimestamp() трактует строку как UTC и конвертирует в таймзону приложения.
             'occurred_at' => CardsProService::parseProviderTimestamp($payload['txDate'] ?? null),
         ]);
 

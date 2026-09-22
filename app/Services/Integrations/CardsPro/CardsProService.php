@@ -26,7 +26,7 @@ use Illuminate\Support\Str;
  *         'currency' => 'USD',
  *     ]);
  *
- * Полное описание каждого метода и передаваемых данных — см. docs/integrations/cardspro.md.
+ * Каждый метод соответствует одной конечной точке API CardsPro (указана в его описании).
  * Все методы бросают {@see \App\Services\Integrations\CardsPro\Exceptions\CardsProException}
  * при ошибке API или неверной настройке провайдера.
  */
@@ -412,22 +412,20 @@ class CardsProService implements CardProviderIntegration
     }
 
     /**
-     * Одна операция из вебхука CARD_TRANSACTION (см. docs.cardspro.com/api/operations-callbacks) —
-     * `txId`, `txType`, `billAmount`, `billCurrency`, `merchantName`, `declineReason`,
-     * `txDate`, `fee`, `originTxnId`. Для ответа `GET /{san}/transactions` см. {@see normalizePolledTransaction()}
+     * Приводит одну операцию из вебхука CARD_TRANSACTION (`txId`, `txType`, `billAmount`,
+     * `billCurrency`, `merchantName`, `declineReason`, `txDate`, `fee`, `originTxnId`) к формату
+     * `CardTransaction`. Подробное описание полей — docs.cardspro.com/api/operations-callbacks.
+     * Для ответа `GET /{san}/transactions` используется другой метод, {@see normalizePolledTransaction()}
      * — там другие имена полей (`originTxId`, без «n»).
      *
-     * `originTxnId`/`originTxId` — id холда (authorization), который расчётывается
-     * этой операцией (или исходной покупки — для reversal/refund); используется в
-     * {@see \App\Models\CardTransaction::upsertFromProvider()}, чтобы слить расчёт с его же холдом
-     * в одну строку вместо двух (раньше одна и та же покупка давала дубль — сначала
-     * строку на авторизацию, затем вторую на расчёт с другим provider_tx_id).
+     * `originTxnId` — id холда (authorization), который расчитывает эта операция (или
+     * исходной покупки — для reversal/refund). Сохраняется как `origin_tx_id`, чтобы
+     * {@see \App\Models\CardTransaction::upsertFromProvider()} мог слить расчёт с его же холдом в
+     * одну строку, вместо двух отдельных записей на одну и ту же покупку.
      *
-     * `billAmount` — сумма до комиссии (по аналогии с `transactionValue` в `GET /{san}/transactions`,
-     * где это явно задокументировано), а `fee` — отдельная комиссия, списываемая
-     * с той же карты вместе с операцией. `amount` здесь — итоговая сумма, списанная с карты
-     * (`billAmount + fee`), а не сам по billAmount — иначе оборот и баланс карты занижаются
-     * на величину комиссии.
+     * `billAmount` — сумма до комиссии, `fee` — отдельная комиссия, списываемая с той
+     * же карты вместе с операцией. Итоговый `amount` — это `billAmount + fee`, т.е. вся
+     * сумма, реально списанная с карты, а не только сама покупка без комиссии.
      *
      * @param  array<string, mixed>  $payload
      * @return array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, cost_amount: ?float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
@@ -456,17 +454,16 @@ class CardsProService implements CardProviderIntegration
     }
 
     /**
-     * Одна операция из ответа `GET /{san}/transactions` (см. docs.cardspro.com/api/cards/card-transactions).
-     * Поля здесь ДРУГИЕ, чем в вебхуке CARD_TRANSACTION (`transactionId` вместо
-     * `txId`, `status` вместо `txType`, `transactionValue`/`transactionCommission`
-     * вместо `billAmount`/`fee`, `cardCurrency` вместо `billCurrency`,
-     * `transactionRecipient` вместо `merchantName`, `date` вместо `txDate`) — это два
-     * независимых источника одних и тех же операций, а не один и тот же формат.
+     * Приводит одну операцию из ответа `GET /{san}/transactions` к формату `CardTransaction`.
+     * Подробное описание полей — docs.cardspro.com/api/cards/card-transactions. У этого эндпоинта
+     * свои имена полей, отличные от вебхука CARD_TRANSACTION: `transactionId` вместо `txId`,
+     * `status` вместо `txType`, `transactionValue`/`transactionCommission` вместо `billAmount`/`fee`,
+     * `cardCurrency` вместо `billCurrency`, `transactionRecipient` вместо `merchantName`, `date`
+     * вместо `txDate`.
      *
-     * `transactionValue` — сумма до комиссии, `transactionCommission` — комиссия, `transactionSum` — итоговая
-     * сумма с комиссией уже готовая (так и задокументировано в API). `amount` берём из
-     * `transactionSum` — это реально списанная с карты сумма, именно она должна идти в
-     * оборот и в баланс карты, а не `transactionValue` без комиссии.
+     * `transactionValue` — сумма до комиссии, `transactionCommission` — комиссия, `transactionSum` —
+     * итоговая сумма с комиссией. `amount` берём из `transactionSum` — это реально
+     * списанная с карты сумма, она идёт в оборот и в баланс карты.
      *
      * @param  array<string, mixed>  $payload
      * @return array{provider_tx_id: string, origin_tx_id: ?string, type: CardTransactionType, status: CardTransactionStatus, amount: float, cost_amount: ?float, commission_amount: ?float, currency: string, merchant: ?string, decline_reason: ?string, occurred_at: DateTimeInterface, balance_delta: float}
@@ -493,16 +490,12 @@ class CardsProService implements CardProviderIntegration
     }
 
     /**
-     * CardsPro отдаёт время транзакций без явного офсета/`Z` в конце строки (например,
-     * `"2026-09-22 08:53:00"`), но фактически это UTC (сверено с кабинетом CardsPro — там та же
-     * операция показана на 3 часа позже). Без явной трактовки как UTC `new DateTimeImmutable()`/`Carbon::parse()`
-     * читали бы эту строку в таймзоне приложения (`config('app.timezone')`, `Europe/Moscow`) без конвертации,
-     * так что `occurred_at` в БД оказывался ровно на часовой пояс меньше реального времени — именно это
-     * вызывало расхождение между временем в ЛК и в кабинете CardsPro. `Carbon::parse($raw, 'UTC')` трактует
-     * без явного офсета строку как UTC (второй аргумент игнорируется, если в самой строке уже есть явный
-     * offset/`Z` — тогда он будет использован вместо), затем `setTimezone()` переводит в местное время
-     * приложения — также, как и `now()`, чьи значения идут в эти же колонки в остальных местах
-     * (например, создание pending-транзакции сразу после оплаты).
+     * Парсит время транзакции от CardsPro (поля `txDate`/`date`) и приводит его к таймзоне
+     * приложения. CardsPro отдаёт это время без явного офсета/`Z` (например,
+     * `"2026-09-22 08:53:00"`), но оно всегда в UTC, поэтому строка явно разбирается как UTC
+     * (`Carbon::parse($raw, 'UTC')`) и затем переводится в таймзону приложения (`config('app.timezone')`,
+     * `Europe/Moscow`) через `setTimezone()` — также, как и все другие временные метки в
+     * приложении (`now()` и т.д.).
      */
     public static function parseProviderTimestamp(?string $raw): Carbon
     {

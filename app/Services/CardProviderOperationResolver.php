@@ -85,9 +85,9 @@ class CardProviderOperationResolver
      * мы только проставляем реальные данные от провайдера (`san`, номер, баланс) и заводим
      * расходы на выпуск/пополнение.
      *
-     * ⚠️ Поле `san` в ответе `GET /request/status` для операции `issue` не
-     * задокументировано явно (см. docs/integrations/cardspro.md) — предположение по
-     * аналогии с вебхуком `CARD_ISSUE`. Проверить на реальном ответе песочницы.
+     * ⚠️ Поле `san` в ответе `GET /request/status` для операции `issue` официально
+     * не задокументировано — используется по аналогии с вебхуком `CARD_ISSUE`. Стоит
+     * проверить на реальном ответе песочницы.
      *
      * @param  array<string, mixed>  $raw
      */
@@ -213,13 +213,12 @@ class CardProviderOperationResolver
     }
 
     /**
-     * Эта ветка — страховка на случай, если вебхук CARD_TOPUP от CardsPro так и не дошёл
-     * ({@see \App\Services\Integrations\CardsPro\CardsProWebhookHandler::handleTopup()} делает то же самое,
-     * если дошёл) — без неё строка CardTransaction, заведённая ещё при
-     * инициации пополнения ({@see \App\Services\Integrations\CardsPro\CardsProOrderProcessor::recordPendingTransaction()}),
-     * навсегда остаётся Pending, а клиент никогда не получит TopupSuccess. `docid`
-     * у CardProviderOperation и `provider_tx_id` у CardTransaction — одно и то же значение из одного
-     * и того же ответа `orders/topup` (см. `recordOperation()` и `recordPendingTransaction()`).
+     * Переводит pending-строку CardTransaction (заведённую при инициации пополнения,
+     * {@see \App\Services\Integrations\CardsPro\CardsProOrderProcessor::recordPendingTransaction()}) в Success
+     * и уведомляет клиента. Страховка на случай, если вебхук CARD_TOPUP так и не дошёл —
+     * {@see \App\Services\Integrations\CardsPro\CardsProWebhookHandler::handleTopup()} делает то же самое,
+     * если он дошёл. `docid` у CardProviderOperation и `provider_tx_id` у CardTransaction — одно
+     * и то же значение из ответа `orders/topup`.
      */
     protected function resolvePendingTopupTransaction(Card $card, CardProviderOperation $operation): void
     {

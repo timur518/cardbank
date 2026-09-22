@@ -15,16 +15,14 @@ use App\Models\Notification;
 use App\Services\CardProviderOperationResolver;
 
 /**
- * По оплаченному заказу (`Income.payment_status = Paid`, см.
- * {@see \App\Services\Payments\PaymentWebhookHandler}) инициирует у CardsPro сам
- * выпуск карты (заказ = `IncomeType::CardIssue`) либо пополнение уже
- * выпущенной карты (заказ = `IncomeType::CardTopup`, через `orders/topup`). `Card`
- * в обоих случаях уже существует к этому моменту.
+ * Запускает у CardsPro выпуск карты или пополнение уже выпущенной карты после того, как
+ * заказ оплачен ({@see \App\Services\Payments\PaymentWebhookHandler} вызывает этот класс
+ * после успешного вебхука оплаты). `Card` в обоих случаях уже существует к этому моменту.
  *
- * `INPROCESS`/`EXECUTED` → заводим `CardProviderOperation` в статусе `Pending`, итог
- * узнаём позже по вебхуку CardsPro (`CardsProWebhookHandler`) или страховкой
- * `providers:sync-pending-operations`. `DECLINED` сразу в ответе → синхронно
- * фиксируем отказ через `CardProviderOperationResolver`.
+ * Если CardsPro отвечает `INPROCESS`/`EXECUTED`, заводится `CardProviderOperation` в
+ * статусе `Pending`, и итог узнаётся позже — по вебхуку CardsPro (`CardsProWebhookHandler`)
+ * или фоновой командой `providers:sync-pending-operations`. Если же CardsPro сразу отказывает
+ * (`DECLINED`), отказ фиксируется сразу через `CardProviderOperationResolver`.
  */
 class CardsProOrderProcessor
 {
@@ -34,7 +32,8 @@ class CardsProOrderProcessor
     }
 
     /**
-     * Выпуск карты с начальным пополнением на `$topupUsd` — см. шаг 4, п. 1-3.
+     * Запрашивает у CardsPro выпуск новой карты с одновременным первым пополнением
+     * баланса на `$topupUsd`.
      */
     public function initiateIssue(Card $card, float $topupUsd): void
     {
@@ -75,22 +74,20 @@ class CardsProOrderProcessor
     }
 
     /**
-     * Заводит CardTransaction(type=Topup, status=Pending) сразу после синхронного
-     * INPROCESS/EXECUTED ответа CardsPro на `orders/topup`, чтобы клиент видел «пополнение в
-     * обработке» в истории сразу после оплаты, а не только после вебхука CARD_TOPUP.
-     * `provider_tx_id` берётся из того же `docid`/`request_id`, который вернётся в вебхуке —
-     * {@see \App\Services\Integrations\CardsPro\CardsProWebhookHandler::handleTopup()} находит эту же
-     * строку по нему и переводит её в Success/Declined, а не создаёт вторую. Если же вебхуки выключены
-     * (только providers:sync-pending-operations) — CardProviderOperationResolver::resolvePendingTopupTransaction()
-     * только меняет статус этой же строки, не трогая суммы — значит, они должны быть верными уже здесь.
+     * Создаёт запись CardTransaction (тип Topup, статус Pending) сразу после ответа
+     * CardsPro на `orders/topup`, чтобы клиент сразу видел «пополнение в обработке» в
+     * истории, не дожидаясь вебхука CARD_TOPUP. `provider_tx_id` берётся из `docid`/
+     * `request_id` того же ответа — по нему же дальше найдёт эту запись и переведёт её в
+     * Success/Declined либо {@see \App\Services\Integrations\CardsPro\CardsProWebhookHandler::handleTopup()}
+     * (вебхук), либо CardProviderOperationResolver::resolvePendingTopupTransaction() (фоновая проверка
+     * providers:sync-pending-operations, если вебхук не пришёл).
      *
-     * `amount` — ровно $topupUsd, БЕЗ комиссии — это ровно та, на сколько реально увеличивается баланс
-     * карты (комиссия списывается с нашего мастер-счёта, не с карты) — менять это нельзя, иначе сумма
-     * транзакции в ЛК клиента разойдётся с тем, на сколько видимо вырос его баланс (CardTransactionResource отдаёт
-     * клиенту именно сырой `amount`). `commission_amount` заводится отдельно — это внутренное поле для
-     * админки (колонка «Комиссия CardsPro» в CardTransactionsTable), как и у покупок — клиенту оно не отдаётся
-     * (см. докблок CardTransactionResource). `cost_amount` тут не заполняем — в отличие от покупок, тут нету
-     * отдельного «до комиссии»-значения, которое было бы списано с карты — весь $topupUsd целиком и есть «до комиссии».
+     * `amount` равен $topupUsd без комиссии — это точно та сумма, на которую реально
+     * увеличится баланс карты (комиссию CardsPro списывает с нашего мастер-счёта, не с
+     * карты), и ровно то, что видит клиент в ЛК. Комиссия хранится отдельно в
+     * `commission_amount` — внутреннее поле только для админки, клиенту оно не показывается.
+     * `cost_amount` здесь не заполняется, потому что весь $topupUsd целиком и есть сумма до
+     * комиссии.
      *
      * @param  array<string, mixed>  $raw
      */
