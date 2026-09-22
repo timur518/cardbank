@@ -138,7 +138,7 @@
                     [
                         'class'=>'product-orange', 'eyebrow'=>'Карта ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-                        'points'=>['Поддерживает привязку к Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'],
+                        'points'=>['Поддерживает Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'],
                         'bgImage'=>'orangecardbg.png',
                         'cta'=>'Оформить карту Orange',
                         'price' => '3 490',
@@ -146,7 +146,7 @@
                     [
                         'class'=>'product-white', 'eyebrow'=>'Карта WHITE', 'title'=>'Универсальная',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-                        'points'=>['Поддерживает привязку к Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'],
+                        'points'=>['Поддерживает Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'],
                         'bgImage'=>'whitecardbg.png', 'cta'=>'Оформить карту White',
                         'price' => '4 990',
                     ],
