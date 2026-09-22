@@ -80,7 +80,17 @@ class CardsProOrderProcessor
      * обработке» в истории сразу после оплаты, а не только после вебхука CARD_TOPUP.
      * `provider_tx_id` берётся из того же `docid`/`request_id`, который вернётся в вебхуке —
      * {@see \App\Services\Integrations\CardsPro\CardsProWebhookHandler::handleTopup()} находит эту же
-     * строку по нему и переводит её в Success/Declined, а не создаёт вторую.
+     * строку по нему и переводит её в Success/Declined, а не создаёт вторую. Если же вебхуки выключены
+     * (только providers:sync-pending-operations) — CardProviderOperationResolver::resolvePendingTopupTransaction()
+     * только меняет статус этой же строки, не трогая суммы — значит, они должны быть верными уже здесь.
+     *
+     * `amount` — ровно $topupUsd, БЕЗ комиссии — это ровно та, на сколько реально увеличивается баланс
+     * карты (комиссия списывается с нашего мастер-счёта, не с карты) — менять это нельзя, иначе сумма
+     * транзакции в ЛК клиента разойдётся с тем, на сколько видимо вырос его баланс (CardTransactionResource отдаёт
+     * клиенту именно сырой `amount`). `commission_amount` заводится отдельно — это внутренное поле для
+     * админки (колонка «Комиссия CardsPro» в CardTransactionsTable), как и у покупок — клиенту оно не отдаётся
+     * (см. докблок CardTransactionResource). `cost_amount` тут не заполняем — в отличие от покупок, тут нету
+     * отдельного «до комиссии»-значения, которое было бы списано с карты — весь $topupUsd целиком и есть «до комиссии».
      *
      * @param  array<string, mixed>  $raw
      */
@@ -92,10 +102,13 @@ class CardsProOrderProcessor
             return;
         }
 
+        $feeUsd = $card->cardProduct?->topupCommissionUsd($topupUsd) ?? 0.0;
+
         CardTransaction::create([
             'card_id' => $card->id,
             'type' => CardTransactionType::Topup,
             'amount' => $topupUsd,
+            'commission_amount' => $feeUsd > 0 ? $feeUsd : null,
             'currency' => $card->currency,
             'status' => CardTransactionStatus::Pending,
             'provider_tx_id' => $providerTxId,

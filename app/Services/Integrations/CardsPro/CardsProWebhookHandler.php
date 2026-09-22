@@ -195,11 +195,19 @@ class CardsProWebhookHandler
             ->where('status', CardTransactionStatus::Success)
             ->exists();
 
+        // amount остаётся без комиссии — ровно тому, на сколько реально увеличивается баланс карты (и то, что
+        // видит клиент в ЛК — CardTransactionResource отдаёт сырой amount, и он не должен расходиться с
+        // видимым изменением баланса). Комиссия CardsPro списывается с нашего мастер-счёта, не с карты,
+        // поэтому её видно только в внутреннем commission_amount (админка, CardTransactionResource его клиенту не отдаёт).
+        // То же самое provider_topup_fee_percent, что и в OrderController::convertTopup()/CardsProOrderProcessor::recordPendingTransaction().
+        $feeUsd = $card->cardProduct?->topupCommissionUsd($amount) ?? 0.0;
+
         CardTransaction::updateOrCreate(
             ['card_id' => $card->id, 'provider_tx_id' => $providerTxId],
             [
                 'type' => CardTransactionType::Topup,
                 'amount' => $amount,
+                'commission_amount' => $feeUsd > 0 ? $feeUsd : null,
                 'currency' => $payload['params']['currency'] ?? $card->currency,
                 'status' => CardTransactionStatus::Success,
                 'occurred_at' => now(),

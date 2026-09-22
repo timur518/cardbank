@@ -172,7 +172,7 @@ class OrderController extends Controller
             ? round($amount, 2)
             : ($sellRateUsd > 0 ? round($amount / $sellRateUsd, 2) : 0.0);
 
-        $feeUsd = round($topupUsd * (float) $product->provider_topup_fee_percent / 100, 2);
+        $feeUsd = $product->topupCommissionUsd($topupUsd);
         $totalRub = round(($topupUsd + $feeUsd) * $sellRateUsd, 2);
 
         return [$topupUsd, $totalRub];

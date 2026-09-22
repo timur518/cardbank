@@ -85,6 +85,18 @@ class CardProduct extends Model
     }
 
     /**
+     * Комиссия CardsPro за пополнение (`provider_topup_fee_percent`) в долларах от суммы
+     * пополнения без комиссии — одина формула для OrderController::convertTopup() (что платит
+     * клиент), CardProviderOperationResolver::recordTopupExpense() (внутренний расход банка) и
+     * CardTransaction.commission_amount (что видно в админке по конкретной транзакции) — без этого
+     * хелпера три места считали ёё независимо друг от друга, и в некоторых из них она вообще забывалась.
+     */
+    public function topupCommissionUsd(float $topupUsd): float
+    {
+        return round($topupUsd * (float) $this->provider_topup_fee_percent / 100, 2);
+    }
+
+    /**
      * Расчётная прибыль с одного выпуска.
      * TODO: учитывать курс USD/RUB, когда появится модуль курсов валют — пока приблизительная оценка.
      */

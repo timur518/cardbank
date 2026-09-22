@@ -168,8 +168,7 @@ class CardProviderOperationResolver
             return;
         }
 
-        $feePercent = (float) ($card->cardProduct?->provider_topup_fee_percent ?? 0);
-        $feeUsd = round($topupUsd * $feePercent / 100, 2);
+        $feeUsd = $card->cardProduct?->topupCommissionUsd($topupUsd) ?? 0.0;
 
         $this->createExpense($card, $operation, ExpenseCategory::CardTopup, $topupUsd + $feeUsd, $comment);
     }
