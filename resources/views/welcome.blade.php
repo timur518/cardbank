@@ -373,7 +373,7 @@
                         <div class="apply-field">
                             <label for="apply-fio">Введите ваше ФИО</label>
                             <input type="text" id="apply-fio" name="fio" data-translit-input autocomplete="name" placeholder="Ivanov Ivan Ivanovich" required>
-                            <p class="apply-hint">Можно на русском - поле само переведёт в английскую транскрипцию</p>
+                            <p class="apply-hint">Можно на русском. Автоматический перевод.</p>
                         </div>
                         <div class="apply-grid-2">
                             <div class="apply-field">
