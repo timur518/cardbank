@@ -158,7 +158,7 @@ export function NewCardOrderPage() {
                             Выбрать другую карту
                         </button>
 
-                        <div className="apply-card-list mt-5">
+                        <div className="apply-card-list mt-5 mb-4">
                             <div className="apply-card-option is-active" style={{ cursor: 'default' }}>
                                 <span className={`apply-card-thumb ${selectedProduct.skin ? '' : 'apply-card-thumb-white'}`}>
                                     {selectedProduct.skin && (

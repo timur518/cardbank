@@ -578,6 +578,9 @@ html::-webkit-scrollbar {
     background: #fff;
     padding: 44px 36px;
 }
+@media (max-width: 640px) {
+    .apply-form-wrap { padding: 20px; }
+}
 
 .apply-card-list { display: flex; flex-direction: column; gap: 6px; }
 .apply-card-option {
