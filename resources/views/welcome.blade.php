@@ -40,7 +40,7 @@
 
 <main id="top" class="bg-[#f3f0ee]">
     {{-- ================= HERO ================= --}}
-    <section class="px-6 pt-[20px] lg:px-10 lg:-mt-[115px]">
+    <section id="hero" class="px-6 pt-[20px] lg:px-10 lg:-mt-[115px]">
         <div class="mx-auto max-w-[1400px]">
             <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[750px] lg:rounded-[40px]">
                 <video
@@ -53,7 +53,7 @@
                 ></video>
                 <div class="absolute inset-0 bg-gradient-to-t from-[#141413]/90 via-[#141413]/25 to-[#141413]/0"></div>
 
-                <div class="relative w-full px-6 pb-10 sm:px-10 sm:pb-12 lg:px-14 lg:pb-16">
+                <div class="hero-copy relative w-full px-6 pb-10 sm:px-10 sm:pb-12 lg:px-14 lg:pb-16">
                     <div data-reveal class="max-w-[620px]">
                         <span class="eyebrow !text-white/80">МОЖНО</span>
                         <h1 class="mt-5 text-[clamp(2.5rem,5.5vw,4.5rem)] font-medium leading-[0.98] tracking-[-0.03em] text-white">
@@ -170,7 +170,7 @@
                             </ul>
                             <div class="mt-10 flex flex-wrap items-center gap-5 border-t border-current/15 pt-7">
                                 <a href="#" class="btn {{ $i === 0 ? 'btn-hero-orange' : 'btn-dark-on-orange' }}">{{ $product['cta'] }}</a>
-                                <span class="text-sm opacity-50">{{ $product['price'] }} ₽ за выпуск · 0 ₽ в месяц</span>
+                                <span class="product-price-note text-sm opacity-50">{{ $product['price'] }} ₽ за выпуск · 0 ₽ в месяц</span>
                             </div>
                         </div>
                     </article>
