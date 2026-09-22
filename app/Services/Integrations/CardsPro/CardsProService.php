@@ -8,6 +8,7 @@ use App\Enums\CardTransactionType;
 use App\Models\CardProvider;
 use App\Services\Integrations\Contracts\CardProviderIntegration;
 use DateTimeInterface;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 /**
@@ -449,7 +450,7 @@ class CardsProService implements CardProviderIntegration
             'currency' => (string) ($payload['billCurrency'] ?? ''),
             'merchant' => $payload['merchantName'] ?? null,
             'decline_reason' => $payload['declineReason'] ?? null,
-            'occurred_at' => new \DateTimeImmutable((string) ($payload['txDate'] ?? 'now')),
+            'occurred_at' => self::parseProviderTimestamp($payload['txDate'] ?? null),
             'balance_delta' => $balanceSign * $amount,
         ];
     }
@@ -486,9 +487,30 @@ class CardsProService implements CardProviderIntegration
             'currency' => (string) ($payload['cardCurrency'] ?? ''),
             'merchant' => $payload['transactionRecipient'] ?? null,
             'decline_reason' => $payload['declineReason'] ?? null,
-            'occurred_at' => new \DateTimeImmutable((string) ($payload['date'] ?? 'now')),
+            'occurred_at' => self::parseProviderTimestamp($payload['date'] ?? null),
             'balance_delta' => $balanceSign * $amount,
         ];
+    }
+
+    /**
+     * CardsPro отдаёт время транзакций без явного офсета/`Z` в конце строки (например,
+     * `"2026-09-22 08:53:00"`), но фактически это UTC (сверено с кабинетом CardsPro — там та же
+     * операция показана на 3 часа позже). Без явной трактовки как UTC `new DateTimeImmutable()`/`Carbon::parse()`
+     * читали бы эту строку в таймзоне приложения (`config('app.timezone')`, `Europe/Moscow`) без конвертации,
+     * так что `occurred_at` в БД оказывался ровно на часовой пояс меньше реального времени — именно это
+     * вызывало расхождение между временем в ЛК и в кабинете CardsPro. `Carbon::parse($raw, 'UTC')` трактует
+     * без явного офсета строку как UTC (второй аргумент игнорируется, если в самой строке уже есть явный
+     * offset/`Z` — тогда он будет использован вместо), затем `setTimezone()` переводит в местное время
+     * приложения — также, как и `now()`, чьи значения идут в эти же колонки в остальных местах
+     * (например, создание pending-транзакции сразу после оплаты).
+     */
+    public static function parseProviderTimestamp(?string $raw): Carbon
+    {
+        if (! $raw) {
+            return Carbon::now();
+        }
+
+        return Carbon::parse($raw, 'UTC')->setTimezone(config('app.timezone'));
     }
 
     /**

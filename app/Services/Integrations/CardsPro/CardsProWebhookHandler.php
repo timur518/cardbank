@@ -309,7 +309,10 @@ class CardsProWebhookHandler
             'merchant' => $payload['merchantName'] ?? null,
             'status' => $status,
             'decline_reason' => $payload['declineReason'] ?? null,
-            'occurred_at' => $payload['txDate'] ?? now(),
+            // CardsPro отдаёт txDate без явного offset/`Z`, но фактически это UTC — без
+            // parseProviderTimestamp() (трактует как UTC, конвертирует в app.timezone) операция в ЛК
+            // показывалась на 3 часа раньше реального времени.
+            'occurred_at' => CardsProService::parseProviderTimestamp($payload['txDate'] ?? null),
         ]);
 
         // $balanceSign === 0 значит, что этот txType вообще не двигает деньги (холд/отклон) —
