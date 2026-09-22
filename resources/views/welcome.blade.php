@@ -279,7 +279,7 @@
             <div data-reveal class="max-w-4xl">
                 <span class="eyebrow">Получить карту</span>
                 <h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Оформление карты онлайн</h2>
-                <p class="mt-6 text-lg leading-relaxed text-[#141413]/60">Сможете использовать карту сразу</p>
+                <p class="mt-6 text-lg leading-relaxed text-[#141413]/60">Можно использовать карту сразу</p>
             </div>
 
             @php
