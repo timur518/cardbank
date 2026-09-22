@@ -34,15 +34,13 @@ export function CardProductChoice({ product, onSelect }: CardProductChoiceProps)
 
     return (
         <div className="flex flex-col rounded-[28px] bg-surface p-5 shadow-sm">
-            <div className="relative aspect-[1.586] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#2b2a28] via-[#1c1b19] to-[#0e0e0d]">
-                {product.skin ? (
-                    <img src={product.skin} alt={`Карта ${product.name}`} className="h-full w-full object-cover" />
-                ) : (
-                    <div className="flex h-full items-center justify-center text-5xl font-black text-white/10">
-                        {product.name.charAt(0)}
-                    </div>
-                )}
-            </div>
+            {product.skin ? (
+                <img src={product.skin} alt={`Карта ${product.name}`} className="w-full" />
+            ) : (
+                <div className="relative flex aspect-[1.586] w-full items-center justify-center overflow-hidden rounded-2xl bg-bg text-5xl font-black text-ink/10">
+                    {product.name.charAt(0)}
+                </div>
+            )}
 
             <div className="mt-5 flex flex-1 flex-col">
                 <div className="flex items-center gap-2">
