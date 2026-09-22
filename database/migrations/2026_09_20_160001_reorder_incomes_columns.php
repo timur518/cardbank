@@ -20,6 +20,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Пересборка таблицы нужна только на SQLite, где ->after(...) не имеет эффекта.
+        // На MySQL/Postgres ->after() при добавлении этих колонок уже отработал как надо,
+        // физический порядок уже правильный, делать здесь нечего (а DROP TABLE через
+        // create+copy+drop+rename на MySQL/Postgres ещё и рискованнее при наличии внешних ключей).
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            return;
+        }
+
         Schema::create('incomes_reordered', function (Blueprint $table) {
             $table->id();
             $table->string('type');

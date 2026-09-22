@@ -102,6 +102,6 @@ class CardProduct extends Model
      */
     public function getEstimatedProfitAttribute(): string
     {
-        return bcsub((string) $this->price_rub, (string) $this->provider_issue_cost_usd, 2);
+        return number_format((float) $this->price_rub - (float) $this->provider_issue_cost_usd, 2, '.', '');
     }
 }
