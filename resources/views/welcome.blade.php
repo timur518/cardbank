@@ -165,7 +165,7 @@
                             <p class="mt-7 max-w-2xl text-lg leading-relaxed opacity-70">{{ $product['desc'] }}</p>
                             <ul class="mt-8 grid gap-4 sm:grid-cols-3">
                                 @foreach ($product['points'] as $point)
-                                    <li class="flex gap-3 text-sm font-semibold leading-relaxed"><span class="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-current"></span>{{ $point }}</li>
+                                    <li class="flex items-center gap-3 text-sm font-semibold leading-relaxed"><span class="h-2 w-2 flex-shrink-0 rounded-full bg-current"></span>{{ $point }}</li>
                                 @endforeach
                             </ul>
                             <div class="mt-10 flex flex-wrap items-center gap-5 border-t border-current/15 pt-7">
