@@ -18,6 +18,19 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Пересборка таблицы (create+copy+drop+rename) нужна только на SQLite, где
+        // ->after(...) не имеет эффекта. На MySQL/Postgres ->after() при добавлении
+        // cost_amount/commission_amount/origin_tx_id уже отработал как надо, а сама
+        // пересборка там ещё и небезопасна: DROP TABLE card_transactions падает на
+        // внешнем ключе incomes.card_transaction_id. Там достаточно добавить updated_at.
+        if (Schema::getConnection()->getDriverName() !== 'sqlite') {
+            Schema::table('card_transactions', function (Blueprint $table) {
+                $table->timestamp('updated_at')->nullable()->after('created_at');
+            });
+
+            return;
+        }
+
         Schema::create('card_transactions_reordered', function (Blueprint $table) {
             $table->id();
             $table->foreignId('card_id')->constrained()->cascadeOnDelete();
