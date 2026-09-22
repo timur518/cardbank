@@ -585,7 +585,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Форма пополнения баланса: итоговая сумма «К оплате» в рублях.
-    // Сумма в $ пересчитывается в ₽ по курсу из data-usd-rate (передан из Setting в blade).
+    //
+    // Формула повторяет OrderController::issue()/convertTopup() из ЛК: клиент платит
+    // цену карты (price_rub) плюс сумму пополнения, пересчитанную в рубли по курсу
+    // (data-usd-rate) с добавлением комиссии провайдера за пополнение
+    // (data-fee-percent из выбранной в сайдбаре карты) — сама сумма, которая попадёт
+    // на карту, от этой комиссии не зависит, платит её клиент сверху.
     document.querySelectorAll('[data-topup-form]').forEach((form) => {
         const amountInput = form.querySelector('[data-topup-amount-input]');
         const totalEl = form.querySelector('[data-topup-total]');
@@ -598,16 +603,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const formatRub = (value) => `${Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽`;
 
+        const selectedCard = () => document.querySelector('input[name="card_product"]:checked');
+
         const updateTotal = () => {
             const currency = toggle?.querySelector('button.is-active')?.dataset.currency ?? 'usd';
             const raw = parseFloat(amountInput.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-            const rubAmount = currency === 'usd' ? raw * usdRate : raw;
+            const card = selectedCard();
+            const priceRub = parseFloat(card?.dataset.priceRub) || 0;
+            const feePercent = parseFloat(card?.dataset.feePercent) || 0;
 
-            totalEl.textContent = `К оплате: ${formatRub(rubAmount)}`;
+            const topupUsd = currency === 'usd' ? raw : (usdRate > 0 ? raw / usdRate : 0);
+            const feeUsd = topupUsd * (feePercent / 100);
+            const topupRub = (topupUsd + feeUsd) * usdRate;
+            const totalRub = priceRub + topupRub;
+
+            totalEl.textContent = `К оплате: ${formatRub(totalRub)}`;
         };
 
         amountInput.addEventListener('input', updateTotal);
         toggle?.querySelectorAll('button').forEach((button) => button.addEventListener('click', updateTotal));
+        document.querySelectorAll('input[name="card_product"]').forEach((input) => input.addEventListener('change', updateTotal));
 
         updateTotal();
     });

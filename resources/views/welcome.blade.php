@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mojno — виртуальные карты для платежей по всему миру</title>
+    <title>Mojno - виртуальные карты для платежей по всему миру</title>
     <link rel="icon" href="assets/images/favicon.svg" sizes="32x32" type="image/png">
     <link rel="icon" href="assets/images/favicon.svg" sizes="16x16" type="image/png">
     <meta name="description" content="Виртуальные карты для оплаты сервисов, подписок и покупок по всему миру. Управление картами полностью онлайн.">
@@ -60,7 +60,7 @@
                             Платить без границ
                         </h1>
                         <p class="mt-6 max-w-lg text-lg leading-relaxed text-white/80">
-                            Виртуальные банковские карты для оплаты сервисов, подписок и покупок за рубежом —
+                            Виртуальные банковские карты для оплаты сервисов, подписок и покупок за рубежом -
                             оформляется за минуты и пополняется из России через СБП.
                         </p>
 
@@ -83,7 +83,7 @@
                 </div>
                 <div data-reveal>
                     <p class="mt-4 max-w-lg text-[20px] font-normal leading-relaxed text-[#141414]">Удобный способ совершать покупки из России и СНГ</p>
-                    <p class="max-w-lg text-base leading-relaxed text-[#141413]/45">От подписки на ИИ-сервис до отеля в отпуске — просто</p>
+                    <p class="max-w-lg text-base leading-relaxed text-[#141413]/45">От подписки на ИИ-сервис до отеля в отпуске - просто</p>
                 </div>
             </div>
         </div>
@@ -126,29 +126,34 @@
             </div>
 
             @php
+                // Цены берём из админки (CardProduct.price_rub по key), картинка/текст остаются маркетинговым контентом страницы.
+                $priceFor = fn (string $key) => isset($cardProducts[$key])
+                    ? number_format((float) $cardProducts[$key]->price_rub, 0, ',', ' ')
+                    : '—';
+
                 $products = [
                     [
-                        'class'=>'product-black', 'eyebrow'=>'Карта BLACK', 'title'=>'Для интернета. Подписок. Сервисов.',
+                        'key'=>'black', 'class'=>'product-black', 'eyebrow'=>'Карта BLACK', 'title'=>'Для интернета. Подписок. Сервисов.',
                         'desc'=>'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов',
                         'points'=>['Оформление за 3 минуты','Пополнение Российской картой или по СБП','Обслуживание - бесплатно'],
                         'bgImage'=>'blackcardbg.png',
                         'cta'=>'Оформить карту Black',
-                        'price' => '990',
+                        'price' => $priceFor('black'),
                     ],
                     [
-                        'class'=>'product-orange', 'eyebrow'=>'Карта ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
+                        'key'=>'orange', 'class'=>'product-orange', 'eyebrow'=>'Карта ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
                         'points'=>['Поддерживает Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'],
                         'bgImage'=>'orangecardbg.png',
                         'cta'=>'Оформить карту Orange',
-                        'price' => '3 490',
+                        'price' => $priceFor('orange'),
                     ],
                     [
-                        'class'=>'product-white', 'eyebrow'=>'Карта WHITE', 'title'=>'Универсальная',
+                        'key'=>'white', 'class'=>'product-white', 'eyebrow'=>'Карта WHITE', 'title'=>'Универсальная',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
                         'points'=>['Поддерживает Apple Pay и Google Pay','Можно платить в магазинах и кафе','Работает с Apple Watch и Wear OS'],
                         'bgImage'=>'whitecardbg.png', 'cta'=>'Оформить карту White',
-                        'price' => '4 990',
+                        'price' => $priceFor('white'),
                     ],
                 ];
             @endphp
@@ -185,7 +190,7 @@
             <div class="grid gap-10 lg:grid-cols-[1fr_.65fr] lg:items-end">
                 <div data-reveal><span class="eyebrow !text-[#f37338]">Онлайн за 3 минуты</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em] text-white">Простое и быстрое оформление карт</h2></div>
                 <div data-reveal>
-                    <p class="text-lg leading-relaxed text-white/55">Никаких офисов и пластика. Всё необходимое — здесь.</p>
+                    <p class="text-lg leading-relaxed text-white/55">Никаких офисов и пластика. Всё необходимое - здесь.</p>
                     <a href="https://mne.mojno.cc/register?utm_source=mojno&utm_capaign=land&utm_medium=prosto" class="btn btn-hero-orange mt-8">Зарегистрироваться</a>
                 </div>
             </div>
@@ -280,19 +285,19 @@
             @php
                 $cardOptions = [
                     [
-                        'name' => 'Black', 'thumb' => 'blackcard.png', 'currency' => '$ USD',
+                        'key' => 'black', 'name' => 'Black', 'thumb' => 'blackcard.png', 'currency' => '$ USD',
                         'desc' => 'Для онлайн платежей, подписок и сервисов.',
-                        'wallets' => null, 'price' => '990',
+                        'wallets' => null,
                     ],
                     [
-                        'name' => 'Orange', 'thumb' => 'orangecard.png', 'currency' => '$ USD',
+                        'key' => 'orange', 'name' => 'Orange', 'thumb' => 'orangecard.png', 'currency' => '$ USD',
                         'desc' => 'Для оффлайн и онлайн покупок.',
-                        'wallets' => 'Apple Pay · Google Pay', 'price' => '3 490',
+                        'wallets' => 'Apple Pay · Google Pay',
                     ],
                     [
-                        'name' => 'White', 'thumb' => 'whitecard.png', 'currency' => '$ USD',
+                        'key' => 'white', 'name' => 'White', 'thumb' => 'whitecard.png', 'currency' => '$ USD',
                         'desc' => 'Универсальная карта с повышенными лимитами. Для оффлайн и онлайн покупок.',
-                        'wallets' => 'Apple Pay · Google Pay', 'price' => '4 990',
+                        'wallets' => 'Apple Pay · Google Pay',
                     ],
                 ];
 
@@ -302,19 +307,40 @@
                     ['Пополнение баланса из России', 'Мгновенное пополнение баланса российскими картами или через СБП.'],
                 ];
 
-                // Курс USD -> RUB с нашей наценкой для "К оплате".
-                $currencySettings = \App\Models\Setting::getMany(['currency_rate_usd', 'currency_markup_usd_percent']);
-                $usdToRub = $currencySettings['currency_rate_usd'] !== null
-                    ? ((float) $currencySettings['currency_rate_usd']) * (1 + ((float) ($currencySettings['currency_markup_usd_percent'] ?? 0)) / 100)
-                    : 100.0;
+                // Иконка способа оплаты — та же логика, что и в ЛК
+                // (PaymentMethodOption.tsx): СБП определяется по названию (в PaymentMethod нет отдельного
+                // типа для СБП — это тоже type=gateway, только с другим названием, задаётся в админке).
+                $paymentIcon = function (\App\Models\PaymentMethod $method): string {
+                    if ($method->type === \App\Enums\PaymentMethodType::Card) {
+                        return '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path stroke-linecap="round" d="M2.5 9.5h19"/><path stroke-linecap="round" d="M6 15h4"/></svg>';
+                    }
+
+                    if (str_contains(mb_strtolower($method->name), 'сбп')) {
+                        return '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.2"/><rect x="14" y="3" width="7" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="7" rx="1.2"/><path stroke-linecap="round" d="M14 14h3m4 0h0M14 17.5h7M17.5 14v7"/></svg>';
+                    }
+
+                    return '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z"/></svg>';
+                };
+
+                $formatRub = fn (float $amount) => number_format(round($amount), 0, ',', ' ') . ' ₽';
             @endphp
+
 
             <div data-reveal class="apply-panel mt-16 grid lg:grid-cols-[1fr_2fr] lg:mt-16">
                 <aside class="apply-sidebar">
                     <div class="apply-card-list" data-card-selector>
                         @foreach ($cardOptions as $i => $card)
+                            @php $cardProduct = $cardProducts[$card['key']] ?? null; @endphp
                             <label class="apply-card-option {{ $i === 0 ? 'is-active' : '' }}">
-                                <input type="radio" name="card_product" value="{{ $card['name'] }}" class="sr-only" {{ $i === 0 ? 'checked' : '' }}>
+                                <input
+                                    type="radio"
+                                    name="card_product"
+                                    value="{{ $card['key'] }}"
+                                    class="sr-only"
+                                    {{ $i === 0 ? 'checked' : '' }}
+                                    data-price-rub="{{ $cardProduct->price_rub ?? 0 }}"
+                                    data-fee-percent="{{ $cardProduct->provider_topup_fee_percent ?? 0 }}"
+                                >
                                 <span class="apply-card-thumb {{ $card['thumb'] ? '' : 'apply-card-thumb-white' }}">
                                     @if ($card['thumb'])
                                         <img src="{{ asset('assets/images/'.$card['thumb']) }}" alt="Карта {{ $card['name'] }}" loading="lazy">
@@ -326,7 +352,7 @@
                                     @if ($card['wallets'])
                                         <span class="apply-card-wallets">{{ $card['wallets'] }}</span>
                                     @endif
-                                    <span class="apply-card-price">{{ $card['price'] }} ₽ / 0 ₽ в мес.</span>
+                                    <span class="apply-card-price">{{ $priceFor($card['key']) }} ₽ / 0 ₽ в мес.</span>
                                 </span>
                             </label>
                         @endforeach
@@ -347,7 +373,7 @@
                         <div class="apply-field">
                             <label for="apply-fio">Введите ваше ФИО</label>
                             <input type="text" id="apply-fio" name="fio" data-translit-input autocomplete="name" placeholder="Ivanov Ivan Ivanovich" required>
-                            <p class="apply-hint">Можно на русском — поле само переведёт в английскую транскрипцию</p>
+                            <p class="apply-hint">Можно на русском - поле само переведёт в английскую транскрипцию</p>
                         </div>
                         <div class="apply-grid-2">
                             <div class="apply-field">
@@ -376,33 +402,23 @@
                     <div class="apply-step apply-loading" data-apply-step="loading" role="status" aria-live="polite">
                         <span class="apply-loading-spinner" aria-hidden="true"></span>
                         <p class="apply-loading-title">Регистрируем аккаунт и готовим карту</p>
-                        <p class="apply-loading-text">Это займёт всего пару секунд…</p>
+                        <p class="apply-loading-text">Это займёт всего пару секунд...</p>
                     </div>
 
-                    <form class="apply-step apply-topup" data-apply-step="topup" data-topup-form data-usd-rate="{{ $usdToRub }}" novalidate>
+                    <form class="apply-step apply-topup" data-apply-step="topup" data-topup-form data-usd-rate="{{ $usdSellRate }}" novalidate>
                         <div class="apply-field">
                             <label>Способ оплаты</label>
                             <div class="apply-pay-list" data-pay-selector>
-                                <label class="apply-pay-option is-active">
-                                    <input type="radio" name="pay_method" value="sbp" class="sr-only" checked>
-                                    <span class="apply-pay-icon" aria-hidden="true">
-                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.2"/><rect x="14" y="3" width="7" height="7" rx="1.2"/><rect x="3" y="14" width="7" height="7" rx="1.2"/><path stroke-linecap="round" d="M14 14h3m4 0h0M14 17.5h7M17.5 14v7"/></svg>
-                                    </span>
-                                    <span class="apply-pay-info">
-                                        <span class="apply-pay-name">СБП</span>
-                                        <span class="apply-pay-desc">Рублями по QR с любого банка РФ</span>
-                                    </span>
-                                </label>
-                                <label class="apply-pay-option">
-                                    <input type="radio" name="pay_method" value="card" class="sr-only">
-                                    <span class="apply-pay-icon" aria-hidden="true">
-                                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path stroke-linecap="round" d="M2.5 9.5h19"/><path stroke-linecap="round" d="M6 15h4"/></svg>
-                                    </span>
-                                    <span class="apply-pay-info">
-                                        <span class="apply-pay-name">Банковской картой</span>
-                                        <span class="apply-pay-desc">Рублями с любой карты РФ банка</span>
-                                    </span>
-                                </label>
+                                @foreach ($paymentMethods as $i => $method)
+                                    <label class="apply-pay-option {{ $i === 0 ? 'is-active' : '' }}">
+                                        <input type="radio" name="pay_method" value="{{ $method->id }}" class="sr-only" {{ $i === 0 ? 'checked' : '' }}>
+                                        <span class="apply-pay-icon" aria-hidden="true">{!! $paymentIcon($method) !!}</span>
+                                        <span class="apply-pay-info">
+                                            <span class="apply-pay-name">{{ $method->name }}</span>
+                                            <span class="apply-pay-desc">От {{ $formatRub((float) $method->min_amount) }} до {{ $formatRub((float) $method->max_amount) }}</span>
+                                        </span>
+                                    </label>
+                                @endforeach
                             </div>
                         </div>
 
@@ -440,7 +456,7 @@
             @php
                 $faqs=[
                     ['На чье имя выпускаются карты?','Все карты выпускаются на ваше имя, указанное в анкете при регистрации аккаунта.'],
-                    ['Сколько стоит обслуживание карты?','Обслуживание всех наших карт — бесплатное.'],
+                    ['Сколько стоит обслуживание карты?','Обслуживание всех наших карт - бесплатное.'],
                     ['Как оформить карту?','Зарегистрируйте аккаунт и выпускайте карты прямо из личного кабинета в режиме онлайн. Без посещений офиса и личных встреч.'],
                     ['Как быстро я смогу начать пользоваться картой?','Сразу после выпуска карты и пополнения баланса. Реквизиты карты вы увидите в личном кабинете.'],
                     ['Как пополнять карту из России?','Через СБП или любой картой российского банка. Рубли автоматически сконвертируются в валюту карты по актуальному курсу.'],
