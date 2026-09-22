@@ -387,7 +387,7 @@
                         </div>
                         <div class="apply-field">
                             <label for="apply-email">Электронная почта</label>
-                            <input type="email" id="apply-email" name="email" autocomplete="email" placeholder="you@example.com" required>
+                            <input type="email" id="apply-email" name="email" autocomplete="email" placeholder="ivan@gmail.com" required>
                         </div>
                         <label class="apply-consent">
                             <input type="checkbox" name="consent" required>
