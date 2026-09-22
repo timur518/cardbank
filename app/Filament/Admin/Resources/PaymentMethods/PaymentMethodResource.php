@@ -24,7 +24,7 @@ class PaymentMethodResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Финансы';
+    protected static string|\UnitEnum|null $navigationGroup = 'Настройки';
 
     protected static ?string $navigationLabel = 'Способы приёма платежей';
 
@@ -32,7 +32,7 @@ class PaymentMethodResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Способы приёма платежей';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {
