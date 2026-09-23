@@ -10,10 +10,10 @@ interface BalancePanelProps {
     onTopupClick: () => void;
 }
 
-// Виджет баланса на странице карты: сумма, потраченное в этом месяце (сумма
-// покупок с начала месяца — считается по CardDetailPage) и кнопка пополнения.
-// Для карт вне статуса Active баланс пополнять нельзя — вместо суммы показывается
-// статус, а кнопка недоступна.
+// Виджет баланса на странице карты: сумма (в одной строке с кнопкой пополнения)
+// и потраченное в этом месяце (сумма покупок с начала месяца — считается по
+// CardDetailPage). Для карт вне статуса Active баланс пополнять нельзя — вместо
+// суммы с кнопкой показывается статус.
 export function BalancePanel({ card, monthTotal, onViewTransactions, onTopupClick }: BalancePanelProps) {
     const isActive = card.status === 'active';
 
@@ -25,9 +25,14 @@ export function BalancePanel({ card, monthTotal, onViewTransactions, onTopupClic
             </div>
 
             {isActive ? (
-                <p className="mt-2 text-4xl font-black tracking-tight text-[#1e7a3c]">
-                    {formatBalanceHero(card.balance, card.currency)}
-                </p>
+                <div className="mt-2 flex items-center justify-between gap-4">
+                    <p className="text-4xl font-black tracking-tight text-ink">
+                        {formatBalanceHero(card.balance, card.currency)}
+                    </p>
+                    <button type="button" className="btn btn-topup shrink-0" onClick={onTopupClick}>
+                        Пополнить баланс
+                    </button>
+                </div>
             ) : (
                 <div className="mt-3">
                     <StatusPill label={CARD_STATUS_LABELS[card.status]} tone={CARD_STATUS_TONES[card.status]} />
@@ -47,16 +52,6 @@ export function BalancePanel({ card, monthTotal, onViewTransactions, onTopupClic
                     </p>
                 </div>
             )}
-
-            <button
-                type="button"
-                className="btn btn-primary apply-submit mt-5"
-                disabled={!isActive}
-                title={isActive ? undefined : 'Пополнение доступно после активации карты'}
-                onClick={onTopupClick}
-            >
-                + Пополнить карту
-            </button>
         </div>
     );
 }

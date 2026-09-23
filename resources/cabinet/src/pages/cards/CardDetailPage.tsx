@@ -174,7 +174,7 @@ export function CardDetailPage() {
                                 expiry={card.expiry}
                                 cardholderName={cardholderName}
                                 cvv={requisites?.cvv ?? null}
-                                showCvv={showCvv}
+                                network={card.card_product.network}
                             />
 
                             <BalancePanel

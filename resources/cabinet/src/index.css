@@ -77,6 +77,8 @@ html::-webkit-scrollbar {
 .btn-primary:hover { background: #2b2a28; border-color: #2b2a28; color: #fff; }
 .btn-orange { background: var(--color-orange); border-color: var(--color-orange); color: #fff; }
 .btn-orange:hover { background: var(--color-orange-dark); border-color: var(--color-orange-dark); color: #fff; }
+.btn-topup { background: var(--color-orange); border-color: var(--color-orange); color: #fff; }
+.btn-topup:hover { background: var(--color-ink); border-color: var(--color-ink); color: #fff; }
 
 /* Круглая кнопка-иконка (выход из аккаунта в шапке, переворот карты и т.п.) — вместо
    подписанной кнопки на всю ширину. */
@@ -370,7 +372,7 @@ html::-webkit-scrollbar {
     max-width: 100%;
     font-weight: 800;
     line-height: 1.15;
-    color: var(--color-orange);
+    color: #fff;
     white-space: nowrap;
     overflow: hidden;
 }
