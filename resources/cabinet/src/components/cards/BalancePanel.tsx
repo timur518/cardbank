@@ -40,7 +40,7 @@ export function BalancePanel({ card, monthTotal, onViewTransactions, onTopupClic
             )}
 
             {isActive && (
-                <div className="mt-5 flex items-center justify-between border-t border-border pt-4">
+                <div className="mt-2 flex items-center justify-between border-t border-border pt-4">
                     <div>
                         <p className="text-sm font-semibold text-ink">Потрачено в этом месяце</p>
                         <button type="button" className="text-xs font-bold text-orange-dark hover:underline" onClick={onViewTransactions}>
