@@ -249,4 +249,53 @@ class CurrencySettings extends Page implements HasForms
 
         return $rows;
     }
+
+    /**
+     * Точки для графика «kak маржа съедается по шагам»: две линии (руб/$) по
+     * остатку после каждого шага calculatorRows() — от полного поступления (шаг 0) до
+     * итоговой чистой прибыли (последний шаг). Рублёвая и долларовая линии масштабируются
+     * каждая по своей амплитуде (руб и $ отличаются на порядки), поэтому визуально обе
+     * идут одинаково вниз слева направо, что наглядно показывает, какой шаг сколько
+     * съедает остатка.
+     *
+     * @return array{width: int, height: int, labels: array<int, string>, rub: array<int, array{x: float, y: float, value: float}>, usd: array<int, array{x: float, y: float, value: float}>}
+     */
+    public function calculatorChartSvg(): array
+    {
+        $rows = $this->calculatorRows();
+        $count = count($rows);
+
+        $width = 640;
+        $height = 220;
+        $paddingX = 16;
+        $paddingY = 16;
+
+        $scale = function (array $values) use ($width, $height, $paddingX, $paddingY, $count): array {
+            $min = min($values);
+            $max = max($values);
+            $range = $max - $min;
+
+            if ($range <= 0.0001) {
+                $range = 1.0;
+            }
+
+            $points = [];
+
+            foreach ($values as $i => $value) {
+                $x = $count > 1 ? $paddingX + ($i / ($count - 1)) * ($width - 2 * $paddingX) : $paddingX;
+                $y = $paddingY + (1 - ($value - $min) / $range) * ($height - 2 * $paddingY);
+                $points[] = ['x' => round($x, 1), 'y' => round($y, 1), 'value' => $value];
+            }
+
+            return $points;
+        };
+
+        return [
+            'width' => $width,
+            'height' => $height,
+            'labels' => array_map(fn (array $row): string => $row['label'], $rows),
+            'rub' => $scale(array_map(fn (array $row): float => $row['remainderRub'], $rows)),
+            'usd' => $scale(array_map(fn (array $row): float => $row['remainderUsd'], $rows)),
+        ];
+    }
 }
