@@ -51,7 +51,7 @@
                     muted
                     playsinline
                 ></video>
-                <div class="absolute inset-0 bg-gradient-to-t from-[#3A3C40]/90 via-[#3A3C40]/25 to-[#3A3C40]/0"></div>
+                <div class="absolute inset-0 bg-[linear-gradient(to_top,_#000_0px,_#000_40px,_rgba(0,0,0,0.4)_50%,_rgba(0,0,0,0)_100%)]"></div>
 
                 <div class="hero-copy relative w-full px-6 pb-10 sm:px-10 sm:pb-12 lg:px-14 lg:pb-16">
                     <div data-reveal class="max-w-[620px]">
