@@ -321,8 +321,12 @@ html::-webkit-scrollbar {
 .site-header { transition: box-shadow .35s ease; }
 .nav-pill {
     background: rgba(255, 255, 255, .78);
-    backdrop-filter: blur(12px) saturate(100%);
-    -webkit-backdrop-filter: blur(12px) saturate(100%);
+    /* saturate(100%) не добавляем — это identity-значение (никакого визуального эффекта), а Lightning CSS
+     (минификатор @tailwindcss/vite) схлопывает его в saturate() и теряет при этом обязательный
+     пробел-разделитель между filter-функциями (получается невалидный "blur(12px)saturate()",
+     десктопный браузер бракует такое значение целиком — блюр пропадает). */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, .7);
     box-shadow: 0 10px 35px rgba(0, 0, 0, .07);
     transition: background .3s, box-shadow .3s;
@@ -1005,8 +1009,9 @@ html::-webkit-scrollbar {
     border-radius: 999px;
     background: rgb(0 0 0 / 60%);
     color: #d0c1ad;
-    backdrop-filter: blur(12px) saturate(100%);
-    -webkit-backdrop-filter: blur(12px) saturate(100%);
+    /* Без saturate(100%) — см. комментарий к .nav-pill выше: то же самое исчезало блюр на десктопе. */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, .7);
     box-shadow: 0 10px 35px rgba(0, 0, 0, .1);
 }
