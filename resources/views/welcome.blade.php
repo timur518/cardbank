@@ -15,7 +15,7 @@
 
 <header data-site-header class="site-header sticky top-[40px] z-50 mt-[40px] px-4 lg:px-8">
     <div class="nav-pill mx-auto flex max-w-[1350px] items-center justify-between rounded-full px-5 py-3 sm:px-7">
-        <a href="/" class="brand-mark"><img src="assets/images/logo.svg" width="55px"></a>
+        <a href="/" class="brand-mark"><img src="assets/images/logo.svg" style="width:130px;max-width:155px;"></a>
         <nav class="hidden items-center gap-8 text-[16px] text-[#3A3C40] lg:flex">
             <a href="#lifestyle" class="nav-link">Возможности</a>
             <a href="#products" class="nav-link">Карты</a>
