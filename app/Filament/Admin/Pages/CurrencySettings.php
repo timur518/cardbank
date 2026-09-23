@@ -251,14 +251,24 @@ class CurrencySettings extends Page implements HasForms
     }
 
     /**
-     * Точки для графика «kak маржа съедается по шагам»: две линии (руб/$) по
-     * остатку после каждого шага calculatorRows() — от полного поступления (шаг 0) до
-     * итоговой чистой прибыли (последний шаг). Рублёвая и долларовая линии масштабируются
-     * каждая по своей амплитуде (руб и $ отличаются на порядки), поэтому визуально обе
-     * идут одинаково вниз слева направо, что наглядно показывает, какой шаг сколько
-     * съедает остатка.
+     * Данные для графика «как маржа съедается по шагам»: одна линия (остаток в рублях)
+     * по всем шагам calculatorRows() — от полного поступления (шаг 0) до итоговой чистой прибыли
+     * (последний шаг). На её основе выделяются две заливки: красная — область между
+     * текущим остатком и уровнем итоговой прибыли — это то, что ещё будет съедено дальнейшими
+     * комиссиями/себестоимостью (к концу сужается до нуля); зелёная — постоянная полоса от уровня
+     * итоговой прибыли до нуля — это уже заработанная, ничем не рискующая часть денег.
      *
-     * @return array{width: int, height: int, labels: array<int, string>, rub: array<int, array{x: float, y: float, value: float}>, usd: array<int, array{x: float, y: float, value: float}>}
+     * @return array{
+     *     width: int,
+     *     height: int,
+     *     paddingX: int,
+     *     paddingY: int,
+     *     profitY: float,
+     *     baselineY: float,
+     *     points: array<int, array{x: float, y: float, rub: float, usd: float, label: string}>,
+     *     expenseAreaPoints: string,
+     *     profitAreaPoints: string,
+     * }
      */
     public function calculatorChartSvg(): array
     {
@@ -266,36 +276,69 @@ class CurrencySettings extends Page implements HasForms
         $count = count($rows);
 
         $width = 640;
-        $height = 220;
+        $height = 240;
         $paddingX = 16;
         $paddingY = 16;
+        $innerHeight = $height - 2 * $paddingY;
 
-        $scale = function (array $values) use ($width, $height, $paddingX, $paddingY, $count): array {
-            $min = min($values);
-            $max = max($values);
-            $range = $max - $min;
+        $rubValues = array_map(fn (array $row): float => $row['remainderRub'], $rows);
+        $usdValues = array_map(fn (array $row): float => $row['remainderUsd'], $rows);
 
-            if ($range <= 0.0001) {
-                $range = 1.0;
-            }
+        // Диапазон обязательно включает 0, чтобы на графике была видна истинная нулевая
+        // отметка (базовая линия зелёной полосы прибыли), даже если все значения положительны.
+        $domainMax = max(max($rubValues), 0.0);
+        $domainMin = min(min($rubValues), 0.0);
+        $range = $domainMax - $domainMin;
 
-            $points = [];
+        if ($range <= 0.0001) {
+            $range = 1.0;
+        }
 
-            foreach ($values as $i => $value) {
-                $x = $count > 1 ? $paddingX + ($i / ($count - 1)) * ($width - 2 * $paddingX) : $paddingX;
-                $y = $paddingY + (1 - ($value - $min) / $range) * ($height - 2 * $paddingY);
-                $points[] = ['x' => round($x, 1), 'y' => round($y, 1), 'value' => $value];
-            }
+        $y = fn (float $value): float => round($paddingY + ($domainMax - $value) / $range * $innerHeight, 1);
 
-            return $points;
-        };
+        $points = [];
+
+        foreach ($rows as $i => $row) {
+            $x = $count > 1 ? round($paddingX + ($i / ($count - 1)) * ($width - 2 * $paddingX), 1) : (float) $paddingX;
+            $points[] = [
+                'x' => $x,
+                'y' => $y($row['remainderRub']),
+                'rub' => $row['remainderRub'],
+                'usd' => $row['remainderUsd'],
+                'label' => $row['label'],
+            ];
+        }
+
+        $profitRub = end($rubValues) ?: 0.0;
+        $profitY = $y($profitRub);
+        $baselineY = $y(0.0);
+
+        // Красная зона «ещё съедит дальнейшие шаги»: сверху — кривая остатка, снизу — горизонтальная
+        // уровня итоговой прибыли — к концу стягивается в точку, так как кривая в конце совпадает с этой уровнём.
+        $forward = collect($points)->map(fn (array $p): string => "{$p['x']},{$p['y']}")->implode(' ');
+        $backward = collect($points)->reverse()->map(fn (array $p): string => "{$p['x']},{$profitY}")->implode(' ');
+
+        // Зелёная зона «заработанная прибыль»: постоянная горизонтальная полоса от уровня итоговой
+        // прибыли до истинного нуля на всю ширину графика.
+        $bandTopY = min($profitY, $baselineY);
+        $bandBottomY = max($profitY, $baselineY);
+        $profitAreaPoints = implode(' ', [
+            $paddingX . ',' . $bandTopY,
+            ($width - $paddingX) . ',' . $bandTopY,
+            ($width - $paddingX) . ',' . $bandBottomY,
+            $paddingX . ',' . $bandBottomY,
+        ]);
 
         return [
             'width' => $width,
             'height' => $height,
-            'labels' => array_map(fn (array $row): string => $row['label'], $rows),
-            'rub' => $scale(array_map(fn (array $row): float => $row['remainderRub'], $rows)),
-            'usd' => $scale(array_map(fn (array $row): float => $row['remainderUsd'], $rows)),
+            'paddingX' => $paddingX,
+            'paddingY' => $paddingY,
+            'profitY' => $profitY,
+            'baselineY' => $baselineY,
+            'points' => $points,
+            'expenseAreaPoints' => $forward . ' ' . $backward,
+            'profitAreaPoints' => $profitAreaPoints,
         ];
     }
 }
