@@ -491,7 +491,7 @@
     <div class="mx-auto max-w-[1400px]">
         <div class="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
             <div>
-                <p class="brand-mark"><a href="/" class="brand-mark"><img src="assets/images/logo.svg" width="55px"></a></p>
+                <p class="brand-mark"><a href="/" class="brand-mark"><img src="assets/images/logo.svg" width="155px"></a></p>
                 <p class="mt-4 max-w-sm text-sm leading-relaxed text-[#3A3C40]/50">Виртуальные карты для платежей, подписок и покупок по всему миру.</p>
             </div>
             <div>
