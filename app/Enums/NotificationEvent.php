@@ -18,6 +18,7 @@ namespace App\Enums;
  * - TopupFailed: 'last4', 'amount'
  * - PasswordChanged: 'datetime' (отформатированная строка)
  * - PasswordResetRequested: 'email'
+ * - OtpCodeReceived: 'code'
  * - Welcome, CardOrderAccepted, CardIssueFailed: без параметров
  */
 enum NotificationEvent
@@ -34,6 +35,7 @@ enum NotificationEvent
     case TopupFailed;
     case PasswordChanged;
     case PasswordResetRequested;
+    case OtpCodeReceived;
 
     public function category(): NotificationType
     {
@@ -50,6 +52,7 @@ enum NotificationEvent
             self::TopupFailed => NotificationType::Payment,
             self::PasswordChanged,
             self::PasswordResetRequested => NotificationType::Security,
+            self::OtpCodeReceived => NotificationType::OtpCode,
         };
     }
 
@@ -71,6 +74,7 @@ enum NotificationEvent
             self::TopupFailed => 'Пополнение не прошло',
             self::PasswordChanged => 'Пароль изменён',
             self::PasswordResetRequested => 'Внимание! Сброс пароля',
+            self::OtpCodeReceived => 'Код подтверждения',
         };
     }
 
@@ -92,6 +96,7 @@ enum NotificationEvent
             self::TopupFailed => "Не удалось пополнить карту •••• {$params['last4']} на {$params['amount']}. Попробуйте ещё раз или используйте другой способ оплаты.",
             self::PasswordChanged => "Пароль от вашего личного кабинета был изменён {$params['datetime']}. Если это были не вы, срочно обратитесь в поддержку.",
             self::PasswordResetRequested => "Запрошен сброс пароля. Новый пароль был отправлен к вам на E-mail. Рекомендуем сменить его на свой после входа в личный кабинет.",
+            self::OtpCodeReceived => "Код подтверждения: {$params['code']}. Никому не сообщайте этот код!",
         };
     }
 

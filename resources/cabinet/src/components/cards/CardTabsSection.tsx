@@ -1,14 +1,18 @@
+import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
+import { fetchCardOtpCodes } from '../../api/cards';
 import { fetchCardTransactions } from '../../api/transactions';
-import type { CardDetail, CardTransaction, PaginationMeta } from '../../api/types';
+import type { CardDetail, CardOtpCode, CardTransaction, PaginationMeta } from '../../api/types';
+import { CopyButton } from '../common/CopyButton';
 import { Skeleton, TransactionsSkeleton } from '../common/Skeleton';
+import { formatTime, groupByDate } from '../../utils/dateGroups';
 import { TransactionsTable } from '../transactions/TransactionsTable';
 
 export type CardTabKey = 'transactions' | 'limits' | 'codes';
 
-const TABS: { key: CardTabKey; label: string; disabled?: boolean }[] = [
+const TABS: { key: CardTabKey; label: string }[] = [
     { key: 'transactions', label: 'Транзакции' },
-    { key: 'codes', label: 'Коды', disabled: true },
+    { key: 'codes', label: '3DS коды' },
     { key: 'limits', label: 'Лимиты' },
 ];
 
@@ -21,12 +25,14 @@ interface CardTabsSectionProps {
 }
 
 /**
- * Нижний блок страницы карты: переключатель вкладок и их содержимое.
- * «Транзакции» — полная история операций по карте с пагинацией (реальные данные,
- * GET /cards/{card}/transactions). «Лимиты» — границы пополнения из карточки
- * продукта (CardProduct.topup_min/max_amount). «Коды» — пересылка одноразовых
- * кодов подтверждения от продавцов пока не реализована, вкладка оставлена
- * неактивной, а не заполнена придуманными данными.
+ * Нижний блок страницы карты — вкладки-ярлычки (.card-tab), примыкающие к панели с
+ * содержимым вкладки. «Транзакции» — полная история операций по карте с пагинацией
+ * (реальные данные, GET /cards/{card}/transactions). «Лимиты» — границы пополнения,
+ * запрещённые магазины и полный текст условий — всё из карточки продукта в админке
+ * (CardProduct.topup_min/max_amount, restricted_merchants, full_terms). «3DS коды» —
+ * OTP-коды card holder verification, GET /cards/{card}/otp-codes (живой запрос к
+ * провайдеру, без локального хранилища — CardsPro не хранит их дольше нескольких
+ * последних штук).
  */
 export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectionProps) {
     const [transactions, setTransactions] = useState<CardTransaction[]>([]);
@@ -50,19 +56,40 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
 
     useEffect(load, [card.id, page]);
 
+    // OTP(3DS)-коды — живой запрос к провайдеру (не фоновая синхронизация, как у
+    // транзакций), поэтому грузится лениво при первом открытии вкладки, а дальше —
+    // только по кнопке «Обновить».
+    const [otpCodes, setOtpCodes] = useState<CardOtpCode[]>([]);
+    const [otpLoading, setOtpLoading] = useState(false);
+    const [otpLoaded, setOtpLoaded] = useState(false);
+
+    function loadOtpCodes() {
+        setOtpLoading(true);
+
+        fetchCardOtpCodes(card.id)
+            .then((codes) => {
+                setOtpCodes(codes);
+                setOtpLoaded(true);
+            })
+            .finally(() => setOtpLoading(false));
+    }
+
+    useEffect(() => {
+        if (activeTab === 'codes' && !otpLoaded) {
+            loadOtpCodes();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTab]);
+
     return (
         <div id="card-tabs-section" className="flex flex-col">
-            <div className="no-scrollbar flex gap-1 overflow-x-auto px-1">
+            <div className="no-scrollbar flex gap-1 overflow-x-auto">
                 {TABS.map((tab) => (
                     <button
                         key={tab.key}
                         type="button"
-                        disabled={tab.disabled}
                         onClick={() => onTabChange(tab.key)}
-                        className={`card-tab shrink-0 ${activeTab === tab.key ? 'card-tab-active' : ''} ${
-                            tab.disabled ? 'cursor-not-allowed opacity-50' : ''
-                        }`}
-                        title={tab.disabled ? 'Функция скоро появится' : undefined}
+                        className={`card-tab shrink-0 ${activeTab === tab.key ? 'card-tab-active' : ''}`}
                     >
                         {tab.label}
                     </button>
@@ -146,9 +173,10 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                                 <h2 className="text-sm font-extrabold uppercase tracking-wide text-muted">
                                     Запрещённые магазины
                                 </h2>
-                                <p className="whitespace-pre-line text-sm leading-relaxed text-ink">
-                                    {card.card_product.restricted_merchants}
-                                </p>
+                                <div
+                                    className="rich-text"
+                                    dangerouslySetInnerHTML={{ __html: card.card_product.restricted_merchants }}
+                                />
                             </div>
                         )}
 
@@ -157,20 +185,66 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                                 <h2 className="text-sm font-extrabold uppercase tracking-wide text-muted">
                                     Остальные условия
                                 </h2>
-                                <p className="whitespace-pre-line text-sm leading-relaxed text-ink">
-                                    {card.card_product.full_terms}
-                                </p>
+                                <div
+                                    className="rich-text"
+                                    dangerouslySetInnerHTML={{ __html: card.card_product.full_terms }}
+                                />
                             </div>
                         )}
                     </div>
                 )}
 
                 {activeTab === 'codes' && (
-                    <p className="py-8 text-center text-sm text-muted">
-                        Пересылка кодов подтверждения от продавцов скоро появится.
-                    </p>
+                    <>
+                        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                            <p className="text-xs text-muted">
+                                {otpLoaded ? `${otpCodes.length} кодов` : <Skeleton className="h-3 w-20" />}
+                            </p>
+                            <button type="button" className="btn" onClick={loadOtpCodes} disabled={otpLoading}>
+                                Обновить
+                            </button>
+                        </div>
+
+                        {otpLoading && !otpLoaded ? (
+                            <TransactionsSkeleton />
+                        ) : otpCodes.length === 0 ? (
+                            <p className="py-8 text-center text-sm text-muted">
+                                Кодов 3DS-подтверждения пока не было.
+                            </p>
+                        ) : (
+                            <div className="tx-list fade-in-up">
+                                {groupByDate(otpCodes, (item) => item.occurred_at).map((group) => (
+                                    <div key={group.title} className="tx-group">
+                                        <div className="tx-group-title">{group.title}</div>
+                                        {group.items.map((item, index) => (
+                                            <OtpCodeRow key={`${item.occurred_at}-${index}`} item={item} />
+                                        ))}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
+        </div>
+    );
+}
+
+// Строка одного OTP(3DS)-кода — тот же визуальный язык, что и .tx-row в TransactionsTable
+// (иконка-кружок слева, текст справа), но вместо суммы — сам код и кнопка копирования.
+// CardsPro отдаёт только сам код и время выдачи — без привязки к конкретной операции/сумме.
+function OtpCodeRow({ item }: { item: CardOtpCode }) {
+    return (
+        <div className="tx-row">
+            <span className="tx-icon">
+                <ShieldCheckIcon />
+            </span>
+            <span className="tx-info">
+                <span className="tx-title">Код 3DS-подтверждения</span>
+                <span className="tx-subtitle">{formatTime(item.occurred_at)}</span>
+            </span>
+            <span className="font-mono text-lg font-extrabold tracking-[0.2em] text-ink">{item.code}</span>
+            <CopyButton value={item.code} />
         </div>
     );
 }

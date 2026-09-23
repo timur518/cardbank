@@ -63,4 +63,12 @@ interface CardProviderIntegration
      * @return array{status: 'pending'|'completed'|'failed', raw: array<string, mixed>}
      */
     public function fetchOperationStatus(string $requestId): array;
+
+    /**
+     * Последние OTP(3DS)-коды по карте (вкладка «3DS коды» в ЛК) — без привязки к
+     * конкретной операции/сумме — провайдер отдаёт только сам код и время его выдачи.
+     *
+     * @return array<int, array{code: string, occurred_at: DateTimeInterface}>
+     */
+    public function fetchOtpCodes(string $providerCardId): array;
 }

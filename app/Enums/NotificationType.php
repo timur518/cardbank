@@ -18,6 +18,7 @@ enum NotificationType: string implements HasColor, HasLabel
     case Payment = 'payment';
     case Security = 'security';
     case Promo = 'promo';
+    case OtpCode = 'otp_code';
 
     public function getLabel(): string
     {
@@ -27,6 +28,7 @@ enum NotificationType: string implements HasColor, HasLabel
             self::Payment => 'Платежи',
             self::Security => 'Безопасность',
             self::Promo => 'Акции и предложения',
+            self::OtpCode => 'Коды подтверждения',
         };
     }
 
@@ -38,6 +40,7 @@ enum NotificationType: string implements HasColor, HasLabel
             self::Payment => 'success',
             self::Security => 'danger',
             self::Promo => 'warning',
+            self::OtpCode => 'primary',
         };
     }
 }

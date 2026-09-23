@@ -399,6 +399,26 @@ class CardsProService implements CardProviderIntegration
     }
 
     /**
+     * Нормализованный список OTP(3DS)-кодов ({@see getCardOtpCodes()}). У CardsPro нет отдельного
+     * хранилища под OTP-коды в нашей схеме — список всегда запрашивается у провайдера
+     * напрямую (до 10 последних), без привязки к конкретной операции/сумме — API отдаёт
+     * только сам код и время.
+     *
+     * @return array<int, array{code: string, occurred_at: DateTimeInterface}>
+     */
+    public function fetchOtpCodes(string $providerCardId): array
+    {
+        $codes = $this->getCardOtpCodes($providerCardId);
+
+        return collect($codes)
+            ->map(fn (array $entry) => [
+                'code' => (string) ($entry['code'] ?? ''),
+                'occurred_at' => self::parseProviderTimestamp($entry['date'] ?? null),
+            ])
+            ->all();
+    }
+
+    /**
      * Статус карты у CardsPro (`GET /{san}/details`) → наш {@see CardStatus}.
      */
     public static function mapCardStatus(string $cardsProStatus): CardStatus

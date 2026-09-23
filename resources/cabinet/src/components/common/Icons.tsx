@@ -28,4 +28,5 @@ export {
     BanknotesIcon as PaymentNotificationIcon,
     ShieldExclamationIcon as SecurityNotificationIcon,
     GiftIcon as PromoNotificationIcon,
+    KeyIcon as OtpCodeNotificationIcon,
 } from '@heroicons/react/24/outline';

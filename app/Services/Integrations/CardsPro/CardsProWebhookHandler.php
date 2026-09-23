@@ -49,10 +49,30 @@ class CardsProWebhookHandler
             CardsProCallbackType::CardUnfreeze => $this->handleStatusChange($payload, CardStatus::Active, 'Карта разморожена по данным CardsPro (CARD_UNFREEZE)'),
             CardsProCallbackType::CardTransaction => $this->handleTransaction($payload),
             CardsProCallbackType::CardIssue => $this->handleIssue($payload),
-            // EXTRA_FEE_CARD, EXTRA_FEE_CAP, OTP_CODE, KYC_CHANGE:
+            CardsProCallbackType::OtpCode => $this->handleOtpCode($payload),
+            // EXTRA_FEE_CARD, EXTRA_FEE_CAP, KYC_CHANGE:
             // осознанно не обрабатываются автоматически — см. docblock класса.
             default => null,
         };
+    }
+
+    /**
+     * OTP(3DS)-код карты (`{ san, otpCode }`, docs.cardspro.com/api/operations-callbacks) — только
+     * шлёт уведомление держателю карты, без собственного хранилища под коды — вкладка
+     * «3DS коды» на странице карты запрашивает их у провайдера напрямую (GET /{san}/otp-codes).
+     */
+    protected function handleOtpCode(array $payload): void
+    {
+        $card = $this->findCard((string) ($payload['san'] ?? ''));
+        $otpCode = (string) ($payload['otpCode'] ?? '');
+
+        if (! $card || $otpCode === '') {
+            return;
+        }
+
+        Notification::notify($card->user, NotificationEvent::OtpCodeReceived, [
+            'code' => $otpCode,
+        ], '/cards/' . $card->uuid);
     }
 
     /**

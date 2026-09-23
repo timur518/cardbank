@@ -97,6 +97,13 @@ export interface CardDetail extends Card {
     price_rub: string;
 }
 
+// OTP(3DS)-код подтверждения операции по карте (вкладка «3DS коды») — у CardsPro нет
+// привязки к конкретной операции/сумме, только сам код и время его выдачи.
+export interface CardOtpCode {
+    code: string;
+    occurred_at: string;
+}
+
 // Реквизиты карты
 export interface CardRequisites {
     card_number: string;
@@ -259,7 +266,7 @@ export interface TopupQuoteResult {
 
 // Категория уведомления — зеркалит App\Enums\NotificationType на бэкенде; определяет
 // иконку/цвет кружочка слева от уведомления в попапе (NotificationsPanel).
-export type AppNotificationType = 'system' | 'card' | 'payment' | 'security' | 'promo';
+export type AppNotificationType = 'system' | 'card' | 'payment' | 'security' | 'promo' | 'otp_code';
 
 // Уведомление в ленте ЛК (попап из шапки) — заводится в админке,
 // отдаётся GET /notifications. Назван не `Notification`, чтобы не пересекаться

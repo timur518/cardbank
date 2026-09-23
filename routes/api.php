@@ -52,6 +52,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/cards', [CardController::class, 'index'])->name('cards.index');
         Route::get('/cards/{card:uuid}', [CardController::class, 'show'])->name('cards.show');
         Route::get('/cards/{card:uuid}/requisites', [CardController::class, 'requisites'])->name('cards.requisites');
+        Route::get('/cards/{card:uuid}/otp-codes', [CardController::class, 'otpCodes'])->name('cards.otp-codes');
         Route::get('/cards/{card:uuid}/transactions', [TransactionController::class, 'forCard'])->name('cards.transactions');
         Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
 

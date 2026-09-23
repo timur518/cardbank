@@ -8,6 +8,7 @@ import {
     PromoNotificationIcon,
     PurchaseIcon,
     RefundIcon,
+    OtpCodeNotificationIcon,
     SecurityNotificationIcon,
     SystemNotificationIcon,
     TopupTxIcon,
@@ -75,6 +76,7 @@ export const NOTIFICATION_TYPE_LABELS: Record<AppNotificationType, string> = {
     payment: 'Платежи',
     security: 'Безопасность',
     promo: 'Акции и предложения',
+    otp_code: 'Коды подтверждения',
 };
 
 // Иконка в кружочке слева от уведомления (NotificationsPanel) — по AppNotificationType.
@@ -84,6 +86,7 @@ export const NOTIFICATION_TYPE_ICONS: Record<AppNotificationType, ComponentType>
     payment: PaymentNotificationIcon,
     security: SecurityNotificationIcon,
     promo: PromoNotificationIcon,
+    otp_code: OtpCodeNotificationIcon,
 };
 
 // Цвет кружочка с иконкой — зеркалит getColor() того же энама (классы .notif-icon-* в index.css).
@@ -93,4 +96,5 @@ export const NOTIFICATION_TYPE_ICON_CLASSES: Record<AppNotificationType, string>
     payment: 'notif-icon-success',
     security: 'notif-icon-danger',
     promo: 'notif-icon-warning',
+    otp_code: 'notif-icon-brand',
 };

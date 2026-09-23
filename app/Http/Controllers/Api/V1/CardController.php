@@ -8,9 +8,12 @@ use App\Http\Resources\Api\V1\CardDetailResource;
 use App\Http\Resources\Api\V1\CardRequisitesResource;
 use App\Http\Resources\Api\V1\CardResource;
 use App\Models\Card;
+use App\Services\Integrations\ProviderIntegrationResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class CardController extends Controller
 {
@@ -52,5 +55,40 @@ class CardController extends Controller
         abort_if(! $card->card_number, 404, 'Реквизиты карты ещё не готовы.');
 
         return (new CardRequisitesResource($card))->response();
+    }
+
+    /**
+     * OTP(3DS)-коды по карте (вкладка «3DS коды» на странице карты) — живой запрос к
+     * провайдеру на каждое открытие вкладки/кнопку «Обновить» — коды одноразовые и
+     * короткоживущие, отдельного хранилища в нашей базе нет. Карта без provider_card_id или
+     * недоступный провайдер молча возвращают пустой список — фронтенд показывает ту же
+     * заглушку «кодов пока не было», что и при действительном отсутствии кодов.
+     */
+    public function otpCodes(Request $request, Card $card): JsonResponse
+    {
+        abort_if($card->user_id !== $request->user()->id, 403);
+
+        $codes = [];
+
+        if ($card->provider_card_id) {
+            try {
+                $codes = ProviderIntegrationResolver::for($card->provider)->fetchOtpCodes($card->provider_card_id);
+            } catch (Throwable $e) {
+                Log::warning('Не удалось получить OTP-коды карты у провайдера', [
+                    'card_id' => $card->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        $data = collect($codes)
+            ->sortByDesc(fn (array $entry) => $entry['occurred_at'])
+            ->values()
+            ->map(fn (array $entry) => [
+                'code' => $entry['code'],
+                'occurred_at' => $entry['occurred_at']->toIso8601String(),
+            ]);
+
+        return response()->json(['data' => $data]);
     }
 }

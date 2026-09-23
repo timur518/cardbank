@@ -248,6 +248,17 @@ html::-webkit-scrollbar {
 .card-tab:hover:not(:disabled) { color: var(--color-ink); }
 .card-tab-active, .card-tab-active:hover { background: var(--color-surface); color: var(--color-ink); }
 
+/* Текст из админских RichEditor-полей (CardProduct.restricted_merchants/full_terms) —
+ * приходит HTML-разметкой (<p>, <strong>, <ul>), поэтому рендерится через
+ * dangerouslySetInnerHTML, а не как простой текст. */
+.rich-text { font-size: .875rem; line-height: 1.6; color: var(--color-ink); }
+.rich-text p { margin: 0 0 .6em; }
+.rich-text p:last-child { margin-bottom: 0; }
+.rich-text strong { font-weight: 700; }
+.rich-text ul, .rich-text ol { margin: 0 0 .6em; padding-left: 1.3em; }
+.rich-text li { margin-bottom: .25em; }
+.rich-text a { color: var(--color-orange-dark); text-decoration: underline; }
+
 .auth-transition-wrapper {
     overflow: hidden;
     transition: height 260ms cubic-bezier(.16,1,.3,1);
