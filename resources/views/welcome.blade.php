@@ -16,7 +16,7 @@
 <header data-site-header class="site-header sticky top-[40px] z-50 mt-[40px] px-4 lg:px-8">
     <div class="nav-pill mx-auto flex max-w-[1350px] items-center justify-between rounded-full px-5 py-3 sm:px-7">
         <a href="/" class="brand-mark"><img src="assets/images/logo.svg" width="55px"></a>
-        <nav class="hidden items-center gap-8 text-[16px] text-[#141413] lg:flex">
+        <nav class="hidden items-center gap-8 text-[16px] text-[#3A3C40] lg:flex">
             <a href="#lifestyle" class="nav-link">Возможности</a>
             <a href="#products" class="nav-link">Карты</a>
             <a href="#how" class="nav-link">Как это работает</a>
@@ -29,11 +29,11 @@
         </button>
     </div>
     <div data-mobile-menu id="mobile-menu" class="nav-pill mx-auto mt-2 hidden max-w-[1400px] flex-col gap-1 rounded-3xl px-5 py-4 lg:hidden">
-        <a href="#lifestyle" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Возможности</a>
-        <a href="#products" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Карты</a>
-        <a href="#how" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Как это работает</a>
-        <a href="#partners" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Партнёрам</a>
-        <a href="#faq" class="rounded-xl px-3 py-2.5 text-[16px] text-[#141413]">Вопросы</a>
+        <a href="#lifestyle" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Возможности</a>
+        <a href="#products" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Карты</a>
+        <a href="#how" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Как это работает</a>
+        <a href="#partners" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Партнёрам</a>
+        <a href="#faq" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Вопросы</a>
         <a href="https://mne.mojno.cc/" class="btn btn-primary mt-2 justify-center text-sm">Личный кабинет</a>
     </div>
 </header>
@@ -51,7 +51,7 @@
                     muted
                     playsinline
                 ></video>
-                <div class="absolute inset-0 bg-gradient-to-t from-[#141413]/90 via-[#141413]/25 to-[#141413]/0"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#3A3C40]/90 via-[#3A3C40]/25 to-[#3A3C40]/0"></div>
 
                 <div class="hero-copy relative w-full px-6 pb-10 sm:px-10 sm:pb-12 lg:px-14 lg:pb-16">
                     <div data-reveal class="max-w-[620px]">
@@ -83,7 +83,7 @@
                 </div>
                 <div data-reveal>
                     <p class="mt-4 max-w-lg text-[20px] font-normal leading-relaxed text-[#141414]">Удобный способ совершать покупки из России и СНГ</p>
-                    <p class="max-w-lg text-base leading-relaxed text-[#141413]/45">От подписки на ИИ-сервис до отеля в отпуске - просто</p>
+                    <p class="max-w-lg text-base leading-relaxed text-[#3A3C40]/45">От подписки на ИИ-сервис до отеля в отпуске - просто</p>
                 </div>
             </div>
         </div>
@@ -102,8 +102,8 @@
                     <img src="{{ $scene['img'] }}" alt="{{ $scene['title'] }}" loading="lazy" class="absolute inset-0 h-full w-full object-cover transition duration-1000 ease-out group-hover:scale-105">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/5"></div>
                     <div class="oval-slide-badges">
-                        <span class="rounded-full bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[.08em] text-[#141413]">{{ $scene['tag'] }}</span>
-                        <span class="rounded-full bg-white px-6 py-3 text-center text-lg font-semibold leading-snug tracking-[-.01em] text-[#141413] sm:text-xl">{{ $scene['title'] }}</span>
+                        <span class="rounded-full bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[.08em] text-[#3A3C40]">{{ $scene['tag'] }}</span>
+                        <span class="rounded-full bg-white px-6 py-3 text-center text-lg font-semibold leading-snug tracking-[-.01em] text-[#3A3C40] sm:text-xl">{{ $scene['title'] }}</span>
                     </div>
                 </article>
             @endforeach
@@ -265,7 +265,7 @@
     <section class="mt-[150px] px-6 lg:px-10">
         <div class="app-panel mx-auto max-w-[1400px] overflow-hidden rounded-[40px] bg-white">
             <div class="grid lg:grid-cols-[1fr_.75fr]">
-                <div data-reveal class="px-5 py-10 sm:p-14 lg:p-20"><span class="eyebrow">Личный кабинет</span><h2 class="mt-5 max-w-2xl text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Удобный и простой личный кабинет</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#141413]/60">Выпускайте карты в пару кликов, отслеживайте актуальный баланс и историю своих платежей из одного места.</p><div class="mt-9 grid gap-4 sm:grid-cols-2">@foreach(['Быстрый выпуск карт','История операций','Пополнение баланса из России','Push-уведомления'] as $item)<div class="rounded-2xl bg-[#f3f0ee] p-5 text-sm font-semibold">{{ $item }}</div>@endforeach</div><div class="mt-8 flex flex-wrap gap-4"><a href="https://mne.mojno.cc/register?utm_source=mojno&utm_capaign=land&utm_medium=lk" class="btn btn-hero-orange">Зарегистрироваться</a><a href="https://mne.mojno.cc/" class="btn btn-hero-black">Авторизоваться</a></div></div>
+                <div data-reveal class="px-5 py-10 sm:p-14 lg:p-20"><span class="eyebrow">Личный кабинет</span><h2 class="mt-5 max-w-2xl text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Удобный и простой личный кабинет</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#3A3C40]/60">Выпускайте карты в пару кликов, отслеживайте актуальный баланс и историю своих платежей из одного места.</p><div class="mt-9 grid gap-4 sm:grid-cols-2">@foreach(['Быстрый выпуск карт','История операций','Пополнение баланса из России','Push-уведомления'] as $item)<div class="rounded-2xl bg-[#f3f0ee] p-5 text-sm font-semibold">{{ $item }}</div>@endforeach</div><div class="mt-8 flex flex-wrap gap-4"><a href="https://mne.mojno.cc/register?utm_source=mojno&utm_capaign=land&utm_medium=lk" class="btn btn-hero-orange">Зарегистрироваться</a><a href="https://mne.mojno.cc/" class="btn btn-hero-black">Авторизоваться</a></div></div>
                 <div data-reveal class="app-visual" style="background-image:url('{{ asset('assets/images/iphone.png') }}');background-position:center;background-repeat:no-repeat;background-size: cover;"></div>
             </div>
         </div>
@@ -285,7 +285,7 @@
             <div data-reveal class="max-w-4xl">
                 <span class="eyebrow">Получить карту</span>
                 <h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em]">Оформление карты онлайн</h2>
-                <p class="mt-6 text-lg leading-relaxed text-[#141413]/60">Можно использовать карту сразу</p>
+                <p class="mt-6 text-lg leading-relaxed text-[#3A3C40]/60">Можно использовать карту сразу</p>
             </div>
 
             @php
@@ -470,7 +470,7 @@
                     ['Сколько карт можно оформить?','Ограничений на количество карт нет. Вы можете выпустить несколько карт для разных задач на ваше усмотрение.']
                     ];
                 @endphp
-            <div class="mt-14 divide-y divide-[#141413]/10 border-y border-[#141413]/10">
+            <div class="mt-14 divide-y divide-[#3A3C40]/10 border-y border-[#3A3C40]/10">
                 @foreach($faqs as $faq)
                     <div data-faq-item data-open="false" class="faq-item">
                         <button type="button" data-faq-button aria-expanded="false" class="flex w-full items-center justify-between gap-6 py-7 text-left">
@@ -478,7 +478,7 @@
                             <span class="faq-plus">+</span>
                         </button>
                         <div class="faq-answer">
-                            <p class="max-w-3xl pb-7 pr-12 text-base leading-relaxed text-[#141413]/55">{{ $faq[1] }}</p>
+                            <p class="max-w-3xl pb-7 pr-12 text-base leading-relaxed text-[#3A3C40]/55">{{ $faq[1] }}</p>
                         </div>
                     </div>
                 @endforeach
@@ -487,12 +487,12 @@
     </section>
 </main>
 
-<footer class="border-t border-[#141413]/10 bg-[#f3f0ee] px-6 py-16 lg:px-10">
+<footer class="border-t border-[#3A3C40]/10 bg-[#f3f0ee] px-6 py-16 lg:px-10">
     <div class="mx-auto max-w-[1400px]">
         <div class="grid gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1fr]">
             <div>
                 <p class="brand-mark"><a href="/" class="brand-mark"><img src="assets/images/logo.svg" width="55px"></a></p>
-                <p class="mt-4 max-w-sm text-sm leading-relaxed text-[#141413]/50">Виртуальные карты для платежей, подписок и покупок по всему миру.</p>
+                <p class="mt-4 max-w-sm text-sm leading-relaxed text-[#3A3C40]/50">Виртуальные карты для платежей, подписок и покупок по всему миру.</p>
             </div>
             <div>
                 <p class="footer-title">Продукт</p>
@@ -520,8 +520,8 @@
                 </ul>
             </div>
         </div>
-        <p class="mt-16 max-w-4xl text-xs leading-relaxed text-[#141413]/35">Можно не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p>
-        <p class="mt-5 text-xs text-[#141413]/30">© {{ date('Y') }} Можно. Все права защищены.</p>
+        <p class="mt-16 max-w-4xl text-xs leading-relaxed text-[#3A3C40]/35">Можно не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p>
+        <p class="mt-5 text-xs text-[#3A3C40]/30">© {{ date('Y') }} Можно. Все права защищены.</p>
     </div>
 </footer>
 </body>

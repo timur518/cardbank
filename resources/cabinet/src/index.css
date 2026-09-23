@@ -10,7 +10,7 @@
 
     --color-bg: #f3f1ef;
     --color-surface: #fff;
-    --color-ink: #151515;
+    --color-ink: #3A3C40;
     --color-muted: #77736e;
     --color-border: #dedbd6;
     --color-orange: #f37338;
@@ -699,7 +699,7 @@ html::-webkit-scrollbar {
     cursor: pointer;
     transition: .2s;
 }
-.apply-currency-toggle button.is-active { background: #151515; color: #fff; }
+.apply-currency-toggle button.is-active { background: #3A3C40; color: #fff; }
 .apply-field .apply-amount-input-group input { border-radius: 0 14px 14px 0; width: 100%; }
 
 @media (min-width: 640px) {

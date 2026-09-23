@@ -17,7 +17,7 @@ export function CardThumbnail({ skin, name }: CardThumbnailProps) {
     }
 
     return (
-        <div className="flex h-9 w-14 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#2b2a28] to-[#151515] text-[9px] font-bold uppercase tracking-wide text-white/70 shadow-sm">
+        <div className="flex h-9 w-14 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#2b2a28] to-[#3A3C40] text-[9px] font-bold uppercase tracking-wide text-white/70 shadow-sm">
             {name.slice(0, 3)}
         </div>
     );
