@@ -174,7 +174,7 @@
                                 @endforeach
                             </ul>
                             <div class="mt-10 flex flex-wrap items-center gap-5 border-t border-current/15 pt-7">
-                                <a href="#" class="btn {{ $i === 0 ? 'btn-hero-orange' : 'btn-dark-on-orange' }}">{{ $product['cta'] }}</a>
+                                <a href="#" class="btn {{ in_array($product['key'], ['black', 'white']) ? 'btn-hero-orange' : 'btn-dark-on-orange' }}">{{ $product['cta'] }}</a>
                                 <span class="product-price-note text-sm opacity-50">{{ $product['price'] }} ₽ за выпуск · 0 ₽ в месяц</span>
                             </div>
                         </div>
