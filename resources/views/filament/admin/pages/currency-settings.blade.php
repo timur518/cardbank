@@ -16,6 +16,7 @@
         $calculatorReceived = $calculatorRows[0] ?? null;
         $calculatorRemaining = end($calculatorRows) ?: null;
         $formatMoney = fn (float $value, string $symbol) => number_format($value, 2, ',', ' ') . ' ' . $symbol;
+        $formatPercent = fn (float $value) => number_format($value, 2, ',', ' ') . '%';
         $calculatorChart = $this->calculatorChartSvg();
     @endphp
 
@@ -29,6 +30,7 @@
                         <th style="padding: 8px 12px; text-align: right;">Сумма $</th>
                         <th style="padding: 8px 12px; text-align: right;">Остаток руб</th>
                         <th style="padding: 8px 12px; text-align: right;">Остаток $</th>
+                        <th style="padding: 8px 12px; text-align: right;">% от поступления</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -39,6 +41,7 @@
                             <td style="padding: 8px 12px; text-align: right;">{{ $formatMoney($row['usd'], '$') }}</td>
                             <td style="padding: 8px 12px; text-align: right; font-weight: 600;">{{ $formatMoney($row['remainderRub'], '₽') }}</td>
                             <td style="padding: 8px 12px; text-align: right; font-weight: 600;">{{ $formatMoney($row['remainderUsd'], '$') }}</td>
+                            <td style="padding: 8px 12px; text-align: right; color: #6b7280;">{{ $formatPercent($row['percentOfReceived']) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -47,11 +50,15 @@
                         <td style="padding: 8px 12px;">Поступило</td>
                         <td style="padding: 8px 12px; text-align: right;" colspan="2">{{ $formatMoney($calculatorReceived['rub'] ?? 0, '₽') }}</td>
                         <td style="padding: 8px 12px; text-align: right;" colspan="2">{{ $formatMoney($calculatorReceived['usd'] ?? 0, '$') }}</td>
+                        <td style="padding: 8px 12px; text-align: right;">{{ $formatPercent($calculatorReceived['percentOfReceived'] ?? 0) }}</td>
                     </tr>
                     <tr style="font-weight: 700;">
-                        <td style="padding: 8px 12px;">Осталось</td>
+                        <td style="padding: 8px 12px;">Осталось (чистая прибыль)</td>
                         <td style="padding: 8px 12px; text-align: right;" colspan="2">{{ $formatMoney($calculatorRemaining['remainderRub'] ?? 0, '₽') }}</td>
                         <td style="padding: 8px 12px; text-align: right;" colspan="2">{{ $formatMoney($calculatorRemaining['remainderUsd'] ?? 0, '$') }}</td>
+                        <td style="padding: 8px 12px; text-align: right; color: #16a34a;">
+                            {{ $formatPercent(($calculatorReceived['rub'] ?? 0) > 0 ? ($calculatorRemaining['remainderRub'] ?? 0) / $calculatorReceived['rub'] * 100 : 0) }}
+                        </td>
                     </tr>
                 </tfoot>
             </table>

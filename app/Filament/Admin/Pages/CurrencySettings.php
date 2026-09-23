@@ -197,7 +197,7 @@ class CurrencySettings extends Page implements HasForms
      * где Rsell = Rraw·(1 + наценка/100). Разница между Rsell и Rraw на сумме пополнения —
      * это курсовая часть маржи, комиссии и себестоимость выпуска/пополнения — остальная часть.
      *
-     * @return array<int, array{label: string, rub: float, usd: float, remainderRub: float, remainderUsd: float}>
+     * @return array<int, array{label: string, rub: float, usd: float, remainderRub: float, remainderUsd: float, percentOfReceived: float}>
      */
     public function calculatorRows(): array
     {
@@ -246,6 +246,15 @@ class CurrencySettings extends Page implements HasForms
         $topupCostRub = $topupCostUsd * $rawRate;
         $balance -= $topupCostRub;
         $rows[] = ['label' => 'Стоимость пополнения карты', 'rub' => $topupCostRub, 'usd' => $topupCostUsd, 'remainderRub' => $balance, 'remainderUsd' => $toUsd($balance)];
+
+        // % от поступления: доля суммы каждой строки ('rub') от общего поступления (шаг 0).
+        // Для самого шага 0 это всегда 100% — он и есть всё поступление.
+        $receivedRub = $rows[0]['rub'];
+
+        foreach ($rows as &$row) {
+            $row['percentOfReceived'] = $receivedRub > 0 ? $row['rub'] / $receivedRub * 100 : 0.0;
+        }
+        unset($row);
 
         return $rows;
     }
