@@ -50,7 +50,7 @@ export function CardsPage() {
         });
 
         activeCards.forEach((card) => {
-            fetchCardTransactions(card.id, { type: 'purchase', date_from: startOfMonth(), per_page: 100 })
+            fetchCardTransactions(card.id, { type: ['purchase', 'decline'], date_from: startOfMonth(), per_page: 100 })
                 .then((response) => {
                     setMonthSpend((current) => ({ ...current, [card.id]: sumSuccessfulPurchases(response.data) }));
                 })

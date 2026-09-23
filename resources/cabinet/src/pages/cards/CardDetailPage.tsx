@@ -91,7 +91,7 @@ export function CardDetailPage() {
             return;
         }
 
-        fetchCardTransactions(id, { type: 'purchase', date_from: startOfMonth(), per_page: 100 })
+        fetchCardTransactions(id, { type: ['purchase', 'decline'], date_from: startOfMonth(), per_page: 100 })
             .then((response) => setMonthPurchases(response.data))
             .catch(() => setMonthPurchases([]));
     }, [id, card?.status]);

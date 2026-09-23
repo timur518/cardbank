@@ -43,8 +43,10 @@ class TransactionController extends Controller
     {
         $query->with(['merchantRecord', 'card']);
 
-        if ($type = $request->string('type')->toString()) {
-            $query->where('type', $type);
+        // ?type=purchase или ?type[]=purchase&type[]=decline — например, для счётчика «Потрачено в
+        // этом месяце» в ЛК нужны сразу и purchase, и decline (комиссия за отклонённую операцию).
+        if ($type = $request->input('type')) {
+            $query->whereIn('type', array_map('strval', (array) $type));
         }
 
         if ($dateFrom = $request->string('date_from')->toString()) {

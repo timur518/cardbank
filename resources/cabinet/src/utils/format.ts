@@ -45,11 +45,20 @@ export function startOfMonth(): string {
     return date.toISOString().slice(0, 10);
 }
 
-/** Сумма успешных покупок из выборки транзакций — отклонённые попытки не
- * списывают деньги с карты и не входят в «Потрачено в этом месяце». */
-export function sumSuccessfulPurchases(transactions: { status: string; amount: string | number }[]): number {
+/**
+ * Сумма для «Потрачено в этом месяце» из выборки транзакций (ожидается выборка с
+ * type ∈ {purchase, decline}, см. fetchCardTransactions(..., { type: ['purchase', 'decline'] })):
+ * - purchase со status=success (списанные покупки) И status=pending (авторизационный
+ *   холд у CardsPro ещё в обработке, но уже удерживает средства на карте — неучёт таких
+ *   операций занижал счётчик на сумму всех висящих холдов);
+ * - decline (всегда status=declined) — сама покупка отклонена и денег не списала, но
+ *   CardsPro может удержать комиссию за неуспешную попытку — она приходит как `amount` этой
+ *   же decline-записи (CardsProWebhookHandler::handleTransaction()), и без её учёта счётчик
+ *   занижал реальные расходы на карте.
+ */
+export function sumSuccessfulPurchases(transactions: { type: string; status: string; amount: string | number }[]): number {
     return transactions
-        .filter((tx) => tx.status === 'success')
+        .filter((tx) => tx.type === 'decline' || (tx.type === 'purchase' && (tx.status === 'success' || tx.status === 'pending')))
         .reduce((sum, tx) => sum + Math.abs(Number(tx.amount)), 0);
 }
 

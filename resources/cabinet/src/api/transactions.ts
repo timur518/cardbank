@@ -4,7 +4,8 @@ import type { CardTransaction, Paginated } from './types';
 export interface TransactionsQuery {
     page?: number;
     per_page?: number;
-    type?: string;
+    // Строка — один тип, массив — несколько через axios ?type[]=a&type[]=b (см. TransactionController::paginate()).
+    type?: string | string[];
     card_id?: string;
     date_from?: string;
     date_to?: string;
