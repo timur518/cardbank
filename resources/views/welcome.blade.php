@@ -245,15 +245,16 @@
                             </a>
                         </li>
                     @endforeach
+                    <li class="service-cell service-more-cell">
+                        <div class="service-more-inner">
+                            <span class="service-more-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                            </span>
+                            <span class="service-more-text">А также любой сайт в мире, где принимают Mastercard и Visa</span>
+                        </div>
+                    </li>
                 </ul>
             </div>
-
-            <p data-reveal class="service-more mt-8 lg:mt-10">
-                <span class="service-more-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
-                </span>
-                <span>А также любой сайт в мире, где принимают <strong>Mastercard и Visa</strong></span>
-            </p>
         </div>
     </section>
 
