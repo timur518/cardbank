@@ -63,6 +63,8 @@ export interface CardProductSummary {
     card_country_flag_url: string | null;
     topup_min_amount?: string;
     topup_max_amount?: string;
+    restricted_merchants?: string | null;
+    full_terms?: string | null;
 }
 
 export type CardStatus = 'waiting' | 'pending' | 'active' | 'frozen' | 'closed' | 'cancelled' | 'failed';

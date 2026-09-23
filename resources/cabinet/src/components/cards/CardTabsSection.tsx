@@ -51,19 +51,17 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
     useEffect(load, [card.id, page]);
 
     return (
-        <div id="card-tabs-section" className="flex flex-col gap-4">
-            <div className="no-scrollbar flex gap-2 overflow-x-auto">
+        <div id="card-tabs-section" className="flex flex-col">
+            <div className="no-scrollbar flex gap-1 overflow-x-auto px-1">
                 {TABS.map((tab) => (
                     <button
                         key={tab.key}
                         type="button"
                         disabled={tab.disabled}
                         onClick={() => onTabChange(tab.key)}
-                        className={`dashboard-nav-link shrink-0 !border-b-0 rounded-full border px-4 py-2 ${
-                            activeTab === tab.key
-                                ? 'border-orange bg-ink text-white'
-                                : 'border-border bg-surface text-muted'
-                        } ${tab.disabled ? 'cursor-not-allowed opacity-50' : ''}`}
+                        className={`card-tab shrink-0 ${activeTab === tab.key ? 'card-tab-active' : ''} ${
+                            tab.disabled ? 'cursor-not-allowed opacity-50' : ''
+                        }`}
                         title={tab.disabled ? 'Функция скоро появится' : undefined}
                     >
                         {tab.label}
@@ -71,7 +69,7 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                 ))}
             </div>
 
-            <div className="auth-panel p-6">
+            <div className="auth-panel card-tabs-panel p-6">
                 {activeTab === 'transactions' && (
                     <>
                         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -124,22 +122,46 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                 )}
 
                 {activeTab === 'limits' && (
-                    <div className="flex flex-col gap-3">
-                        <h2 className="mb-1 text-sm font-extrabold uppercase tracking-wide text-muted">
-                            Лимиты пополнения
-                        </h2>
-                        <div className="flex items-center justify-between border-t border-border py-3 first:border-t-0">
-                            <span className="text-sm text-muted">Минимальная сумма</span>
-                            <span className="text-sm font-semibold text-ink">
-                                {card.card_product.topup_min_amount ? `$${card.card_product.topup_min_amount}` : '—'}
-                            </span>
+                    <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-3">
+                            <h2 className="mb-1 text-sm font-extrabold uppercase tracking-wide text-muted">
+                                Лимиты пополнения
+                            </h2>
+                            <div className="flex items-center justify-between border-t border-border py-3 first:border-t-0">
+                                <span className="text-sm text-muted">Минимальная сумма</span>
+                                <span className="text-sm font-semibold text-ink">
+                                    {card.card_product.topup_min_amount ? `$${card.card_product.topup_min_amount}` : '—'}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-border py-3">
+                                <span className="text-sm text-muted">Максимальная сумма</span>
+                                <span className="text-sm font-semibold text-ink">
+                                    {card.card_product.topup_max_amount ? `$${card.card_product.topup_max_amount}` : '—'}
+                                </span>
+                            </div>
                         </div>
-                        <div className="flex items-center justify-between border-t border-border py-3">
-                            <span className="text-sm text-muted">Максимальная сумма</span>
-                            <span className="text-sm font-semibold text-ink">
-                                {card.card_product.topup_max_amount ? `$${card.card_product.topup_max_amount}` : '—'}
-                            </span>
-                        </div>
+
+                        {card.card_product.restricted_merchants && (
+                            <div className="flex flex-col gap-2 border-t border-border pt-5">
+                                <h2 className="text-sm font-extrabold uppercase tracking-wide text-muted">
+                                    Запрещённые магазины
+                                </h2>
+                                <p className="whitespace-pre-line text-sm leading-relaxed text-ink">
+                                    {card.card_product.restricted_merchants}
+                                </p>
+                            </div>
+                        )}
+
+                        {card.card_product.full_terms && (
+                            <div className="flex flex-col gap-2 border-t border-border pt-5">
+                                <h2 className="text-sm font-extrabold uppercase tracking-wide text-muted">
+                                    Остальные условия
+                                </h2>
+                                <p className="whitespace-pre-line text-sm leading-relaxed text-ink">
+                                    {card.card_product.full_terms}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 )}
 

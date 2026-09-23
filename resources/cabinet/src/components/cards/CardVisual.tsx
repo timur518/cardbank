@@ -1,4 +1,5 @@
 import type { Card } from '../../api/types';
+import logoMark from '../../assets/logo-mark.svg';
 import { formatBalanceHero } from '../../utils/format';
 import { CARD_STATUS_LABELS, CARD_STATUS_TONES } from '../../utils/labels';
 import { NetworkBadge } from '../common/NetworkBadge';
@@ -21,15 +22,10 @@ export function CardVisual({ card, showCountryFlag = false }: CardVisualProps) {
 
     return (
         <div className="relative aspect-[1.586] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#2b2a28] via-[#1c1b19] to-[#0e0e0d] p-5 text-white">
-            <span className="pointer-events-none absolute -right-4 -top-8 text-[9rem] leading-none font-black text-white/5 select-none">
-                {card.card_product.name.charAt(0)}
-            </span>
+            <img src={logoMark} alt="" className="pointer-events-none absolute right-0 top-0 w-[140px] max-w-[45%] select-none" />
 
             <div className="relative flex h-full flex-col justify-between">
                 <div className="flex items-center gap-2">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange text-xs font-extrabold">
-                        {card.card_product.name.charAt(0)}
-                    </span>
                     <p className="text-sm font-semibold">{card.card_product.name}</p>
                     <div className="ml-auto flex shrink-0 items-center gap-1.5">
                         {showCountryFlag && card.card_product.card_country_flag_url && (

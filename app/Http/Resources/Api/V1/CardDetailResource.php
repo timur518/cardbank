@@ -16,10 +16,12 @@ class CardDetailResource extends CardResource
     {
         $parent = parent::toArray($request);
 
-        // Лимиты пополнения продукта (вкладка «Лимиты» на странице карты) — только здесь, в
-        // списке карт (CardResource) они не нужны.
+        // Лимиты пополнения и текстовые условия продукта (вкладка «Лимиты» на странице карты) —
+        // только здесь, в списке карт (CardResource) они не нужны.
         $parent['card_product']['topup_min_amount'] = number_format((float) $this->cardProduct->topup_min_amount, 2, '.', '');
         $parent['card_product']['topup_max_amount'] = number_format((float) $this->cardProduct->topup_max_amount, 2, '.', '');
+        $parent['card_product']['restricted_merchants'] = $this->cardProduct->restricted_merchants;
+        $parent['card_product']['full_terms'] = $this->cardProduct->full_terms;
 
         return array_merge($parent, [
             'price_rub' => number_format((float) $this->price_rub, 2, '.', ''),

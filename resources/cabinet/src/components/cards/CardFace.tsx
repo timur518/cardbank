@@ -48,9 +48,6 @@ export function CardFace({
 
                     <div className="relative flex h-full flex-col justify-between">
                         <div className="flex items-center gap-3">
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange text-sm font-extrabold text-white">
-                                {productName.charAt(0)}
-                            </span>
                             <div>
                                 <p className="text-sm font-bold">Карта {productName}</p>
                                 {subtitle && <p className="text-xs text-white/50">{subtitle}</p>}
