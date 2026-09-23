@@ -190,12 +190,16 @@ class CurrencySettings extends Page implements HasForms
      * Пошаговый расчёт маржи по одной карте: сколько денег поступает от клиента и что от них
      * остаётся после всех комиссий и себестоимости у провайдера. Общая формула:
      *
-     * Остаток = (Pруб + Tусд·Rsell)
-     *           · (1 − fприём/100) · (1 − fвывод/100) · (1 − fмастер/100)
-     *           − Cпровайдер_усд·Rraw − Tусд·(1 + fпополн/100)·Rraw
+     * Стап 1 (приём) и шаг 2 (вывод) — простые проценты от текущего остатка. Формула
+     * шага 3 (комиссия пополнения мастер-счёта) отличается — она берёт в расчёт не текущий
+     * остаток, а сумму в долларах, которую нужно загрузить на мастер-счёт для выпуска
+     * карты и пополнения:
      *
-     * где Rsell = Rraw·(1 + наценка/100). Разница между Rsell и Rraw на сумме пополнения —
-     * это курсовая часть маржи, комиссии и себестоимость выпуска/пополнения — остальная часть.
+     * fмастер_руб = (Cпровайдер_усд + Tусд·fпополн/100) · fмастер/100 · Rraw
+     *
+     * то есть база для этой комиссии — стоимость выпуска карты у провайдера (Cпровайдер_усд) плюс
+     * только фиа-составляющая пополнения карты (Tусд·fпополн/100), а не вся сумма пополнения —
+     * сам трансит основной суммы на карту этой комиссией не облагается.
      *
      * @return array<int, array{label: string, rub: float, usd: float, remainderRub: float, remainderUsd: float, percentOfReceived: float}>
      */
@@ -230,19 +234,27 @@ class CurrencySettings extends Page implements HasForms
         $balance -= $fee;
         $rows[] = ['label' => 'Комиссия за вывод средств', 'rub' => $fee, 'usd' => $toUsd($fee), 'remainderRub' => $balance, 'remainderUsd' => $toUsd($balance)];
 
-        // Шаг 3: комиссия за конвертацию рублей в доллары и пополнение мастер-счёта у провайдера.
-        $fee = $balance * $masterTopupFeePercent / 100;
+        // Себестоимость выпуска карты у провайдера и fee-часть пополнения карты считаются заранее в долларах:
+        // они нужны как база для комиссии шага 3 и не зависят от текущего остатка баланса.
+        $costRub = $providerIssueCostUsd * $rawRate;
+        $topupFeeUsd = $topupUsd * $cardTopupFeePercent / 100;
+
+        // Шаг 3: комиссия за конвертацию рублей в доллары и пополнение мастер-счёта у провайдера:
+        // берёт не % от текущего остатка, а % от суммы, которую нужно загрузить на мастер-счёт
+        // для выпуска карты и пополнения (себестоимость выпуска + fee-часть пополнения, без
+        // самой суммы пополнения).
+        $masterTopupFeeUsd = ($providerIssueCostUsd + $topupFeeUsd) * $masterTopupFeePercent / 100;
+        $fee = $masterTopupFeeUsd * $rawRate;
         $balance -= $fee;
-        $rows[] = ['label' => 'Комиссия пополнения мастер-счёта', 'rub' => $fee, 'usd' => $toUsd($fee), 'remainderRub' => $balance, 'remainderUsd' => $toUsd($balance)];
+        $rows[] = ['label' => 'Комиссия пополнения мастер-счёта', 'rub' => $fee, 'usd' => $masterTopupFeeUsd, 'remainderRub' => $balance, 'remainderUsd' => $toUsd($balance)];
 
         // Шаг 4: фиксированная себестоимость выпуска карты у провайдера, по реальному курсу.
-        $costRub = $providerIssueCostUsd * $rawRate;
         $balance -= $costRub;
         $rows[] = ['label' => 'Стоимость выпуска карты у провайдера', 'rub' => $costRub, 'usd' => $providerIssueCostUsd, 'remainderRub' => $balance, 'remainderUsd' => $toUsd($balance)];
 
         // Шаг 5: сумма, которая реально уходит на карту с мастер-счёта (сама сумма пополнения
         // плюс комиссия провайдера за пополнение карты), тоже по реальному курсу.
-        $topupCostUsd = $topupUsd * (1 + $cardTopupFeePercent / 100);
+        $topupCostUsd = $topupUsd + $topupFeeUsd;
         $topupCostRub = $topupCostUsd * $rawRate;
         $balance -= $topupCostRub;
         $rows[] = ['label' => 'Стоимость пополнения карты', 'rub' => $topupCostRub, 'usd' => $topupCostUsd, 'remainderRub' => $balance, 'remainderUsd' => $toUsd($balance)];
