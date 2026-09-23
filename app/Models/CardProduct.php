@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CardCountry;
 use App\Enums\CardNetwork;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -55,6 +56,7 @@ class CardProduct extends Model
     {
         return [
             'network' => CardNetwork::class,
+            'card_country' => CardCountry::class,
             'provider_kyc_required' => 'boolean',
             'provider_issue_cost_usd' => 'decimal:2',
             'provider_topup_fee_percent' => 'decimal:2',

@@ -19,7 +19,7 @@ export function CardGridCard({ card, monthSpend }: CardGridCardProps) {
             to={`/cards/${card.id}`}
             className="flex flex-col rounded-[28px] bg-surface p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
         >
-            <CardVisual card={card} />
+            <CardVisual card={card} showCountryFlag />
 
             <div className="mt-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-2">

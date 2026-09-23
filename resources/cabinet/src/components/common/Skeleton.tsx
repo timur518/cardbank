@@ -146,18 +146,20 @@ export function PaymentMethodsSkeleton({ rows = 2 }: { rows?: number }) {
     );
 }
 
-/** Список карточных продуктов (CardProductOption, apply-card-option) —
- * NewCardOrderPage на время загрузки каталога. */
-export function CardProductsSkeleton({ items = 3 }: { items?: number }) {
+/** Сетка выбора карточного продукта (CardProductChoice) — первый шаг NewCardOrderPage
+ * на время загрузки каталога: 3 колонки на десктопе, 1 на мобилке. */
+export function CardChoiceGridSkeleton({ items = 3 }: { items?: number }) {
     return (
-        <div className="apply-card-list" aria-hidden="true">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3" aria-hidden="true">
             {Array.from({ length: items }).map((_, index) => (
-                <div key={index} className="apply-card-option">
-                    <Skeleton className="h-16 w-24 shrink-0 rounded-lg" />
-                    <div className="flex flex-1 flex-col gap-2">
+                <div key={index} className="flex flex-col rounded-[28px] bg-surface p-5 shadow-sm">
+                    <Skeleton className="aspect-[1.586] w-full rounded-2xl" />
+                    <div className="mt-5 flex flex-col gap-2">
                         <Skeleton className="h-4 w-28" />
                         <Skeleton className="h-3 w-full" />
-                        <Skeleton className="h-3.5 w-16" />
+                        <Skeleton className="h-3 w-3/4" />
+                        <Skeleton className="mt-3 h-4 w-24" />
+                        <Skeleton className="mt-3 h-11 w-full rounded-2xl" />
                     </div>
                 </div>
             ))}

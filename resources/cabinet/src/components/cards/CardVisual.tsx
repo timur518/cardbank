@@ -1,10 +1,14 @@
 import type { Card } from '../../api/types';
 import { formatBalanceHero } from '../../utils/format';
 import { CARD_STATUS_LABELS, CARD_STATUS_TONES } from '../../utils/labels';
+import { NetworkBadge } from '../common/NetworkBadge';
 import { StatusPill } from '../common/StatusPill';
 
 interface CardVisualProps {
     card: Card;
+    /** Флаг страны выпуска рядом с логотипом платёжной системы — только в сетке «Мои
+     * карты» (CardGridCard); на главном экране (CardsStrip) только логотип системы. */
+    showCountryFlag?: boolean;
 }
 
 // Тёмный визуал банковской карты (иконка+название продукта, маска номера,
@@ -12,7 +16,7 @@ interface CardVisualProps {
 // сетке страницы «Мои карты» (CardGridCard) и в горизонтальной ленте карт
 // (CardsStrip). Ширину/масштаб задаёт обёртка снаружи —
 // сам визуал всегда aspect-[1.586] (пропорции банковской карты).
-export function CardVisual({ card }: CardVisualProps) {
+export function CardVisual({ card, showCountryFlag = false }: CardVisualProps) {
     const isActive = card.status === 'active';
 
     return (
@@ -27,6 +31,14 @@ export function CardVisual({ card }: CardVisualProps) {
                         {card.card_product.name.charAt(0)}
                     </span>
                     <p className="text-sm font-semibold">{card.card_product.name}</p>
+                    <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                        {showCountryFlag && card.card_product.card_country_flag && (
+                            <span className="text-sm leading-none" title={card.card_product.card_country_label ?? undefined}>
+                                {card.card_product.card_country_flag}
+                            </span>
+                        )}
+                        <NetworkBadge network={card.card_product.network} tone="mono" />
+                    </div>
                 </div>
 
                 <p className="font-mono text-lg tracking-[0.25em] text-white/90">

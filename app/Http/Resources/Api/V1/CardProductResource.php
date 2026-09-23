@@ -21,6 +21,12 @@ class CardProductResource extends JsonResource
             // В БД хранится относительный путь на диске public — фронтенду нужен готовый URL.
             'skin' => $this->skin ? Storage::disk('public')->url($this->skin) : null,
             'currency' => $this->currency,
+            'network' => $this->network?->value,
+            'card_country' => $this->card_country?->value,
+            'card_country_label' => $this->card_country?->getLabel(),
+            'card_country_flag' => $this->card_country?->flag(),
+            'restricted_merchants' => $this->restricted_merchants,
+            'full_terms' => $this->full_terms,
             'price_rub' => number_format((float) $this->price_rub, 2, '.', ''),
             'provider_kyc_required' => (bool) $this->provider_kyc_required,
             'apple_pay_enabled' => (bool) $this->apple_pay_enabled,
