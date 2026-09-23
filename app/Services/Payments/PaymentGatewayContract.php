@@ -35,4 +35,27 @@ interface PaymentGatewayContract
      * @return array{transaction_id: string, status: 'paid'|'failed'|'unknown'}
      */
     public function parseWebhookPayload(array $payload): array;
+
+    /**
+     * Создать возврат по уже проведённому платежу — полный (amount = null) или частичный.
+     * $transactionId — тот же идентификатор, что вернул initiate() и что пришёл в вебхуке
+     * (Income.payment_transaction_id).
+     *
+     * @return array{success: bool, refund_id: ?string, status: string, raw: array<string, mixed>}
+     */
+    public function refund(string $transactionId, ?float $amount = null): array;
+
+    /**
+     * Баланс мастер-счёта платёжной системы (реквизиты — из settlement_config способа
+     * оплаты, для которого резолвился этот шлюз, см. PaymentGatewayResolver::for()).
+     *
+     * @return array{
+     *     available: float,
+     *     locked: float,
+     *     hold: float,
+     *     currency: string,
+     * } available — доступный баланс, locked — заблокировано к выплате, hold — временный
+     *   холд (перейдёт в available спустя время).
+     */
+    public function getMasterBalance(): array;
 }

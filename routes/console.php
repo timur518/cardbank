@@ -33,6 +33,12 @@ Schedule::command('providers:sync-card-catalog')
     ->daily()
     ->withoutOverlapping();
 
+// Общая для всех платёжных систем отмена заказов без вебхука об оплате дольше 30 минут (см.
+// App\Console\Commands\Payments\CancelExpiredPaymentOrders).
+Schedule::command('payments:cancel-expired-orders')
+    ->everyFiveMinutes()
+    ->withoutOverlapping();
+
 // Курсы валют для страницы «Настройки» -> «Валютная система» (см.
 // App\Console\Commands\SyncCurrencyRates). ЦБ РФ обновляет курс сам не чаще раза
 // в сутки, но команда запускается почаще для устойчивости: если в момент планового

@@ -96,4 +96,25 @@ class StubPaymentGateway implements PaymentGatewayContract
             'status' => $status,
         ];
     }
+
+    /**
+     * Заглушка всегда «успешно» возвращает деньги — реального шлюза за ней нет.
+     */
+    public function refund(string $transactionId, ?float $amount = null): array
+    {
+        return [
+            'success' => true,
+            'refund_id' => 'rf_' . Str::uuid(),
+            'status' => 'success',
+            'raw' => ['transaction_id' => $transactionId, 'amount' => $amount],
+        ];
+    }
+
+    /**
+     * Заглушка не ходит ни в какой внешний сервис — баланс всегда нулевой.
+     */
+    public function getMasterBalance(): array
+    {
+        return ['available' => 0.0, 'locked' => 0.0, 'hold' => 0.0, 'currency' => 'RUB'];
+    }
 }

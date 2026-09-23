@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\PaymentMethods\Schemas;
 
 use App\Enums\ActiveStatus;
+use App\Enums\PaymentGatewayCode;
 use App\Enums\PaymentMethodType;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
@@ -55,8 +56,14 @@ class PaymentMethodForm
 
                 Section::make('Технические настройки подключения')
                     ->schema([
+                        Select::make('gateway_code')
+                            ->label('Интеграция')
+                            ->helperText('Какая платёжная система обслуживает этот способ оплаты. Не выбрано — используется тестовая заглушка (StubPaymentGateway).')
+                            ->options(PaymentGatewayCode::class)
+                            ->native(false),
                         KeyValue::make('settlement_config')
-                            ->label('Реквизиты / адрес кошелька')
+                            ->label('Ключи и параметры подключения')
+                            ->helperText('Для CardLink: api_token, shop_id (обязательны), success_url, fail_url, base_url (опционально).')
                             ->keyLabel('Параметр')
                             ->valueLabel('Значение')
                             ->columnSpanFull(),

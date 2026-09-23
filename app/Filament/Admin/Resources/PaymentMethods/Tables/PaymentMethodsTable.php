@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\PaymentMethods\Tables;
 
 use App\Enums\ActiveStatus;
+use App\Enums\PaymentGatewayCode;
 use App\Enums\PaymentMethodType;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -34,6 +35,10 @@ class PaymentMethodsTable
                 TextColumn::make('type')
                     ->label('Тип')
                     ->badge(),
+                TextColumn::make('gateway_code')
+                    ->label('Интеграция')
+                    ->placeholder('Тестовая заглушка')
+                    ->badge(),
                 TextColumn::make('currency')
                     ->label('Валюта'),
                 TextColumn::make('status')
@@ -47,6 +52,9 @@ class PaymentMethodsTable
                 SelectFilter::make('type')
                     ->label('Тип')
                     ->options(PaymentMethodType::class),
+                SelectFilter::make('gateway_code')
+                    ->label('Интеграция')
+                    ->options(PaymentGatewayCode::class),
                 SelectFilter::make('status')
                     ->label('Статус')
                     ->options(ActiveStatus::class),

@@ -42,4 +42,11 @@ return [
         'timeout' => (int) env('CARDSPRO_TIMEOUT', 20),
     ],
 
+    'cardlink' => [
+        // Тайм-аут HTTP-запросов к API CardLink (https://cardlink.link/reference/api), секунды.
+        // Учётные данные (api_token, shop_id, ...) хранятся не здесь, а в settlement_config
+        // способа оплаты в разделе «Настройки» → «Способы оплаты», т.к. магазинов CardLink может быть несколько.
+        'timeout' => (int) env('CARDLINK_TIMEOUT', 20),
+    ],
+
 ];

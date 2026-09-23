@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ActiveStatus;
+use App\Enums\PaymentGatewayCode;
 use App\Enums\PaymentMethodType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ class PaymentMethod extends Model
     protected $fillable = [
         'name',
         'type',
+        'gateway_code',
         'currency',
         'status',
         'fee_percent',
@@ -31,6 +33,7 @@ class PaymentMethod extends Model
     {
         return [
             'type' => PaymentMethodType::class,
+            'gateway_code' => PaymentGatewayCode::class,
             'status' => ActiveStatus::class,
             'settlement_config' => 'array',
             'fee_percent' => 'decimal:2',

@@ -25,6 +25,7 @@ class Income extends Model
         'card_transaction_id',
         'payment_method_id',
         'payment_transaction_id',
+        'payment_url',
         'payment_status',
         'idempotency_key',
         'comment',

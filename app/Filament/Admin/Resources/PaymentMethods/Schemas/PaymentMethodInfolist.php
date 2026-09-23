@@ -24,12 +24,15 @@ class PaymentMethodInfolist
                             ->label('Статус')
                             ->badge(),
                         TextEntry::make('fee_percent')->label('Комиссия способа')->suffix('%'),
+                        TextEntry::make('gateway_code')
+                            ->label('Интеграция')
+                            ->placeholder('Тестовая заглушка'),
                     ]),
 
                 Section::make('Технические настройки')
                     ->schema([
                         KeyValueEntry::make('settlement_config')
-                            ->label('Реквизиты / адрес кошелька')
+                            ->label('Ключи и параметры подключения')
                             ->columnSpanFull(),
                     ]),
             ]);

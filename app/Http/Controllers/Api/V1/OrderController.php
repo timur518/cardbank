@@ -12,8 +12,9 @@ use App\Http\Requests\Api\V1\TopupQuoteRequest;
 use App\Models\Card;
 use App\Models\CardProduct;
 use App\Models\Income;
+use App\Models\PaymentMethod;
 use App\Services\CurrencyRateService;
-use App\Services\Payments\PaymentGatewayContract;
+use App\Services\Payments\PaymentGatewayResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -21,17 +22,15 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Оформление заказов на выпуск карты и пополнение баланса: создаёт
- * записи Card и Income со статусом ожидания оплаты и инициирует платёж
- * через PaymentGatewayContract (сейчас это StubPaymentGateway — реальный провайдер
- * ещё не подключён). Фактический выпуск/пополнение карты на стороне провайдера
- * происходит уже после подтверждения оплаты вебхуками (PaymentWebhookController,
- * затем CardsProWebhookController) — вне этого контроллера.
+ * записи Card и Income со статусом ожидания оплаты и инициирует платёж через
+ * шлюз, выбранный клиентом в payment_method_id ({@see PaymentGatewayResolver::for()}). Фактический
+ * выпуск/пополнение карты на стороне провайдера происходит уже после подтверждения
+ * оплаты вебхуками (PaymentWebhookController, затем CardsProWebhookController) — вне этого контроллера.
  */
 class OrderController extends Controller
 {
     public function __construct(
         private readonly CurrencyRateService $rates,
-        private readonly PaymentGatewayContract $gateway,
     ) {
         //
     }
@@ -97,15 +96,16 @@ class OrderController extends Controller
             return [$card, $income];
         });
 
-        $payment = $this->gateway->initiate($totalRub, "Заказ на выпуск карты #{$card->id}", (string) $income->id);
-        $income->update(['payment_transaction_id' => $payment['transaction_id']]);
+        $gateway = PaymentGatewayResolver::for(PaymentMethod::findOrFail($data['payment_method_id']));
+        $payment = $gateway->initiate($totalRub, "Заказ на выпуск карты #{$card->id}", (string) $income->id);
+        $income->update(['payment_transaction_id' => $payment['transaction_id'], 'payment_url' => $payment['payment_url']]);
 
         return $this->issueResponse($card, $income, $idempotencyKey);
     }
 
     /**
      * Оформляет пополнение уже активной карты клиента: создаёт Income и инициирует
-     * оплату через PaymentGatewayContract; идемпотентно, как и issue().
+     * оплату через PaymentGatewayResolver::for(); идемпотентно, как и issue().
      */
     public function topup(TopupOrderRequest $request): JsonResponse
     {
@@ -146,8 +146,9 @@ class OrderController extends Controller
             'idempotency_key' => $idempotencyKey,
         ]);
 
-        $payment = $this->gateway->initiate($topupRub, "Пополнение карты #{$card->id}", (string) $income->id);
-        $income->update(['payment_transaction_id' => $payment['transaction_id']]);
+        $gateway = PaymentGatewayResolver::for(PaymentMethod::findOrFail($data['payment_method_id']));
+        $payment = $gateway->initiate($topupRub, "Пополнение карты #{$card->id}", (string) $income->id);
+        $income->update(['payment_transaction_id' => $payment['transaction_id'], 'payment_url' => $payment['payment_url']]);
 
         return $this->topupResponse($income, $idempotencyKey);
     }
@@ -219,7 +220,7 @@ class OrderController extends Controller
                 'topup_rub' => number_format($topupRub, 2, '.', ''),
                 'total_rub' => number_format((float) $income->amount, 2, '.', ''),
                 'payment_transaction_id' => $income->payment_transaction_id,
-                'payment_url' => $this->rebuildPaymentUrl($income),
+                'payment_url' => $income->payment_url,
                 'idempotency_key' => $idempotencyKey,
             ],
         ], 201);
@@ -234,20 +235,9 @@ class OrderController extends Controller
                 'topup_rub' => number_format((float) $income->amount, 2, '.', ''),
                 'total_rub' => number_format((float) $income->amount, 2, '.', ''),
                 'payment_transaction_id' => $income->payment_transaction_id,
-                'payment_url' => $this->rebuildPaymentUrl($income),
+                'payment_url' => $income->payment_url,
                 'idempotency_key' => $idempotencyKey,
             ],
         ], 201);
-    }
-
-    /**
-     * Заглушка платёжной системы не хранит ссылку на оплату — при идемпотентном
-     * повторе просто пересобираем её по уже сохранённому payment_transaction_id.
-     */
-    private function rebuildPaymentUrl(Income $income): ?string
-    {
-        return $income->payment_transaction_id
-            ? "https://payment-gateway.example/pay/{$income->payment_transaction_id}"
-            : null;
     }
 }

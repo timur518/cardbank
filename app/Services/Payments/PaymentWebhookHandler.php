@@ -5,9 +5,11 @@ namespace App\Services\Payments;
 use App\Enums\CardStatus;
 use App\Enums\IncomePaymentStatus;
 use App\Enums\IncomeType;
+use App\Enums\NotificationEvent;
 use App\Models\Card;
 use App\Models\CardStatusHistory;
 use App\Models\Income;
+use App\Models\Notification;
 use App\Services\Integrations\CardsPro\CardsProOrderProcessor;
 
 /**
@@ -43,7 +45,7 @@ class PaymentWebhookHandler
 
         match ($event['status']) {
             'paid' => $this->handlePaid($income),
-            'failed' => $this->handleFailed($income),
+            'failed' => $this->cancelUnpaidOrder($income, IncomePaymentStatus::Failed, 'Оплата заказа не прошла (вебхук платёжной системы)'),
         };
     }
 
@@ -67,22 +69,40 @@ class PaymentWebhookHandler
     }
 
     /**
-     * Оплата не прошла. Для выпуска карты (`CardIssue`) заказ дальше не двигается —
-     * карта, заведённая ещё до оплаты (шаг 0), отменяется. Для пополнения уже активной
-     * карты (`CardTopup`) карта существует независимо от этого заказа — её статус не
-     * трогаем, отменять нечего.
+     * Отменяет неоплаченный заказ — общая функция для любой платёжной системы:
+     * вызывается и как из этого хендлера (вебхук с итогом 'failed'), и из
+     * {@see \App\Console\Commands\Payments\CancelExpiredPaymentOrders} (нет вебхука вовсе спустя
+     * 30 минут после создания заказа) — разница только в итоговом payment_status и тексте
+     * причины в истории статусов карты.
+     *
+     * Для выпуска карты (`CardIssue`) карта, заведённая ещё до оплаты (шаг 0), отменяется, и
+     * пользователю приходит уведомление CardIssueFailed. Для пополнения уже активной карты
+     * (`CardTopup`) карта существует независимо от этого заказа — её статус не трогаем, только
+     * отправляем TopupFailed.
      */
-    protected function handleFailed(Income $income): void
+    public function cancelUnpaidOrder(Income $income, IncomePaymentStatus $status, string $reason): void
     {
-        $income->update(['payment_status' => IncomePaymentStatus::Failed]);
-
-        if ($income->type !== IncomeType::CardIssue) {
+        if ($income->payment_status !== IncomePaymentStatus::Pending) {
             return;
         }
 
+        $income->update(['payment_status' => $status]);
         $card = $income->card;
 
-        if (! $card || $card->status === CardStatus::Cancelled) {
+        if (! $card) {
+            return;
+        }
+
+        if ($income->type === IncomeType::CardTopup) {
+            Notification::notify($card->user, NotificationEvent::TopupFailed, [
+                'last4' => $card->card_last4,
+                'amount' => NotificationEvent::money($income->amount, $income->currency),
+            ], '/cards/' . $card->uuid);
+
+            return;
+        }
+
+        if ($income->type !== IncomeType::CardIssue || $card->status === CardStatus::Cancelled) {
             return;
         }
 
@@ -90,9 +110,10 @@ class PaymentWebhookHandler
             'card_id' => $card->id,
             'old_status' => $card->status,
             'new_status' => CardStatus::Cancelled,
-            'reason' => 'Оплата заказа не прошла (вебхук платёжной системы)',
+            'reason' => $reason,
         ]);
 
         $card->update(['status' => CardStatus::Cancelled]);
+        Notification::notify($card->user, NotificationEvent::CardIssueFailed);
     }
 }

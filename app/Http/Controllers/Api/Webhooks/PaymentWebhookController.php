@@ -6,7 +6,7 @@ use App\Enums\MessageProcessingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\PaymentMethod;
 use App\Models\PaymentMethodMessage;
-use App\Services\Payments\PaymentGatewayContract;
+use App\Services\Payments\PaymentGatewayResolver;
 use App\Services\Payments\PaymentWebhookHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,32 +14,36 @@ use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
- * Принимает вебхуки платёжной системы о смене статуса оплаты (успешно/отказано)
- * для заказов выпуска карты и пополнения (OrderController), чтобы запустить
- * фактический выпуск/пополнение карты на стороне провайдера.
+ * Принимает вебхуки любой подключённой платёжной системы о смене статуса оплаты
+ * (успешно/отказано/ошибка) для заказов выпуска карты и пополнения (OrderController),
+ * чтобы запустить фактический выпуск/пополнение карты на стороне провайдера.
  *
- * URL для настройки в личном кабинете платёжной системы:
+ * Один и тот же маршрут обслуживает ЛЮБУЮ платёжную систему — конкретная интеграция
+ * определяется по $paymentMethod->gateway_code через {@see PaymentGatewayResolver::for()}: подключение
+ * новой платёжной системы не требует изменений этого контроллера — только новую реализацию
+ * PaymentGatewayContract и ветку в резолвере.
+ *
+ * URL для настройки в личном кабинете платёжной системы (Result/Webhook URL):
  *   POST {APP_URL}/api/webhooks/payment/{id способа оплаты из «Способы оплаты»}
- *   ?token={значение settlement_config.webhook_secret способа оплаты, если оно задано}
  *
- * Реальный провайдер пока не подключён — работает через {@see \App\Services\Payments\StubPaymentGateway}
- * (см. привязку в AppServiceProvider). Формат тела запроса — наш собственный
- * придуманный контракт для тестирования, см. докблок StubPaymentGateway. При
- * подключении реальной платёжной системы этот контроллер менять не нужно — только
- * реализацию PaymentGatewayContract.
+ * Тело вебхука читается через Request::all() вместо Request::json() нарочно, чтобы
+ * одинаково понимать и JSON (StubPaymentGateway), и form-urlencoded тело вебхука (CardLink и
+ * большинство других платёжных систем) без ветвления по Content-Type.
  *
  * Контроллер намеренно тонкий: проверяет подпись/токен, всегда сохраняет сырое тело в
  * PaymentMethodMessage и передаёт разбор события в PaymentWebhookHandler.
  */
 class PaymentWebhookController extends Controller
 {
-    public function __invoke(Request $request, PaymentMethod $paymentMethod, PaymentGatewayContract $gateway): JsonResponse
+    public function __invoke(Request $request, PaymentMethod $paymentMethod): JsonResponse
     {
+        $gateway = PaymentGatewayResolver::for($paymentMethod);
+
         if (! $gateway->verifyWebhookSignature($request, $paymentMethod)) {
             return response()->json(['error' => 'invalid_signature'], Response::HTTP_FORBIDDEN);
         }
 
-        $payload = (array) $request->json()->all();
+        $payload = $request->all();
         $event = $gateway->parseWebhookPayload($payload);
 
         $message = PaymentMethodMessage::create([
