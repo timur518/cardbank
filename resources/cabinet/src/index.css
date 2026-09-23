@@ -324,9 +324,14 @@ html::-webkit-scrollbar {
     /* saturate(100%) не добавляем — это identity-значение (никакого визуального эффекта), а Lightning CSS
      (минификатор @tailwindcss/vite) схлопывает его в saturate() и теряет при этом обязательный
      пробел-разделитель между filter-функциями (получается невалидный "blur(12px)saturate()",
-     десктопный браузер бракует такое значение целиком — блюр пропадает). */
-    backdrop-filter: blur(12px);
+     десктопный браузер бракует такое значение целиком — блюр пропадает).
+     Порядок важен: -webkit-backdrop-filter должен идти первым, а стандартный backdrop-filter —
+     вторым. Lightning CSS считает их дублирующими друг друга свойствами и оставляет в выводе
+     только последнее объявление — если -webkit- идёт после стандартного, то из сборки вырезается
+     ийменно стандартный backdrop-filter, и блюр пропадает в Firefox (он не знает -webkit-
+     префикс). */
     -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, .7);
     box-shadow: 0 10px 35px rgba(0, 0, 0, .07);
     transition: background .3s, box-shadow .3s;
@@ -760,14 +765,18 @@ html::-webkit-scrollbar {
     align-items: flex-end;
     justify-content: center;
     background: rgba(15, 15, 15, 0);
-    backdrop-filter: blur(0px);
-    -webkit-backdrop-filter: blur(0px);
+    /* blur(0px), а не none/0 — чтобы transition ниже был плавным (из none блюр не анимируется).
+       Итого 0.01px вместо ровного 0px — Lightning CSS сворацивает точное blur(0px) в невалидное
+       пустое blur() (без аргумента), что браузер отвергает целиком ("Invalid property value") —
+       ничтожно-чальное 0.01px не попадает в эту оптиизацию. */
+    -webkit-backdrop-filter: blur(0.01px);
+    backdrop-filter: blur(0.01px);
     transition: background .28s ease, backdrop-filter .28s ease, -webkit-backdrop-filter .28s ease;
 }
 .modal-overlay.is-visible {
     background: rgba(15, 15, 15, .45);
-    backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
 }
 
 .modal-sheet {
@@ -1009,9 +1018,14 @@ html::-webkit-scrollbar {
     border-radius: 999px;
     background: rgb(0 0 0 / 60%);
     color: #d0c1ad;
-    /* Без saturate(100%) — см. комментарий к .nav-pill выше: то же самое исчезало блюр на десктопе. */
-    backdrop-filter: blur(12px);
+    /* Без saturate(100%) — см. комментарий к .nav-pill выше: то же самое исчезало блюр на десктопе.
+       Стандартное свойство backdrop-filter должно идти после -webkit-backdrop-filter, иначе
+       Lightning CSS (минификатор @tailwindcss/vite) считает их дублирующими друг друга
+       свойствами и оставляет только то, что объявлено последним — при обратном порядке
+       вырезало бы стандартное свойство, и блюр не работал бы в Firefox (он не знает
+       -webkit-backdrop-filter). */
     -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, .7);
     box-shadow: 0 10px 35px rgba(0, 0, 0, .1);
 }
