@@ -23,7 +23,7 @@ interface RequisiteRowProps {
 
 function RequisiteRow({ label, value, copyValue, action }: RequisiteRowProps) {
     return (
-        <div className="flex items-center justify-between gap-4 border-t border-border px-1 py-4 first:border-t-0">
+        <div className="flex items-center justify-between gap-4 border-t border-border px-1 py-3 first:border-t-0">
             <div>
                 <p className="text-xs font-semibold text-muted">{label}</p>
                 <p className="mt-1 font-mono text-base font-semibold text-ink">{value}</p>

@@ -98,7 +98,7 @@ export function CardDetailSkeleton() {
                     </div>
                 </div>
                 {Array.from({ length: 4 }).map((_, index) => (
-                    <div key={index} className="flex items-center justify-between gap-4 border-t border-border px-1 py-4 first:border-t-0">
+                    <div key={index} className="flex items-center justify-between gap-4 border-t border-border px-1 py-3 first:border-t-0">
                         <div className="flex flex-col gap-2">
                             <Skeleton className="h-3 w-24" />
                             <Skeleton className="h-4 w-32" />
