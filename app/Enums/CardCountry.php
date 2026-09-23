@@ -7,7 +7,8 @@ use Filament\Support\Contracts\HasLabel;
 /**
  * Страна выпуска карты (CardProduct.card_country) — используется в админке (Select
  * вместо свободного текста, чтобы название страны и флаг были согласованы) и в API
- * карточных продуктов (флаг эмодзи + русское название для тултипа в ЛК).
+ * карточных продуктов (URL круглого SVG-флага + русское название для тултипа в ЛК).
+ * SVG-файлы лежат в public/assets/images — те же статичные ассеты лендинга.
  */
 enum CardCountry: string implements HasLabel
 {
@@ -24,12 +25,12 @@ enum CardCountry: string implements HasLabel
         };
     }
 
-    public function flag(): string
+    public function flagUrl(): string
     {
-        return match ($this) {
-            self::Singapore => '🇸🇬',
-            self::Usa => '🇺🇸',
-            self::HongKong => '🇭🇰',
-        };
+        return asset('assets/images/' . match ($this) {
+            self::Singapore => 'singapore.svg',
+            self::Usa => 'usa.svg',
+            self::HongKong => 'honkong.svg',
+        });
     }
 }

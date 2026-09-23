@@ -32,10 +32,13 @@ export function CardVisual({ card, showCountryFlag = false }: CardVisualProps) {
                     </span>
                     <p className="text-sm font-semibold">{card.card_product.name}</p>
                     <div className="ml-auto flex shrink-0 items-center gap-1.5">
-                        {showCountryFlag && card.card_product.card_country_flag && (
-                            <span className="text-sm leading-none" title={card.card_product.card_country_label ?? undefined}>
-                                {card.card_product.card_country_flag}
-                            </span>
+                        {showCountryFlag && card.card_product.card_country_flag_url && (
+                            <img
+                                src={card.card_product.card_country_flag_url}
+                                alt={card.card_product.card_country_label ?? ''}
+                                title={card.card_product.card_country_label ?? undefined}
+                                className="h-4 w-4 shrink-0 rounded-full object-cover"
+                            />
                         )}
                         <NetworkBadge network={card.card_product.network} tone="mono" />
                     </div>

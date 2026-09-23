@@ -48,10 +48,13 @@ export function CardProductChoice({ product, onSelect }: CardProductChoiceProps)
                     <h3 className="text-base font-extrabold tracking-tight text-ink">Карта {product.name}</h3>
                     <span className="apply-card-badge">{product.currency}</span>
                     <NetworkBadge network={product.network} />
-                    {product.card_country_flag && (
-                        <span className="text-sm leading-none" title={product.card_country_label ?? undefined}>
-                            {product.card_country_flag}
-                        </span>
+                    {product.card_country_flag_url && (
+                        <img
+                            src={product.card_country_flag_url}
+                            alt={product.card_country_label ?? ''}
+                            title={product.card_country_label ?? undefined}
+                            className="h-4 w-4 shrink-0 rounded-full object-cover"
+                        />
                     )}
                     {product.coming_soon && <span className="apply-card-badge">Скоро</span>}
                 </div>

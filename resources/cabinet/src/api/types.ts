@@ -60,7 +60,7 @@ export interface CardProductSummary {
     network: string | null;
     card_country: string | null;
     card_country_label: string | null;
-    card_country_flag: string | null;
+    card_country_flag_url: string | null;
     topup_min_amount?: string;
     topup_max_amount?: string;
 }
@@ -175,7 +175,7 @@ export interface CardProduct {
     network: string | null;
     card_country: string | null;
     card_country_label: string | null;
-    card_country_flag: string | null;
+    card_country_flag_url: string | null;
     restricted_merchants: string | null;
     full_terms: string | null;
     price_rub: string;

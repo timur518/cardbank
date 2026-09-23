@@ -24,7 +24,7 @@ class CardProductResource extends JsonResource
             'network' => $this->network?->value,
             'card_country' => $this->card_country?->value,
             'card_country_label' => $this->card_country?->getLabel(),
-            'card_country_flag' => $this->card_country?->flag(),
+            'card_country_flag_url' => $this->card_country?->flagUrl(),
             'restricted_merchants' => $this->restricted_merchants,
             'full_terms' => $this->full_terms,
             'price_rub' => number_format((float) $this->price_rub, 2, '.', ''),

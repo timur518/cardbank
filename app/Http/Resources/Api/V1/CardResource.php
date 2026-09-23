@@ -23,7 +23,7 @@ class CardResource extends JsonResource
                 'network' => $this->cardProduct->network?->value,
                 'card_country' => $this->cardProduct->card_country?->value,
                 'card_country_label' => $this->cardProduct->card_country?->getLabel(),
-                'card_country_flag' => $this->cardProduct->card_country?->flag(),
+                'card_country_flag_url' => $this->cardProduct->card_country?->flagUrl(),
             ],
             'status' => $this->status->value,
             'currency' => $this->currency,
