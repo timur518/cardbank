@@ -131,6 +131,10 @@ export interface CardTransaction {
     card_id: string;
     type: CardTransactionType;
     amount: string;
+    // Только для type='decline' и только если CardsPro прислал комиссию за отклонённую операцию —
+    // единственная часть amount такой записи, которая реально списывается с карты
+    // (см. utils/format.ts sumSuccessfulPurchases()).
+    decline_fee: string | null;
     currency: string;
     merchant: string | null;
     merchant_info: TransactionMerchantInfo | null;

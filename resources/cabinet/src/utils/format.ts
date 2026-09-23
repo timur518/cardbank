@@ -51,15 +51,25 @@ export function startOfMonth(): string {
  * - purchase со status=success (списанные покупки) И status=pending (авторизационный
  *   холд у CardsPro ещё в обработке, но уже удерживает средства на карте — неучёт таких
  *   операций занижал счётчик на сумму всех висящих холдов);
- * - decline (всегда status=declined) — сама покупка отклонена и денег не списала, но
- *   CardsPro может удержать комиссию за неуспешную попытку — она приходит как `amount` этой
- *   же decline-записи (CardsProWebhookHandler::handleTransaction()), и без её учёта счётчик
- *   занижал реальные расходы на карте.
+ * - decline — сама покупка отклонена и её сумма (`amount`) денег с карты не списывает; реально
+ *   списывается только комиссия за неуспешную попытку, если CardsPro её прислал — она приходит
+ *   отдельным полем `decline_fee` (null, если комиссии не было). Берём именно её, а не `amount`
+ *   (в `amount` decline-записи зашит ещё и сумма самой отклонённой покупки, которая не списана).
  */
-export function sumSuccessfulPurchases(transactions: { type: string; status: string; amount: string | number }[]): number {
-    return transactions
-        .filter((tx) => tx.type === 'decline' || (tx.type === 'purchase' && (tx.status === 'success' || tx.status === 'pending')))
-        .reduce((sum, tx) => sum + Math.abs(Number(tx.amount)), 0);
+export function sumSuccessfulPurchases(
+    transactions: { type: string; status: string; amount: string | number; decline_fee?: string | number | null }[],
+): number {
+    return transactions.reduce((sum, tx) => {
+        if (tx.type === 'decline') {
+            return sum + Math.abs(Number(tx.decline_fee ?? 0));
+        }
+
+        if (tx.type === 'purchase' && (tx.status === 'success' || tx.status === 'pending')) {
+            return sum + Math.abs(Number(tx.amount));
+        }
+
+        return sum;
+    }, 0);
 }
 
 /** "2026-09-10T12:00:00Z" -> "10.09.2026, 15:00". */
