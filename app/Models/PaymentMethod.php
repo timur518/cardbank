@@ -25,10 +25,6 @@ class PaymentMethod extends Model
         'settlement_config',
     ];
 
-    protected $hidden = [
-        'settlement_config',
-    ];
-
     protected function casts(): array
     {
         return [
