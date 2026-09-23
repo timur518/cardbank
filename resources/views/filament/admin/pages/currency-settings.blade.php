@@ -68,25 +68,26 @@
     <x-filament::section heading="Как маржа съедается по шагам" style="margin-top: 24px;">
         <div style="display: flex; align-items: center; gap: 20px; font-size: 12px; margin-bottom: 12px;">
             <span style="display: inline-flex; align-items: center; gap: 6px;">
-                <span style="display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: #ef4444;"></span>
-                Будет съедено дальше (комиссии и себестоимость)
+                <span style="display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: #22c55e;"></span>
+                Поступление (остаток)
             </span>
             <span style="display: inline-flex; align-items: center; gap: 6px;">
-                <span style="display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: #22c55e;"></span>
-                Чистая прибыль
+                <span style="display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: #ef4444;"></span>
+                Расходы (уже списано)
             </span>
         </div>
 
         <svg viewBox="0 0 {{ $calculatorChart['width'] }} {{ $calculatorChart['height'] }}" style="width: 100%; height: 240px; display: block;">
-            <polygon points="{{ $calculatorChart['profitAreaPoints'] }}" fill="#22c55e" fill-opacity="0.35" />
-            <polygon points="{{ $calculatorChart['expenseAreaPoints'] }}" fill="#ef4444" fill-opacity="0.35" />
-
-            <line x1="{{ $calculatorChart['paddingX'] }}" y1="{{ $calculatorChart['profitY'] }}" x2="{{ $calculatorChart['width'] - $calculatorChart['paddingX'] }}" y2="{{ $calculatorChart['profitY'] }}" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="4 4" />
-
-            <polyline points="{{ collect($calculatorChart['points'])->map(fn ($p) => "{$p['x']},{$p['y']}")->implode(' ') }}" fill="none" stroke="#111827" stroke-width="2.5" />
+            <polygon points="{{ $calculatorChart['incomeAreaPoints'] }}" fill="#22c55e" fill-opacity="0.55" />
+            <polygon points="{{ $calculatorChart['expenseAreaPoints'] }}" fill="#ef4444" fill-opacity="0.55" />
 
             @foreach ($calculatorChart['points'] as $point)
+                <line x1="{{ $point['x'] }}" y1="{{ $calculatorChart['paddingY'] }}" x2="{{ $point['x'] }}" y2="{{ $calculatorChart['height'] - $calculatorChart['paddingY'] }}" stroke="#ffffff" stroke-width="1" stroke-opacity="0.6" />
                 <circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="4" fill="#111827" />
+
+                @if ($point['stepCostRub'] > 0)
+                    <text x="{{ $point['x'] }}" y="{{ $calculatorChart['paddingY'] + 10 }}" text-anchor="middle" font-size="10" fill="#7f1d1d">-{{ number_format($point['stepCostRub'], 0, ',', ' ') }}₽</text>
+                @endif
             @endforeach
         </svg>
 

@@ -260,23 +260,24 @@ class CurrencySettings extends Page implements HasForms
     }
 
     /**
-     * Данные для графика «как маржа съедается по шагам»: одна линия (остаток в рублях)
-     * по всем шагам calculatorRows() — от полного поступления (шаг 0) до итоговой чистой прибыли
-     * (последний шаг). На её основе выделяются две заливки: красная — область между
-     * текущим остатком и уровнем итоговой прибыли — это то, что ещё будет съедено дальнейшими
-     * комиссиями/себестоимостью (к концу сужается до нуля); зелёная — постоянная полоса от уровня
-     * итоговой прибыли до нуля — это уже заработанная, ничем не рискующая часть денег.
+     * Данные для графика «как маржа съедается по шагам»: столбик-диаграмма (staircase),
+     * где общая высота всегда равна полному поступлению (шаг 0, receivedRub) и делится на две
+     * заливки: зелёная (остаток после шага, снизу) и красная (уже съеденная сумма = receivedRub −
+     * остаток, сверху). У каждой точки граница между заливками держится полкой до следующего
+     * шага, а там резко прыгает вниз на величину израсходованного в этот шаг — такие ступени
+     * наглядно показывают, где расход большой (большой скачок), а где маленький.
+     * Сначала (шаг 0, Поступление) зелёная занимает весь график, красная — ноль; к концу
+     * (шаг 5, Осталось) наоборот — красная занимает большую часть, а зелёная остаётся тонкой
+     * полоской чистой прибыли.
      *
      * @return array{
      *     width: int,
      *     height: int,
      *     paddingX: int,
      *     paddingY: int,
-     *     profitY: float,
-     *     baselineY: float,
-     *     points: array<int, array{x: float, y: float, rub: float, usd: float, label: string}>,
+     *     points: array<int, array{x: float, y: float, remainderRub: float, stepCostRub: float, label: string}>,
+     *     incomeAreaPoints: string,
      *     expenseAreaPoints: string,
-     *     profitAreaPoints: string,
      * }
      */
     public function calculatorChartSvg(): array
@@ -290,20 +291,11 @@ class CurrencySettings extends Page implements HasForms
         $paddingY = 16;
         $innerHeight = $height - 2 * $paddingY;
 
-        $rubValues = array_map(fn (array $row): float => $row['remainderRub'], $rows);
-        $usdValues = array_map(fn (array $row): float => $row['remainderUsd'], $rows);
+        $receivedRub = $rows[0]['remainderRub'] ?? 0.0;
+        $domainMax = $receivedRub > 0 ? $receivedRub : 1.0;
 
-        // Диапазон обязательно включает 0, чтобы на графике была видна истинная нулевая
-        // отметка (базовая линия зелёной полосы прибыли), даже если все значения положительны.
-        $domainMax = max(max($rubValues), 0.0);
-        $domainMin = min(min($rubValues), 0.0);
-        $range = $domainMax - $domainMin;
-
-        if ($range <= 0.0001) {
-            $range = 1.0;
-        }
-
-        $y = fn (float $value): float => round($paddingY + ($domainMax - $value) / $range * $innerHeight, 1);
+        // большее значение → выше на графике (меньше y).
+        $y = fn (float $value): float => round($paddingY + (1 - max(0.0, min($value, $domainMax)) / $domainMax) * $innerHeight, 1);
 
         $points = [];
 
@@ -312,42 +304,47 @@ class CurrencySettings extends Page implements HasForms
             $points[] = [
                 'x' => $x,
                 'y' => $y($row['remainderRub']),
-                'rub' => $row['remainderRub'],
-                'usd' => $row['remainderUsd'],
+                'remainderRub' => $row['remainderRub'],
+                'stepCostRub' => $i === 0 ? 0.0 : $row['rub'],
                 'label' => $row['label'],
             ];
         }
 
-        $profitRub = end($rubValues) ?: 0.0;
-        $profitY = $y($profitRub);
-        $baselineY = $y(0.0);
+        // Ступенчатая граница между заливками: от точки i горизонтально до x_{i+1}, потом
+        // вертикальный скачок до y_{i+1} ровно в точке x_{i+1} — величина скачка наглядно равна
+        // stepCostRub этой точки.
+        $staircase = [];
 
-        // Красная зона «ещё съедит дальнейшие шаги»: сверху — кривая остатка, снизу — горизонтальная
-        // уровня итоговой прибыли — к концу стягивается в точку, так как кривая в конце совпадает с этой уровнём.
-        $forward = collect($points)->map(fn (array $p): string => "{$p['x']},{$p['y']}")->implode(' ');
-        $backward = collect($points)->reverse()->map(fn (array $p): string => "{$p['x']},{$profitY}")->implode(' ');
+        foreach ($points as $i => $point) {
+            $staircase[] = ['x' => $point['x'], 'y' => $point['y']];
 
-        // Зелёная зона «заработанная прибыль»: постоянная горизонтальная полоса от уровня итоговой
-        // прибыли до истинного нуля на всю ширину графика.
-        $bandTopY = min($profitY, $baselineY);
-        $bandBottomY = max($profitY, $baselineY);
-        $profitAreaPoints = implode(' ', [
-            $paddingX . ',' . $bandTopY,
-            ($width - $paddingX) . ',' . $bandTopY,
-            ($width - $paddingX) . ',' . $bandBottomY,
-            $paddingX . ',' . $bandBottomY,
-        ]);
+            if ($i < $count - 1) {
+                $staircase[] = ['x' => $points[$i + 1]['x'], 'y' => $point['y']];
+            }
+        }
+
+        $topLeft = $paddingX . ',' . $paddingY;
+        $topRight = ($width - $paddingX) . ',' . $paddingY;
+        $bottomLeft = $paddingX . ',' . ($height - $paddingY);
+        $bottomRight = ($width - $paddingX) . ',' . ($height - $paddingY);
+
+        $staircaseForward = collect($staircase)->map(fn (array $p): string => "{$p['x']},{$p['y']}")->implode(' ');
+        $staircaseBackward = collect($staircase)->reverse()->map(fn (array $p): string => "{$p['x']},{$p['y']}")->implode(' ');
+
+        // Зелёная зона «Поступление» (остаток): от ступенчатой границы вниз, до низа графика.
+        $incomeAreaPoints = $staircaseForward . ' ' . $bottomRight . ' ' . $bottomLeft;
+
+        // Красная зона «Расходы» (уже израсходовано): от верха графика до ступенчатой границы.
+        $expenseAreaPoints = $topLeft . ' ' . $topRight . ' ' . $staircaseBackward;
 
         return [
             'width' => $width,
             'height' => $height,
             'paddingX' => $paddingX,
             'paddingY' => $paddingY,
-            'profitY' => $profitY,
-            'baselineY' => $baselineY,
             'points' => $points,
-            'expenseAreaPoints' => $forward . ' ' . $backward,
-            'profitAreaPoints' => $profitAreaPoints,
+            'incomeAreaPoints' => $incomeAreaPoints,
+            'expenseAreaPoints' => $expenseAreaPoints,
         ];
     }
 }
