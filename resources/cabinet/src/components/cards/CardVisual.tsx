@@ -37,7 +37,11 @@ export function CardVisual({ card, showCountryFlag = false, compact = false }: C
 
             <div className={`relative flex h-full flex-col justify-between ${compact ? 'gap-1' : ''}`}>
                 <div className="flex items-center gap-2">
-                    <p className={`font-semibold ${compact ? 'text-xs leading-tight' : 'text-sm'}`}>{card.card_product.name}</p>
+                    <p
+                        className={`font-semibold ${compact ? 'min-w-0 flex-1 truncate text-xs leading-tight' : 'text-sm'}`}
+                    >
+                        {card.card_product.name}
+                    </p>
                     <div className="ml-auto flex shrink-0 items-center gap-1.5">
                         {showCountryFlag && card.card_product.card_country_flag_url && (
                             <img
