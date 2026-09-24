@@ -175,6 +175,25 @@ export function NewCardOrderPage() {
 
                         <form onSubmit={handleSubmit}>
                             <div className="apply-field">
+                                <label>Сумма для пополнения карты</label>
+                                <div className="apply-amount-input-group">
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="50"
+                                        value={amount}
+                                        onChange={(event) => setAmount(event.target.value)}
+                                    />
+                                </div>
+                                {selectedProduct && (
+                                    <p className="apply-hint">
+                                        Пополнение: от ${selectedProduct.topup_min_amount ?? '10'} до $
+                                        {selectedProduct.topup_max_amount ?? '—'}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="apply-field">
                                 <label>Способ оплаты</label>
                                 <div className="apply-pay-list">
                                     {methods.map((method) => (
@@ -188,27 +207,7 @@ export function NewCardOrderPage() {
                                 </div>
                             </div>
 
-                            <div className="apply-field">
-                                <label>Сумма для пополнения карты</label>
-                                <div className="apply-amount-row">
-                                    <div className="apply-amount-input-group">
-                                        <input
-                                            type="text"
-                                            inputMode="numeric"
-                                            placeholder="50"
-                                            value={amount}
-                                            onChange={(event) => setAmount(event.target.value)}
-                                        />
-                                    </div>
-                                    {selectedProduct && (
-                                        <p className="apply-hint apply-amount-hint">
-                                            Пополнение: от ${selectedProduct.topup_min_amount ?? '10'} до $
-                                            {selectedProduct.topup_max_amount ?? '—'}
-                                        </p>
-                                    )}
-                                    <p className="apply-amount-total">К оплате: {formatRub(totalRub)}</p>
-                                </div>
-                            </div>
+                            <p className="apply-amount-total">К оплате: {formatRub(totalRub)}</p>
 
                             {submitError && <p className="form-error-banner mt-5">{submitError}</p>}
 

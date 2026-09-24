@@ -718,18 +718,9 @@ html::-webkit-scrollbar {
 .apply-pay-name { display: block; font-weight: 700; font-size: .92rem; }
 .apply-pay-desc { display: block; margin-top: 2px; font-size: .78rem; color: var(--color-muted); }
 
-.apply-amount-row { display: flex; flex-direction: column; gap: 10px; }
-.apply-amount-input-group { display: flex; align-items: stretch; order: 0; }
-.apply-amount-hint { order: 1; margin: 0; }
-.apply-amount-total { order: 2; margin: 0; display: flex; align-items: center; font-weight: 800; color: #101010; font-size: .95rem; }
+.apply-amount-input-group { display: flex; align-items: stretch; }
+.apply-amount-total { margin: 14px 0 0; display: flex; align-items: center; font-weight: 800; color: #101010; font-size: .95rem; }
 .apply-field .apply-amount-input-group input { border-radius: 14px; width: 100%; }
-
-@media (min-width: 640px) {
-    .apply-amount-row { flex-direction: row; flex-wrap: wrap; align-items: stretch; gap: 14px; }
-    .apply-amount-input-group { flex: 1 1 50%; min-width: 0; order: 0; }
-    .apply-amount-total { flex: 1 1 50%; padding-left: 4px; order: 1; }
-    .apply-amount-hint { order: 2; flex-basis: 100%; }
-}
 
 /*
  * Модальное окно с адаптивным поведением под платформу (компонент Modal) — на
