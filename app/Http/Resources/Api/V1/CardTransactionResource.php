@@ -24,6 +24,13 @@ class CardTransactionResource extends JsonResource
             // Клиенту отдаём uuid транзакции и карты, а не сквозные id в базе — аналогично CardResource/UserResource.
             'id' => $this->uuid,
             'card_id' => $this->card->uuid,
+            // Краткая карточка карты, по которой прошла операция — нужна в попапе детализации на
+            // сводной странице «Операции» (там одной лентой смешаны транзакции разных карт клиента).
+            'card' => [
+                'id' => $this->card->uuid,
+                'last4' => $this->card->card_last4,
+                'product_name' => $this->card->cardProduct->name,
+            ],
             'type' => $this->type->value,
             'amount' => number_format((float) $this->amount, 2, '.', ''),
             // Только для type=decline и только если CardsPro прислал комиссию в payload.fee (CardsProWebhookHandler::handleTransaction())
@@ -31,6 +38,18 @@ class CardTransactionResource extends JsonResource
             'decline_fee' => $this->type === CardTransactionType::Decline && $this->commission_amount !== null
                 ? number_format((float) $this->commission_amount, 2, '.', '')
                 : null,
+            // Комиссия провайдера за операцию — реальная часть `amount`, списанная с карты сверх
+            // стоимости у эмитента (см. докблок модели). Показывается только там, где действительно
+            // уменьшает баланс карты (purchase/decline) — для topup комиссия провайдера уже учтена и
+            // показана клиенту отдельно на шаге оплаты (см. OrderController::convertTopup()), здесь
+            // её повторный показ только запутает (деньги за неё с карты не списываются).
+            'commission_amount' => in_array($this->type, [CardTransactionType::Purchase, CardTransactionType::Decline], true)
+                && $this->commission_amount !== null
+                ? number_format((float) $this->commission_amount, 2, '.', '')
+                : null,
+            // Причина отказа от провайдера (например, недостаточно средств, заблокирован мерчант) —
+            // только для status=declined, иначе null.
+            'decline_reason' => $this->decline_reason,
             'currency' => $this->currency,
             // Сырое описание операции от провайдера как есть (например "AUGMENT CODE
             // PALO ALTO USA") — используется в ЛК как запасной вариант, если мерчант

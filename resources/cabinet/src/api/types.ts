@@ -124,17 +124,30 @@ export interface TransactionMerchantInfo {
     color: string | null;
 }
 
+// Краткая карточка карты, по которой прошла операция (TransactionDetailModal, сводная лента операций по всем картам).
+export interface TransactionCardInfo {
+    id: string;
+    last4: string | null;
+    product_name: string;
+}
+
 // Транзакции по карте
 export interface CardTransaction {
     // uuid, а не сквозные id в базе — аналогично Card.id.
     id: string;
     card_id: string;
+    card: TransactionCardInfo;
     type: CardTransactionType;
     amount: string;
     // Только для type='decline' и только если CardsPro прислал комиссию за отклонённую операцию —
     // единственная часть amount такой записи, которая реально списывается с карты
     // (см. utils/format.ts sumSuccessfulPurchases()).
     decline_fee: string | null;
+    // Комиссия провайдера за операцию — только для purchase/decline (часть amount, реально списанная с карты),
+    // иначе null. Для попапа детализации транзакции (TransactionDetailModal).
+    commission_amount: string | null;
+    // Только для status='declined', иначе null.
+    decline_reason: string | null;
     currency: string;
     merchant: string | null;
     merchant_info: TransactionMerchantInfo | null;

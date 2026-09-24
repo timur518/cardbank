@@ -41,7 +41,7 @@ class TransactionController extends Controller
 
     private function paginate(Builder|\Illuminate\Database\Eloquent\Relations\HasMany $query, Request $request): AnonymousResourceCollection
     {
-        $query->with(['merchantRecord', 'card']);
+        $query->with(['merchantRecord', 'card.cardProduct']);
 
         // ?type=purchase или ?type[]=purchase&type[]=decline — например, для счётчика «Потрачено в
         // этом месяце» в ЛК нужны сразу и purchase, и decline (комиссия за отклонённую операцию).

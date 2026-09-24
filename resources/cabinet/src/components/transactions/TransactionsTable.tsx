@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import type { CardTransaction } from '../../api/types';
-import { ClockIcon, DeclineIcon } from '../common/Icons';
+import { ClockIcon } from '../common/Icons';
 import { formatMoney } from '../../utils/format';
 import { groupByDate, formatTime } from '../../utils/dateGroups';
-import { TRANSACTION_TYPE_ICONS, TRANSACTION_TYPE_LABELS } from '../../utils/labels';
+import { TRANSACTION_TYPE_LABELS } from '../../utils/labels';
+import { TransactionDetailModal } from './TransactionDetailModal';
+import { TxIcon } from './TxIcon';
 
 interface TransactionsTableProps {
     transactions: CardTransaction[];
@@ -10,8 +13,11 @@ interface TransactionsTableProps {
 }
 
 // Список операций по картам — переиспользуется и в блоке «последние операции» на
-// главной странице, и на полной странице «Операции», и во вкладке карты.
+// главной странице, и на полной странице «Операции», и во вкладке карты. Каждая
+// строка кликабельна — открывает попап детализации (TransactionDetailModal).
 export function TransactionsTable({ transactions, emptyMessage = 'Операций пока нет.' }: TransactionsTableProps) {
+    const [selected, setSelected] = useState<CardTransaction | null>(null);
+
     if (transactions.length === 0) {
         return <p className="py-8 text-center text-sm text-muted">{emptyMessage}</p>;
     }
@@ -24,16 +30,17 @@ export function TransactionsTable({ transactions, emptyMessage = 'Операци
                 <div key={group.title} className="tx-group">
                     <div className="tx-group-title">{group.title}</div>
                     {group.items.map((tx) => (
-                        <TransactionRow key={tx.id} tx={tx} />
+                        <TransactionRow key={tx.id} tx={tx} onSelect={() => setSelected(tx)} />
                     ))}
                 </div>
             ))}
+
+            {selected && <TransactionDetailModal tx={selected} onClose={() => setSelected(null)} />}
         </div>
     );
 }
 
-function TransactionRow({ tx }: { tx: CardTransaction }) {
-    const Icon = TRANSACTION_TYPE_ICONS[tx.type];
+function TransactionRow({ tx, onSelect }: { tx: CardTransaction; onSelect: () => void }) {
     const typeLabel = TRANSACTION_TYPE_LABELS[tx.type];
     const isPending = tx.status === 'pending';
     // Отклонённый платёж/пополнение (например, провайдер отклонил из-за
@@ -46,21 +53,8 @@ function TransactionRow({ tx }: { tx: CardTransaction }) {
     const title = merchantName ?? typeLabel;
 
     return (
-        <div className="tx-row">
-            <span
-                className={`tx-icon${isDeclined ? ' tx-icon-danger' : ''}`}
-                style={merchant ? { background: merchant.color ?? undefined, color: '#fff' } : undefined}
-            >
-                {isDeclined ? (
-                    <DeclineIcon />
-                ) : merchant?.logo_svg ? (
-                    <svg viewBox="0 0 24 24" fill="currentColor" dangerouslySetInnerHTML={{ __html: merchant.logo_svg }} />
-                ) : merchant ? (
-                    <span className="tx-icon-letter">{merchant.name.charAt(0).toUpperCase()}</span>
-                ) : (
-                    <Icon />
-                )}
-            </span>
+        <button type="button" className="tx-row" onClick={onSelect}>
+            <TxIcon tx={tx} />
             <span className="tx-info">
                 <span className="tx-title">{title}</span>
                 <span className="tx-subtitle">
@@ -79,6 +73,6 @@ function TransactionRow({ tx }: { tx: CardTransaction }) {
                     {formatMoney(tx.amount, tx.currency)}
                 </span>
             </span>
-        </div>
+        </button>
     );
 }
