@@ -57,7 +57,7 @@ export function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen flex-col items-center px-4 py-10">
+        <div className="flex min-h-screen flex-col items-center bg-white px-4 py-10">
             <div className="mb-10">
                 <BrandLogo />
             </div>
