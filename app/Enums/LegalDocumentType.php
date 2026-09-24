@@ -13,6 +13,7 @@ enum LegalDocumentType: string implements HasLabel
     case KycAmlPolicy = 'kyc_aml_policy';
     case PersonalDataConsent = 'personal_data_consent';
     case MessagingConsent = 'messaging_consent';
+    case CookiePolicy = 'cookie_policy';
 
     public function getLabel(): string
     {
@@ -24,6 +25,7 @@ enum LegalDocumentType: string implements HasLabel
             self::KycAmlPolicy => 'Политика KYC/AML',
             self::PersonalDataConsent => 'Согласие на обработку персональных данных',
             self::MessagingConsent => 'Согласие на получение сообщений',
+            self::CookiePolicy => 'Политика использования cookie',
         };
     }
 }

@@ -29,6 +29,7 @@
                     <li><a href="{{ route('legal.kyc-aml') }}">Политика KYC/AML</a></li>
                     <li><a href="{{ route('legal.personal-data-consent') }}">Согласие на обработку персональных данных</a></li>
                     <li><a href="{{ route('legal.messaging-consent') }}">Согласие на получение сообщений</a></li>
+                    <li><a href="{{ route('legal.cookie-policy') }}">Политика использования cookie</a></li>
                     <li><a href="#">Тарифы</a></li>
                 </ul>
             </div>

@@ -37,6 +37,7 @@ foreach ([
     'kyc-aml' => [LegalDocumentType::KycAmlPolicy, 'Политика KYC/AML', 'legal.kyc-aml'],
     'personal-data-consent' => [LegalDocumentType::PersonalDataConsent, 'Согласие на обработку персональных данных', 'legal.personal-data-consent'],
     'messaging-consent' => [LegalDocumentType::MessagingConsent, 'Согласие на получение сообщений', 'legal.messaging-consent'],
+    'cookie-policy' => [LegalDocumentType::CookiePolicy, 'Политика использования cookie', 'legal.cookie-policy'],
 ] as $slug => [$type, $title, $routeName]) {
     Route::get("/{$slug}", function () use ($type, $title) {
         $document = LegalDocument::query()
