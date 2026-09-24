@@ -32,8 +32,6 @@ class CardsTable
                 TextColumn::make('id')
                     ->label('ID')
                     ->sortable(),
-                TextColumn::make('provider.name')
-                    ->label('Провайдер'),
                 TextColumn::make('user.email')
                     ->label('Владелец')
                     ->description(fn (Card $record) => trim("{$record->user?->last_name} {$record->user?->first_name}"))
