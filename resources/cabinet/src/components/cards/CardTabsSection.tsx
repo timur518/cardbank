@@ -152,6 +152,53 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                     <div className="flex flex-col gap-6">
                         <div className="flex flex-col gap-3">
                             <h2 className="mb-1 text-sm font-extrabold uppercase tracking-wide text-muted">
+                                Страна карты
+                            </h2>
+                            <div className="flex items-center justify-between border-t border-border py-3 first:border-t-0">
+                                <span className="text-sm text-muted">Страна выпуска</span>
+                                <span className="flex items-center gap-2 text-sm font-semibold text-ink">
+                                    {card.card_product.card_country_flag_url && (
+                                        <img
+                                            src={card.card_product.card_country_flag_url}
+                                            alt=""
+                                            className="h-4 w-4 rounded-full object-cover"
+                                        />
+                                    )}
+                                    {card.card_product.card_country_label ?? '—'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3 border-t border-border pt-5">
+                            <h2 className="mb-1 text-sm font-extrabold uppercase tracking-wide text-muted">Комиссии</h2>
+                            <div className="flex items-center justify-between border-t border-border py-3 first:border-t-0">
+                                <span className="text-sm text-muted">Успешная оплата</span>
+                                <span className="text-sm font-semibold text-ink">
+                                    {card.card_product.successful_payment_fee_usd ? `$${card.card_product.successful_payment_fee_usd}` : '—'}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-border py-3">
+                                <span className="text-sm text-muted">Неуспешная оплата</span>
+                                <span className="text-sm font-semibold text-ink">
+                                    {card.card_product.decline_fee_usd ? `$${card.card_product.decline_fee_usd}` : '—'}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-border py-3">
+                                <span className="text-sm text-muted">Оплата в другой валюте</span>
+                                <span className="text-sm font-semibold text-ink">
+                                    {card.card_product.non_usd_payment_fee || '—'}
+                                </span>
+                            </div>
+                            <div className="flex items-center justify-between border-t border-border py-3">
+                                <span className="text-sm text-muted">Попытка оплаты запрещённой площадки</span>
+                                <span className="text-sm font-semibold text-ink">
+                                    {card.card_product.risk_operation_fee_usd ? `$${card.card_product.risk_operation_fee_usd}` : '—'}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-3 border-t border-border pt-5">
+                            <h2 className="mb-1 text-sm font-extrabold uppercase tracking-wide text-muted">
                                 Лимиты пополнения
                             </h2>
                             <div className="flex items-center justify-between border-t border-border py-3 first:border-t-0">

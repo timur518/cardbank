@@ -63,6 +63,10 @@ export interface CardProductSummary {
     card_country_flag_url: string | null;
     topup_min_amount?: string;
     topup_max_amount?: string;
+    successful_payment_fee_usd?: string | null;
+    decline_fee_usd?: string | null;
+    non_usd_payment_fee?: string | null;
+    risk_operation_fee_usd?: string | null;
     restricted_merchants?: string | null;
     full_terms?: string | null;
 }

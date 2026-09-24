@@ -16,10 +16,20 @@ class CardDetailResource extends CardResource
     {
         $parent = parent::toArray($request);
 
-        // Лимиты пополнения и текстовые условия продукта (вкладка «Лимиты» на странице карты) —
-        // только здесь, в списке карт (CardResource) они не нужны.
+        // Лимиты пополнения, комиссии и текстовые условия продукта (вкладка «Лимиты» на странице
+        // карты) — только здесь, в списке карт (CardResource) они не нужны.
         $parent['card_product']['topup_min_amount'] = number_format((float) $this->cardProduct->topup_min_amount, 2, '.', '');
         $parent['card_product']['topup_max_amount'] = number_format((float) $this->cardProduct->topup_max_amount, 2, '.', '');
+        $parent['card_product']['successful_payment_fee_usd'] = $this->cardProduct->successful_payment_fee_usd !== null
+            ? number_format((float) $this->cardProduct->successful_payment_fee_usd, 2, '.', '')
+            : null;
+        $parent['card_product']['decline_fee_usd'] = $this->cardProduct->decline_fee_usd !== null
+            ? number_format((float) $this->cardProduct->decline_fee_usd, 2, '.', '')
+            : null;
+        $parent['card_product']['non_usd_payment_fee'] = $this->cardProduct->non_usd_payment_fee;
+        $parent['card_product']['risk_operation_fee_usd'] = $this->cardProduct->risk_operation_fee_usd !== null
+            ? number_format((float) $this->cardProduct->risk_operation_fee_usd, 2, '.', '')
+            : null;
         $parent['card_product']['restricted_merchants'] = $this->cardProduct->restricted_merchants;
         $parent['card_product']['full_terms'] = $this->cardProduct->full_terms;
 
