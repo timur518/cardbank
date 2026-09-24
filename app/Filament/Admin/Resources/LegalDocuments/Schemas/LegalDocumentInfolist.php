@@ -14,7 +14,6 @@ class LegalDocumentInfolist
         return $schema
             ->components([
                 Section::make('Документ')
-                    ->columns(3)
                     ->schema([
                         TextEntry::make('type')->label('Тип документа')->badge(),
                         TextEntry::make('version')->label('Версия'),
@@ -31,7 +30,8 @@ class LegalDocumentInfolist
                             ->view('filament.infolists.entries.legal-document-body')
                             ->columnSpanFull(),
                         TextEntry::make('created_at')->label('Дата создания')->dateTime('d.m.Y H:i'),
-                    ]),
+                    ])
+                ->columnSpanFull(),
             ]);
     }
 }
