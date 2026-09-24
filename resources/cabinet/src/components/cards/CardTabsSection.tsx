@@ -96,7 +96,9 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                 ))}
             </div>
 
-            <div className="auth-panel card-tabs-panel p-6">
+            <div
+                className={`auth-panel card-tabs-panel p-6 ${activeTab !== 'transactions' ? 'card-tabs-panel-all-corners' : ''}`}
+            >
                 {activeTab === 'transactions' && (
                     <>
                         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
