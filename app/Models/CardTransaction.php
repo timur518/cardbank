@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 /**
@@ -105,20 +106,48 @@ class CardTransaction extends Model
         // строки заводилась вторая, success, а холд навсегда оставался висеть в pending — именно
         // так выглядели дубли в проде. Раз origin_tx_id провайдер в принципе не прислал (не просто
         // "не нашли по нему холд"), ищем сам holdа по card_id + тем же cost_amount/currency среди ещё
-        // не закрытых pending-покупок — это единственный доступный в этом ответе провайдера признак,
-        // что это расчёт того же холда, а не новая независимая операция.
+        // не закрытых pending-покупок. Но cost_amount+currency сами по себе не гарантируют
+        // уникальность (две разные покупки вполне могут совпасть по сумме и оказаться обе
+        // pending одновременно), поэтому автоматически сливаем только однозначный матч: сначала
+        // берём все подходящие по cost_amount/currency пендинг-холды, если их несколько — сужаем
+        // по совпадению merchant (если он заполнен у обеих сторон). Если и после этого остаётся
+        // больше одного кандидата — не гадаем, оставляем как новую независимую строку и логируем
+        // предупреждение — лучше видимый дубль, чем тихое слияние с чужим холдом.
         if (! $originHold && ! $alreadyRecorded && empty($tx['origin_tx_id'])
             && $tx['status'] === CardTransactionStatus::Success
             && $tx['type'] === CardTransactionType::Purchase
             && $tx['cost_amount'] !== null
         ) {
-            $originHold = static::where('card_id', $cardId)
+            $candidates = static::where('card_id', $cardId)
                 ->where('status', CardTransactionStatus::Pending)
                 ->where('type', CardTransactionType::Purchase)
                 ->where('cost_amount', $tx['cost_amount'])
                 ->where('currency', $tx['currency'])
                 ->orderBy('occurred_at')
-                ->first();
+                ->get();
+
+            if ($candidates->count() === 1) {
+                $originHold = $candidates->first();
+            } elseif ($candidates->count() > 1 && ! empty($tx['merchant'])) {
+                $byMerchant = $candidates->filter(
+                    fn (self $candidate) => $candidate->merchant !== null
+                        && trim(mb_strtolower($candidate->merchant)) === trim(mb_strtolower($tx['merchant']))
+                );
+
+                if ($byMerchant->count() === 1) {
+                    $originHold = $byMerchant->first();
+                }
+            }
+
+            if (! $originHold && $candidates->count() > 1) {
+                Log::warning('CardTransaction::upsertFromProvider: неоднозначное совпадение расчёта с pending-холдом по cost_amount/currency — слияние пропущено, создаётся новая строка.', [
+                    'card_id' => $cardId,
+                    'provider_tx_id' => $tx['provider_tx_id'],
+                    'cost_amount' => $tx['cost_amount'],
+                    'currency' => $tx['currency'],
+                    'candidate_ids' => $candidates->pluck('id')->all(),
+                ]);
+            }
         }
 
         $target = $existingBySameId ?? $originHold;
