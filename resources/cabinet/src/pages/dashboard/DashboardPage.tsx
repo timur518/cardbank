@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { fetchCards } from '../../api/cards';
 import { fetchTransactions } from '../../api/transactions';
 import type { Card, CardTransaction } from '../../api/types';
@@ -11,6 +11,7 @@ import { formatMoney } from '../../utils/format';
 import { useFitFontSize } from '../../utils/useFitFontSize';
 
 export function DashboardPage() {
+    const navigate = useNavigate();
     const [cards, setCards] = useState<Card[]>([]);
     const [cardsLoading, setCardsLoading] = useState(true);
     const [transactions, setTransactions] = useState<CardTransaction[]>([]);
@@ -25,6 +26,16 @@ export function DashboardPage() {
             .then((response) => setTransactions(response.data))
             .finally(() => setTransactionsLoading(false));
     }, []);
+
+    // У пользователя вообще нет ни одной карты (не про статус — про полное отсутствие,
+    // GET /cards уже отфильтровывает отменённые/неудавшиеся, так что пустой список здесь
+    // означает, что карт не было заказано вовсе) — сразу ведём оформлять первую карту,
+    // главной странице ЛК без единой карты показывать нечего.
+    useEffect(() => {
+        if (!cardsLoading && cards.length === 0) {
+            navigate('/cards/new', { replace: true });
+        }
+    }, [cardsLoading, cards, navigate]);
 
     // Сумма балансов активных карт по каждой валюте отдельно — карты в разных
     // валютах не складываются друг с другом.
@@ -52,6 +63,13 @@ export function DashboardPage() {
                   .map(([currency, total]) => formatMoney(total, currency))
                   .join(' + ');
     const balanceRef = useFitFontSize(balanceText, 28, 14);
+
+    // Карт точно нет (запрос уже отработал, cardsLoading === false) — вот-вот сработает редирект
+    // выше, не показываем пустой дашборд (нулевой баланс, пустую историю операций) вовсе.
+    // Пока же cardsLoading === true — дашборд рендерится как обычно, с обычными skeleton'ами.
+    if (!cardsLoading && cards.length === 0) {
+        return null;
+    }
 
     return (
         <div className="flex flex-col gap-8">
