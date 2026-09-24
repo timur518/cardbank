@@ -31,7 +31,7 @@ export function CardsStrip({ cards, isLoading }: CardsStripProps) {
             ) : (
                 cards.map((card) => (
                     <Link key={card.id} to={`/cards/${card.id}`} className={`${CARD_WIDTH_CLASS} fade-in-up`}>
-                        <CardVisual card={card} />
+                        <CardVisual card={card} compact />
                     </Link>
                 ))
             )}
