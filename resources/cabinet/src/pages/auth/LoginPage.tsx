@@ -11,8 +11,9 @@ type LoginStep = 'identifier' | 'password';
  * Вход — отдельный экран (не через общий AuthShell/AuthLayout, как /register и
  * /forgot-password, поэтому кросс-фейд AuthTransition между /login и остальными
  * auth-страницами больше не применяется): одна карточка входа по центру
- * экрана (без видео-заставки справа и без тени у панели) — лого + заголовок
- * по центру сверху, форма по центру, ссылка на регистрацию снизу.
+ * экрана (без видео-заставки справа), высота карточки не ограничена — растёт
+ * по содержимому. Заголовок отделён от формы отступом 40px снизу, ссылка на
+ * регистрацию — отступом 40px сверху от формы.
  *
  * Сам вход — в два шага (как у Google/Microsoft): сначала только
  * телефон/email, после клика по «Войти» форма динамично сменяется на ввод
@@ -63,12 +64,12 @@ export function LoginPage() {
             </div>
 
             <div className="flex w-full flex-1 items-center justify-center">
-                <div className="auth-panel auth-panel-login flex w-full max-w-[440px] flex-col p-8 sm:p-10">
+                <div className="auth-panel flex w-full max-w-[440px] flex-col p-8 sm:p-10">
                     <div>
-                        <h1 className="text-center text-2xl font-extrabold tracking-tight text-ink">Вход в личный кабинет</h1>
+                        <h1 className="mb-[40px] text-center text-2xl font-extrabold tracking-tight text-ink">Вход в личный кабинет</h1>
                     </div>
 
-                    <div className="flex flex-1 flex-col justify-center py-6">
+                    <div className="flex flex-1 flex-col justify-center">
                         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                             {error ? <div className="form-error-banner">{error}</div> : null}
 
@@ -135,7 +136,7 @@ export function LoginPage() {
                         </form>
                     </div>
 
-                    <div className="text-center text-sm text-muted">
+                    <div className="mt-[40px] text-center text-sm text-muted">
                         Ещё нет аккаунта? <Link to="/register" className="font-bold text-orange-dark">Стать клиентом</Link>
                     </div>
                 </div>
