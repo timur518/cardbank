@@ -1179,6 +1179,73 @@ html::-webkit-scrollbar {
 }
 
 /*
+ * Прелоадер первой загрузки ЛК (Preloader.tsx, AppContent в App.tsx) — заблюренный оверлей на
+ * весь экран с тем же бегущим бликом, что и у .skeleton, и двумя вращающимися в разные
+ * стороны дугами вокруг круглого логотипа. Показывается только пока AuthContext проверяет
+ * сессию (status === 'checking') — один раз за всю жизнь SPA, а не при каждом переходе
+ * между страницами. z-index выше всех остальных оверлеев/шапок (.modal-overlay — 50).
+ */
+.app-preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: rgba(243, 241, 239, .85);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    transition: opacity .4s ease;
+}
+.app-preloader.is-hiding { opacity: 0; pointer-events: none; }
+.app-preloader::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .6), transparent);
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
+}
+.app-preloader-spinner {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+.app-preloader-logo {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--color-surface);
+    box-shadow: 0 8px 24px rgba(15, 15, 15, .14);
+}
+.app-preloader-ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.app-preloader-ring circle {
+    fill: none;
+    stroke-width: 3px;
+}
+.app-preloader-ring-a circle { stroke: var(--color-orange); }
+.app-preloader-ring-b circle { stroke: var(--color-ink); opacity: .3; }
+.app-preloader-ring-a { animation: app-preloader-spin 1.3s linear infinite; }
+.app-preloader-ring-b { animation: app-preloader-spin-reverse 1.9s linear infinite; }
+@keyframes app-preloader-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+@keyframes app-preloader-spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+/*
  * Входная анимация для контента, который приходит на смену скелетону (Skeleton.tsx) —
  * лёгкий fade+slide вместо резкой подмены DOM. Скелетон и реальный контент —
  * разные элементы/компоненты в одной и той же позиции дерева, поэтому React всегда
