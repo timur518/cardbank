@@ -17,6 +17,7 @@ class LegalDocumentForm
         return $schema
             ->components([
                 Section::make('Документ')
+                    ->columns(3)
                     ->schema([
                         Select::make('type')
                             ->label('Тип документа')

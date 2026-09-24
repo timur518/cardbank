@@ -14,6 +14,7 @@ class LegalDocumentInfolist
         return $schema
             ->components([
                 Section::make('Документ')
+                    ->columns(3)
                     ->schema([
                         TextEntry::make('type')->label('Тип документа')->badge(),
                         TextEntry::make('version')->label('Версия'),
