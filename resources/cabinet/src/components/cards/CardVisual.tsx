@@ -23,19 +23,31 @@ interface CardVisualProps {
 // баланс/статус, срок действия) — общий «вид карты», переиспользуется в
 // сетке страницы «Мои карты» (CardGridCard) и в горизонтальной ленте карт
 // (CardsStrip). Ширину/масштаб задаёт обёртка снаружи —
-// сам визуал всегда aspect-[1.586] (пропорции банковской карты). Размеры шрифтов/отступов —
-// исходные (как в CardGridCard), если compact=false; уменьшаются только при compact=true
-// (узкие карточки CardsStrip на главной странице), независимо от ширины экрана.
+// сам визуал всегда пропорции банковской карты (85.6×53.98мм, ISO 7810 ID-1 ≈ 1.586:1).
+// Размеры шрифтов/отступов — исходные (как в CardGridCard), если compact=false; уменьшаются
+// только при compact=true (узкие карточки CardsStrip на главной странице), независимо от
+// ширины экрана.
 export function CardVisual({ card, showCountryFlag = false, compact = false }: CardVisualProps) {
     const isActive = card.status === 'active';
 
     return (
-        <div
-            className={`relative aspect-[1.586] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#2b2a28] via-[#1c1b19] to-[#0e0e0d] text-white ${compact ? 'p-3.5' : 'p-5'}`}
-        >
+        <div className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#2b2a28] via-[#1c1b19] to-[#0e0e0d] text-white">
+            {/* Высота задаётся классическим приёмом padding-top в % от ширины (1/1.586 ≈ 63.05%)
+                вместо CSS aspect-ratio: на реальных iPhone (iOS Safari и Chrome — оба на движке
+                WebKit) aspect-ratio у карточки внутри горизонтально прокручиваемого flex-контейнера
+                (CardsStrip) пересчитывался некорректно — карта визуально становилась ниже, чем
+                нужно для её же контента, и баланс/срок действия обрезались снизу overflow-hidden.
+                Баг не воспроизводился в эмуляции мобильного экрана через DevTools на компьютере,
+                потому что там рендерит Blink/Chromium, а не WebKit. padding-top — надёжный кросс-
+                браузерный приём на обычном блочном layout, не зависящий от поддержки aspect-ratio
+                конкретным движком. */}
+            <div style={{ paddingTop: '63.0517%' }} />
+
             <img src={logoMark} alt="" className="pointer-events-none absolute right-0 top-0 w-[140px] max-w-[45%] select-none" />
 
-            <div className={`relative flex h-full flex-col justify-between ${compact ? 'gap-1' : ''}`}>
+            <div
+                className={`absolute inset-0 flex flex-col justify-between ${compact ? 'gap-1 p-3.5' : 'p-5'}`}
+            >
                 <div className="flex items-center gap-2">
                     <p
                         className={`font-semibold ${compact ? 'min-w-0 flex-1 truncate text-xs leading-tight' : 'text-sm'}`}
