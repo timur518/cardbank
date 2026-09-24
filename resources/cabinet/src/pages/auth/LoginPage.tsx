@@ -1,27 +1,18 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { API_ROOT, extractErrorMessage } from '../../api/client';
+import { extractErrorMessage } from '../../api/client';
 import { BrandLogo } from '../../components/common/BrandLogo';
 import { FormField } from '../../components/common/FormField';
 
 type LoginStep = 'identifier' | 'password';
 
-// Фоновое видео справа — статический ассет бэкенда (тот же файл, что и на
-// лендинге), путь строим от настроенного API_ROOT, а не хардкодим хост.
-const heroVideoUrl = `${API_ROOT}/assets/images/herobg.mp4`;
-
 /**
- * Вход — отдельный двухколоночный экран (не через общий AuthShell/AuthLayout,
- * как /register и /forgot-password, поэтому кросс-фейд AuthTransition между
- * /login и остальными auth-страницами больше не применяется — вёрстка входа
- * теперь принципиально другая):
- * слева — карточка входа фиксированной высоты 550px (лого + заголовок
- * сверху, форма по центру, ссылка на регистрацию снизу); справа — видео-
- * панель-заставка (без блока соцсетей на ней), которая визуально «выезжает»
- * из-под карточки (ниже по z-index и частично перекрыта её правым краем).
- * Показывается только от 1024px (lg) и шире — на мобильных остаётся только
- * карточка входа, как раньше.
+ * Вход — отдельный экран (не через общий AuthShell/AuthLayout, как /register и
+ * /forgot-password, поэтому кросс-фейд AuthTransition между /login и остальными
+ * auth-страницами больше не применяется): одна карточка входа по центру
+ * экрана (без видео-заставки справа и без тени у панели) — лого + заголовок
+ * по центру сверху, форма по центру, ссылка на регистрацию снизу.
  *
  * Сам вход — в два шага (как у Google/Microsoft): сначала только
  * телефон/email, после клика по «Войти» форма динамично сменяется на ввод
@@ -72,11 +63,9 @@ export function LoginPage() {
             </div>
 
             <div className="flex w-full flex-1 items-center justify-center">
-            <div className="relative w-full max-w-[900px] lg:h-[550px]">
-                {/* Карточка входа — поверх видео-панели (z-10), фиксированная высота 550px только от lg. */}
-                <div className="auth-panel relative z-10 mx-auto flex w-full max-w-[440px] flex-col p-8 sm:p-10 lg:mx-0 lg:h-full">
+                <div className="auth-panel auth-panel-login flex w-full max-w-[440px] flex-col p-8 sm:p-10">
                     <div>
-                        <h1 className="text-2xl font-extrabold tracking-tight text-ink">Вход в личный кабинет</h1>
+                        <h1 className="text-center text-2xl font-extrabold tracking-tight text-ink">Вход в личный кабинет</h1>
                     </div>
 
                     <div className="flex flex-1 flex-col justify-center py-6">
@@ -150,21 +139,6 @@ export function LoginPage() {
                         Ещё нет аккаунта? <Link to="/register" className="font-bold text-orange-dark">Стать клиентом</Link>
                     </div>
                 </div>
-
-                {/* Видео-панель — справа, абсолютно спозиционирована так, что её левая
-                    часть уходит под карточку входа (z-0 против z-10 у карточки), создавая
-                    эффект «выезжает из-под». */}
-                <div className="absolute inset-y-0 right-0 z-0 hidden w-[520px] overflow-hidden rounded-3xl lg:block">
-                    <video
-                        className="h-full w-full object-cover object-right"
-                        src={heroVideoUrl}
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
-                    />
-                </div>
-            </div>
             </div>
         </div>
     );
