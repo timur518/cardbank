@@ -33,12 +33,6 @@ class CardProvider extends Model
         ];
     }
 
-    protected $hidden = [
-        'api_key',
-        'api_secret',
-        'webhook_secret',
-    ];
-
     public function cardProducts(): HasMany
     {
         return $this->hasMany(CardProduct::class, 'provider_id');
