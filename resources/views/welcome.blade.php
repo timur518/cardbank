@@ -408,13 +408,9 @@
                         </div>
 
                         <div class="apply-field">
-                            <label for="apply-topup-amount" data-topup-amount-label>Введите сколько зачислить на карту</label>
+                            <label for="apply-topup-amount">Сумма для пополнения карты</label>
                             <div class="apply-amount-row">
                                 <div class="apply-amount-input-group">
-                                    <div class="apply-currency-toggle" data-currency-toggle>
-                                        <button type="button" data-currency="rub">₽</button>
-                                        <button type="button" class="is-active" data-currency="usd">$</button>
-                                    </div>
                                     <input type="text" id="apply-topup-amount" name="amount" inputmode="numeric" data-topup-amount-input placeholder="50" required>
                                 </div>
                                 <p class="apply-amount-total" data-topup-total>К оплате: 0 ₽</p>

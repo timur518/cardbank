@@ -11,7 +11,6 @@ import { PaymentMethodOption } from '../../components/orders/PaymentMethodOption
 import { useTopupQuote } from '../../hooks/useTopupQuote';
 import { formatRub } from '../../utils/format';
 
-type AmountCurrency = 'USD' | 'RUB';
 type OrderStep = 'select' | 'topup';
 
 /** "5 000,50" / "50.5" -> 5000.5. Нечисловой ввод игнорируется. */
@@ -37,7 +36,6 @@ export function NewCardOrderPage() {
     const [step, setStep] = useState<OrderStep>('select');
     const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
     const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
-    const [currency, setCurrency] = useState<AmountCurrency>('USD');
     const [amount, setAmount] = useState('');
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +62,7 @@ export function NewCardOrderPage() {
     const { totalRub: topupTotalRub } = useTopupQuote({
         cardProductId: selectedProduct?.id ?? null,
         amount: parsedAmount,
-        currency,
+        currency: 'USD',
     });
     const totalRub = (selectedProduct ? Number(selectedProduct.price_rub) : 0) + (topupTotalRub ?? 0);
 
@@ -89,7 +87,7 @@ export function NewCardOrderPage() {
             const result = await issueOrder({
                 card_product_id: selectedProduct.id,
                 topup_amount: raw,
-                topup_currency: currency,
+                topup_currency: 'USD',
                 payment_method_id: selectedMethodId,
                 idempotency_key: idempotencyKey.current,
             });
@@ -191,43 +189,25 @@ export function NewCardOrderPage() {
                             </div>
 
                             <div className="apply-field">
-                                <label>
-                                    {currency === 'USD' ? 'Введите сколько зачислить на карту' : 'Введите сколько заплатить'}
-                                </label>
+                                <label>Сумма для пополнения карты</label>
                                 <div className="apply-amount-row">
                                     <div className="apply-amount-input-group">
-                                        <div className="apply-currency-toggle">
-                                            <button
-                                                type="button"
-                                                className={currency === 'RUB' ? 'is-active' : ''}
-                                                onClick={() => setCurrency('RUB')}
-                                            >
-                                                ₽
-                                            </button>
-                                            <button
-                                                type="button"
-                                                className={currency === 'USD' ? 'is-active' : ''}
-                                                onClick={() => setCurrency('USD')}
-                                            >
-                                                $
-                                            </button>
-                                        </div>
                                         <input
                                             type="text"
                                             inputMode="numeric"
-                                            placeholder={currency === 'USD' ? '50' : '5 000'}
+                                            placeholder="50"
                                             value={amount}
                                             onChange={(event) => setAmount(event.target.value)}
                                         />
                                     </div>
+                                    {selectedProduct && (
+                                        <p className="apply-hint apply-amount-hint">
+                                            Пополнение: от ${selectedProduct.topup_min_amount ?? '10'} до $
+                                            {selectedProduct.topup_max_amount ?? '—'}
+                                        </p>
+                                    )}
                                     <p className="apply-amount-total">К оплате: {formatRub(totalRub)}</p>
                                 </div>
-                                {selectedProduct && (
-                                    <p className="apply-hint">
-                                        Пополнение: от ${selectedProduct.topup_min_amount ?? '10'} до $
-                                        {selectedProduct.topup_max_amount ?? '—'}
-                                    </p>
-                                )}
                             </div>
 
                             {submitError && <p className="form-error-banner mt-5">{submitError}</p>}

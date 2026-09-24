@@ -549,42 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Форма пополнения баланса: переключатель валюты суммы (₽ / $) меняет подпись поля.
-    document.querySelectorAll('[data-currency-toggle]').forEach((toggle) => {
-        const buttons = [...toggle.querySelectorAll('button')];
-        const field = toggle.closest('.apply-field');
-        const label = field?.querySelector('[data-topup-amount-label]');
-        const input = field?.querySelector('[data-topup-amount-input]');
-
-        const labels = {
-            rub: 'Введите сколько заплатить',
-            usd: 'Введите сколько зачислить на карту',
-        };
-
-        const placeholders = {
-            rub: '5 000',
-            usd: '50',
-        };
-
-        buttons.forEach((button) => {
-            button.addEventListener('click', () => {
-                buttons.forEach((other) => other.classList.toggle('is-active', other === button));
-
-                const currency = button.dataset.currency;
-
-                if (label && labels[currency]) {
-                    label.textContent = labels[currency];
-                }
-
-                if (input && placeholders[currency]) {
-                    input.placeholder = placeholders[currency];
-                    input.value = '';
-                }
-            });
-        });
-    });
-
-    // Форма пополнения баланса: итоговая сумма «К оплате» в рублях.
+    // Форма пополнения баланса: итоговая сумма «К оплате» в рублях. Сумма пополнения всегда вводится в долларах.
     //
     // Формула повторяет OrderController::issue()/convertTopup() из ЛК: клиент платит
     // цену карты (price_rub) плюс сумму пополнения, пересчитанную в рубли по курсу
@@ -594,7 +559,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-topup-form]').forEach((form) => {
         const amountInput = form.querySelector('[data-topup-amount-input]');
         const totalEl = form.querySelector('[data-topup-total]');
-        const toggle = form.querySelector('[data-currency-toggle]');
         const usdRate = parseFloat(form.dataset.usdRate) || 0;
 
         if (!amountInput || !totalEl) {
@@ -606,13 +570,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedCard = () => document.querySelector('input[name="card_product"]:checked');
 
         const updateTotal = () => {
-            const currency = toggle?.querySelector('button.is-active')?.dataset.currency ?? 'usd';
-            const raw = parseFloat(amountInput.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+            const topupUsd = parseFloat(amountInput.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
             const card = selectedCard();
             const priceRub = parseFloat(card?.dataset.priceRub) || 0;
             const feePercent = parseFloat(card?.dataset.feePercent) || 0;
 
-            const topupUsd = currency === 'usd' ? raw : (usdRate > 0 ? raw / usdRate : 0);
             const feeUsd = topupUsd * (feePercent / 100);
             const topupRub = (topupUsd + feeUsd) * usdRate;
             const totalRub = priceRub + topupRub;
@@ -621,7 +583,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         amountInput.addEventListener('input', updateTotal);
-        toggle?.querySelectorAll('button').forEach((button) => button.addEventListener('click', updateTotal));
         document.querySelectorAll('input[name="card_product"]').forEach((input) => input.addEventListener('change', updateTotal));
 
         updateTotal();

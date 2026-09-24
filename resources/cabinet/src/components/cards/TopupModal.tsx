@@ -30,14 +30,13 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
 
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
     const [selectedMethodId, setSelectedMethodId] = useState<number | null>(null);
-    const [currency, setCurrency] = useState<'USD' | 'RUB'>('USD');
     const [amount, setAmount] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const parsedAmount = useMemo(() => parseAmount(amount), [amount]);
-    const { totalRub } = useTopupQuote({ cardId: card.id, amount: parsedAmount, currency });
+    const { totalRub } = useTopupQuote({ cardId: card.id, amount: parsedAmount, currency: 'USD' });
 
     useEffect(() => {
         fetchPaymentMethods()
@@ -70,7 +69,7 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
             const result = await topupOrder({
                 card_id: card.id,
                 amount: raw,
-                currency,
+                currency: 'USD',
                 payment_method_id: selectedMethodId,
                 idempotency_key: idempotencyKey.current,
             });
@@ -109,28 +108,12 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
                         </div>
 
                         <div className="apply-field">
-                            <label>Сумма пополнения</label>
+                            <label>Сумма для пополнения карты</label>
                             <div className="apply-amount-input-group">
-                                <div className="apply-currency-toggle">
-                                    <button
-                                        type="button"
-                                        className={currency === 'RUB' ? 'is-active' : ''}
-                                        onClick={() => setCurrency('RUB')}
-                                    >
-                                        ₽
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={currency === 'USD' ? 'is-active' : ''}
-                                        onClick={() => setCurrency('USD')}
-                                    >
-                                        $
-                                    </button>
-                                </div>
                                 <input
                                     type="text"
                                     inputMode="numeric"
-                                    placeholder={currency === 'USD' ? '50' : '5 000'}
+                                    placeholder="50"
                                     value={amount}
                                     onChange={(event) => setAmount(event.target.value)}
                                 />
