@@ -98,6 +98,29 @@ class CardTransaction extends Model
                 ->where('status', CardTransactionStatus::Pending)
                 ->first();
 
+        // GET /{san}/transactions (опрос, providers:sync-card-transactions) в отличие от вебхука
+        // CARD_TRANSACTION вообще не отдаёт origin-поле (см. normalizePolledTransaction()) — если
+        // расчёт покупки (expense) потерял свой вебхук и его подхватывает только фоновый опрос,
+        // origin_tx_id у него всегда пустой, и слить с холдом нечем: вместо обновления pending-
+        // строки заводилась вторая, success, а холд навсегда оставался висеть в pending — именно
+        // так выглядели дубли в проде. Раз origin_tx_id провайдер в принципе не прислал (не просто
+        // "не нашли по нему холд"), ищем сам holdа по card_id + тем же cost_amount/currency среди ещё
+        // не закрытых pending-покупок — это единственный доступный в этом ответе провайдера признак,
+        // что это расчёт того же холда, а не новая независимая операция.
+        if (! $originHold && ! $alreadyRecorded && empty($tx['origin_tx_id'])
+            && $tx['status'] === CardTransactionStatus::Success
+            && $tx['type'] === CardTransactionType::Purchase
+            && $tx['cost_amount'] !== null
+        ) {
+            $originHold = static::where('card_id', $cardId)
+                ->where('status', CardTransactionStatus::Pending)
+                ->where('type', CardTransactionType::Purchase)
+                ->where('cost_amount', $tx['cost_amount'])
+                ->where('currency', $tx['currency'])
+                ->orderBy('occurred_at')
+                ->first();
+        }
+
         $target = $existingBySameId ?? $originHold;
 
         $attributes = [
