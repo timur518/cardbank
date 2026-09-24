@@ -24,10 +24,10 @@
             <div>
                 <p class="footer-title">Документы</p>
                 <ul class="footer-links">
-                    <li><a href="/oferta">Публичная оферта</a></li>
-                    <li><a href="#">Политика конфиденциальности</a></li>
-                    <li><a href="#">Политика KYC/AML</a></li>
-                    <li><a href="#">Согласие на обработку персональных данных</a></li>
+                    <li><a href="{{ route('legal.offer') }}">Публичная оферта</a></li>
+                    <li><a href="{{ route('legal.privacy-policy') }}">Политика конфиденциальности</a></li>
+                    <li><a href="{{ route('legal.kyc-aml') }}">Политика KYC/AML</a></li>
+                    <li><a href="{{ route('legal.personal-data-consent') }}">Согласие на обработку персональных данных</a></li>
                     <li><a href="#">Тарифы</a></li>
                 </ul>
             </div>

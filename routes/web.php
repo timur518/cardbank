@@ -28,17 +28,25 @@ Route::get('/', function (CurrencyRateService $rates) {
     ]);
 });
 
-// Публичная оферта — текст берётся из админки (LegalDocument), показывается последняя
-// действующая версия этого типа документа.
-Route::get('/oferta', function () {
-    $document = LegalDocument::query()
-        ->where('type', LegalDocumentType::PublicOffer)
-        ->orderByDesc('effective_at')
-        ->orderByDesc('id')
-        ->first();
+// Страницы юридических документов — текст каждой берётся из админки (LegalDocument),
+// показывается последняя действующая версия соответствующего типа документа.
+// Слаг URL => [тип документа, заголовок страницы, имя роута].
+foreach ([
+    'oferta' => [LegalDocumentType::PublicOffer, 'Публичная оферта', 'legal.offer'],
+    'privacy-policy' => [LegalDocumentType::PrivacyPolicy, 'Политика конфиденциальности', 'legal.privacy-policy'],
+    'kyc-aml' => [LegalDocumentType::KycAmlPolicy, 'Политика KYC/AML', 'legal.kyc-aml'],
+    'personal-data-consent' => [LegalDocumentType::PersonalDataConsent, 'Согласие на обработку персональных данных', 'legal.personal-data-consent'],
+] as $slug => [$type, $title, $routeName]) {
+    Route::get("/{$slug}", function () use ($type, $title) {
+        $document = LegalDocument::query()
+            ->where('type', $type)
+            ->orderByDesc('effective_at')
+            ->orderByDesc('id')
+            ->first();
 
-    return view('legal.document', [
-        'title' => 'Публичная оферта',
-        'document' => $document,
-    ]);
-})->name('legal.offer');
+        return view('legal.document', [
+            'title' => $title,
+            'document' => $document,
+        ]);
+    })->name($routeName);
+}
