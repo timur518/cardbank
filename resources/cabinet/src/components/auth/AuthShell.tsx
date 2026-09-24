@@ -13,7 +13,9 @@ export function AuthShell() {
     return (
         <div className="flex min-h-screen flex-col items-center bg-white px-4 py-10">
             <div className="mb-10">
-                <BrandLogo />
+                <a href="https://mojno.cc/">
+                    <BrandLogo />
+                </a>
             </div>
 
             <div className="flex w-full flex-1 items-center justify-center">
