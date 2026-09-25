@@ -1,3 +1,6 @@
+// Зеркало значений App\Enums\KycStatus на бэкенде.
+export type AppKycStatus = 'not_started' | 'pending' | 'approved' | 'declined';
+
 // Поля профиля.
 export interface Profile {
     id: string;
@@ -8,6 +11,8 @@ export interface Profile {
     email: string;
     date_of_birth: string | null;
     kyc_status: string;
+    // Заполнено только когда kyc_status === 'declined' — показывается в блоке верификации на странице профиля.
+    kyc_decline_reason: string | null;
     two_factor_enabled: boolean;
     referral_code: string | null;
     created_at: string;
@@ -287,7 +292,7 @@ export interface TopupQuoteResult {
 
 // Категория уведомления — зеркалит App\Enums\NotificationType на бэкенде; определяет
 // иконку/цвет кружочка слева от уведомления в попапе (NotificationsPanel).
-export type AppNotificationType = 'system' | 'card' | 'payment' | 'security' | 'promo' | 'otp_code';
+export type AppNotificationType = 'system' | 'card' | 'payment' | 'security' | 'promo' | 'otp_code' | 'kyc';
 
 // Уведомление в ленте ЛК (попап из шапки) — заводится в админке,
 // отдаётся GET /notifications. Назван не `Notification`, чтобы не пересекаться

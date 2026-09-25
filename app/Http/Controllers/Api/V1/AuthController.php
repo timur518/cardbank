@@ -48,7 +48,7 @@ class AuthController extends Controller
 
         $user->update(['last_login_at' => now()]);
 
-        return (new UserResource($user))->response()->setStatusCode(200);
+        return (new UserResource($user->loadMissing('latestKycVerification')))->response()->setStatusCode(200);
     }
 
     /**
@@ -61,7 +61,7 @@ class AuthController extends Controller
         $data = $request->validated();
 
         $user = User::create([
-            'name' => trim($data['first_name'] . ' ' . $data['last_name']),
+            'name' => trim($data['first_name'].' '.$data['last_name']),
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'middle_name' => $data['middle_name'] ?? null,
@@ -82,7 +82,7 @@ class AuthController extends Controller
         // Роль customer явно блокирует доступ в /admin — см. User::canAccessPanel().
         $user->assignRole('customer');
 
-        //Отправка приветственного уведомления
+        // Отправка приветственного уведомления
         Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
 
         Auth::guard('web')->login($user);
@@ -108,7 +108,7 @@ class AuthController extends Controller
             $user->update(['password' => $newPassword]);
             $user->notify(new NewPasswordNotification($newPassword));
 
-            //Отправка уведомления о смене пароля
+            // Отправка уведомления о смене пароля
             Notification::notify($user, NotificationEvent::PasswordResetRequested, ['email' => $user->email], '/profile');
         }
 

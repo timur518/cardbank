@@ -1,4 +1,4 @@
-import type { AppNotificationType, CardStatus, CardTransactionStatus, CardTransactionType } from '../api/types';
+import type { AppKycStatus, AppNotificationType, CardStatus, CardTransactionStatus, CardTransactionType } from '../api/types';
 import type { ComponentType } from 'react';
 import {
     CardNotificationIcon,
@@ -9,6 +9,7 @@ import {
     PurchaseIcon,
     RefundIcon,
     OtpCodeNotificationIcon,
+    KycNotificationIcon,
     SecurityNotificationIcon,
     SystemNotificationIcon,
     TopupTxIcon,
@@ -60,6 +61,21 @@ export const TRANSACTION_STATUS_TONES: Record<CardTransactionStatus, StatusTone>
     reversed: 'gray',
 };
 
+// Зеркалит getLabel() App\Enums\KycStatus — блок верификации на странице профиля.
+export const KYC_STATUS_LABELS: Record<AppKycStatus, string> = {
+    not_started: 'Не начата',
+    pending: 'На проверке',
+    approved: 'Пройдена',
+    declined: 'Не пройдена',
+};
+
+export const KYC_STATUS_TONES: Record<AppKycStatus, StatusTone> = {
+    not_started: 'gray',
+    pending: 'warning',
+    approved: 'success',
+    declined: 'danger',
+};
+
 // Иконка строки в списке операций (TransactionsTable) — подбирается по CardTransactionType.
 export const TRANSACTION_TYPE_ICONS: Record<CardTransactionType, ComponentType> = {
     purchase: PurchaseIcon,
@@ -77,6 +93,7 @@ export const NOTIFICATION_TYPE_LABELS: Record<AppNotificationType, string> = {
     security: 'Безопасность',
     promo: 'Акции и предложения',
     otp_code: 'Коды подтверждения',
+    kyc: 'Верификация личности',
 };
 
 // Иконка в кружочке слева от уведомления (NotificationsPanel) — по AppNotificationType.
@@ -87,6 +104,7 @@ export const NOTIFICATION_TYPE_ICONS: Record<AppNotificationType, ComponentType>
     security: SecurityNotificationIcon,
     promo: PromoNotificationIcon,
     otp_code: OtpCodeNotificationIcon,
+    kyc: KycNotificationIcon,
 };
 
 // Цвет кружочка с иконкой — зеркалит getColor() того же энама (классы .notif-icon-* в index.css).
@@ -97,4 +115,5 @@ export const NOTIFICATION_TYPE_ICON_CLASSES: Record<AppNotificationType, string>
     security: 'notif-icon-danger',
     promo: 'notif-icon-warning',
     otp_code: 'notif-icon-brand',
+    kyc: 'notif-icon-brand',
 };

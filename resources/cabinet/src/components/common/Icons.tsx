@@ -29,4 +29,5 @@ export {
     ShieldExclamationIcon as SecurityNotificationIcon,
     GiftIcon as PromoNotificationIcon,
     KeyIcon as OtpCodeNotificationIcon,
+    IdentificationIcon as KycNotificationIcon,
 } from '@heroicons/react/24/outline';

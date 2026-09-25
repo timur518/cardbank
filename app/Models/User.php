@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use App\Enums\KycStatus;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
@@ -14,8 +16,8 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -85,6 +87,15 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(KycVerification::class);
     }
 
+    /**
+     * Последняя по времени проверка личности (внутренняя или через провайдера, например
+     * Didit) — используется, чтобы показать пользователю причину отказа в ЛК (см. UserResource).
+     */
+    public function latestKycVerification(): HasOne
+    {
+        return $this->hasOne(KycVerification::class)->latestOfMany();
+    }
+
     public function riskFlags(): HasMany
     {
         return $this->hasMany(RiskFlag::class);
@@ -108,7 +119,7 @@ class User extends Authenticatable implements FilamentUser
     /**
      * Переопределяет одноимённый метод из трейта Notifiable (там это MorphMany на встроенный
      * в Laravel \Illuminate\Notifications\DatabaseNotification, который мы не используем) — у нас
-     * своя таблица/модель {@see \App\Models\Notification} для ленты «Уведомления» в ЛК.
+     * своя таблица/модель {@see Notification} для ленты «Уведомления» в ЛК.
      */
     public function notifications(): HasMany
     {

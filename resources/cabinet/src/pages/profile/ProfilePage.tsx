@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { updatePassword } from '../../api/auth';
 import { extractErrorMessage } from '../../api/client';
 import { FormField } from '../../components/common/FormField';
+import { KycStatusSection } from '../../components/kyc/KycStatusSection';
 import { useAuth } from '../../context/AuthContext';
 import { formatDateMask, formatPhoneMask, isoDateToDisplay, joinFio, splitFio, transliterateFio } from '../../utils/masks';
 
@@ -15,6 +16,7 @@ export function ProfilePage() {
         <div className="flex flex-col gap-6">
             <h1 className="text-2xl font-extrabold tracking-tight text-ink">Профиль</h1>
 
+            <KycStatusSection />
             <ProfileDataSection />
             <SecuritySection />
         </div>

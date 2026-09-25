@@ -20,6 +20,10 @@ class KycVerification extends Model
         'documents',
         'submitted_at',
         'resolved_at',
+        'provider',
+        'provider_session_id',
+        'provider_status',
+        'provider_response',
     ];
 
     protected function casts(): array
@@ -30,6 +34,7 @@ class KycVerification extends Model
             'documents' => 'array',
             'submitted_at' => 'datetime',
             'resolved_at' => 'datetime',
+            'provider_response' => 'array',
         ];
     }
 

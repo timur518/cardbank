@@ -10,8 +10,8 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -38,6 +38,16 @@ class KycVerificationsRelationManager extends RelationManager
                     ->options(DecisionStatus::class)
                     ->required()
                     ->live(),
+                TextInput::make('provider_session_id')
+                    ->label('ID сессии у провайдера')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->visible(fn ($record) => filled($record?->provider_session_id)),
+                TextInput::make('provider_status')
+                    ->label('Сырой статус от провайдера')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->visible(fn ($record) => filled($record?->provider_status)),
                 Textarea::make('decline_reason')
                     ->label('Причина отказа')
                     ->visible(fn ($get) => $get('status') === DecisionStatus::Declined->value)
@@ -69,6 +79,9 @@ class KycVerificationsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('type')
                     ->label('Тип'),
+                TextColumn::make('provider')
+                    ->label('Провайдер')
+                    ->placeholder('—'),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge(),

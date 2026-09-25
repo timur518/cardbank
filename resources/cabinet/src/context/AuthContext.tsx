@@ -11,6 +11,7 @@ interface AuthContextValue {
     register: (payload: RegisterPayload) => Promise<void>;
     logout: () => Promise<void>;
     updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
+    refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -58,9 +59,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(data);
     }, []);
 
+    // Перечитывает профиль без изменения статуса сессии — используется после закрытия
+    // попапа верификации Didit (KycStatusSection), чтобы подтянуть актуальный kyc_status,
+    // когда вебхук от Didit уже обработан.
+    const refreshProfile = useCallback(async () => {
+        const data = await authApi.fetchProfile();
+        setProfile(data);
+    }, []);
+
     const value = useMemo<AuthContextValue>(
-        () => ({ status, profile, login, register, logout, updateProfile }),
-        [status, profile, login, register, logout, updateProfile],
+        () => ({ status, profile, login, register, logout, updateProfile, refreshProfile }),
+        [status, profile, login, register, logout, updateProfile, refreshProfile],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

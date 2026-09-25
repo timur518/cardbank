@@ -2,9 +2,11 @@
 
 namespace App\Enums;
 
+use App\Models\Notification;
+
 /**
  * Событие, по которому создаётся запись в ленте «Уведомления» ЛК
- * ({@see \App\Models\Notification::notify()}). Один `case` на событие — категория
+ * ({@see Notification::notify()}). Один `case` на событие — категория
  * и тексты собраны прямо здесь, без отдельного файла-класса на каждое уведомление:
  * подключение нового события в будущем — это один новый `case` и по одному новому
  * `match`-варианту в category()/title()/body(), вызывается напрямую из места
@@ -19,7 +21,8 @@ namespace App\Enums;
  * - PasswordChanged: 'datetime' (отформатированная строка)
  * - PasswordResetRequested: 'email'
  * - OtpCodeReceived: 'code'
- * - Welcome, CardOrderAccepted, CardIssueFailed: без параметров
+ * - KycDeclined: 'reason' (?string)
+ * - Welcome, CardOrderAccepted, CardIssueFailed, KycApproved: без параметров
  */
 enum NotificationEvent
 {
@@ -36,6 +39,8 @@ enum NotificationEvent
     case PasswordChanged;
     case PasswordResetRequested;
     case OtpCodeReceived;
+    case KycApproved;
+    case KycDeclined;
 
     public function category(): NotificationType
     {
@@ -53,6 +58,8 @@ enum NotificationEvent
             self::PasswordChanged,
             self::PasswordResetRequested => NotificationType::Security,
             self::OtpCodeReceived => NotificationType::OtpCode,
+            self::KycApproved,
+            self::KycDeclined => NotificationType::Kyc,
         };
     }
 
@@ -75,6 +82,8 @@ enum NotificationEvent
             self::PasswordChanged => 'Пароль изменён',
             self::PasswordResetRequested => 'Внимание! Сброс пароля',
             self::OtpCodeReceived => 'Код подтверждения',
+            self::KycApproved => 'Верификация личности пройдена',
+            self::KycDeclined => 'Верификация не пройдена',
         };
     }
 
@@ -95,9 +104,23 @@ enum NotificationEvent
             self::TopupSuccess => "Карта •••• {$params['last4']} пополнена на {$params['amount']}. Новый баланс: {$params['balance']}.",
             self::TopupFailed => "Не удалось пополнить карту •••• {$params['last4']} на {$params['amount']}. Попробуйте ещё раз или используйте другой способ оплаты.",
             self::PasswordChanged => "Пароль от вашего личного кабинета был изменён {$params['datetime']}. Если это были не вы, срочно обратитесь в поддержку.",
-            self::PasswordResetRequested => "Запрошен сброс пароля. Новый пароль был отправлен к вам на E-mail. Рекомендуем сменить его на свой после входа в личный кабинет.",
+            self::PasswordResetRequested => 'Запрошен сброс пароля. Новый пароль был отправлен к вам на E-mail. Рекомендуем сменить его на свой после входа в личный кабинет.',
             self::OtpCodeReceived => "Код подтверждения: {$params['code']}. Никому не сообщайте этот код!",
+            self::KycApproved => 'Проверка личности успешно завершена. Теперь вам доступны все возможности личного кабинета.',
+            self::KycDeclined => $this->kycDeclinedBody($params),
         };
+    }
+
+    /**
+     * @param  array<string, mixed>  $params
+     */
+    private function kycDeclinedBody(array $params): string
+    {
+        $reason = $params['reason'] ?? null;
+
+        return $reason
+            ? "Проверка личности не пройдена: {$reason}. Попробуйте снова в разделе «Профиль»."
+            : 'Проверка личности не пройдена. Проверьте, что документ и селфи хорошо видны, и попробуйте снова в разделе «Профиль».';
     }
 
     /**
@@ -120,6 +143,6 @@ enum NotificationEvent
     {
         $symbols = ['USD' => '$', 'EUR' => '€', 'RUB' => '₽', 'GBP' => '£'];
 
-        return number_format((float) $amount, 2, '.', '') . ' ' . ($symbols[$currency] ?? $currency);
+        return number_format((float) $amount, 2, '.', '').' '.($symbols[$currency] ?? $currency);
     }
 }

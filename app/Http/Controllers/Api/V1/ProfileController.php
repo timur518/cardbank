@@ -20,7 +20,7 @@ class ProfileController extends Controller
      */
     public function show(Request $request): JsonResponse
     {
-        return (new UserResource($request->user()))->response();
+        return (new UserResource($request->user()->loadMissing('latestKycVerification')))->response();
     }
 
     /**
@@ -32,7 +32,7 @@ class ProfileController extends Controller
         $user = $request->user();
         $user->update($request->safe()->only(['first_name', 'last_name', 'middle_name', 'phone', 'date_of_birth']));
 
-        return (new UserResource($user))->response();
+        return (new UserResource($user->loadMissing('latestKycVerification')))->response();
     }
 
     /**
@@ -51,7 +51,7 @@ class ProfileController extends Controller
 
         $user->update(['password' => $request->validated('password')]);
 
-        //Отправка уведомления о смене пароля
+        // Отправка уведомления о смене пароля
         Notification::notify($user, NotificationEvent::PasswordChanged, ['datetime' => now()->format('d.m.Y H:i')], '/profile');
 
         return response()->json(['message' => 'Пароль изменён']);

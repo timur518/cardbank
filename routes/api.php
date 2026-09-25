@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CardController;
 use App\Http\Controllers\Api\V1\CardProductController;
+use App\Http\Controllers\Api\V1\KycController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PaymentMethodController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\Webhooks\CardsProWebhookController;
+use App\Http\Controllers\Api\Webhooks\DiditWebhookController;
 use App\Http\Controllers\Api\Webhooks\PaymentWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +20,9 @@ Route::post('/webhooks/cardspro/{provider:code}', CardsProWebhookController::cla
 
 Route::post('/webhooks/payment/{paymentMethod}', PaymentWebhookController::class)
     ->name('webhooks.payment');
+
+Route::post('/webhooks/didit', DiditWebhookController::class)
+    ->name('webhooks.didit');
 
 // Личный кабинет (ЛК) — см. CABINET_API_SPEC.md.
 Route::prefix('v1')->name('api.v1.')->group(function () {
@@ -41,6 +46,9 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
+        // Верификация личности через Didit — блок на странице профиля (перед «Мои данные»).
+        Route::post('/kyc/start', [KycController::class, 'start'])->name('kyc.start');
 
         // Раздел 3. Оформление заказа.
         Route::post('/orders/issue', [OrderController::class, 'issue'])->name('orders.issue');

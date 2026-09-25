@@ -49,4 +49,12 @@ return [
         'timeout' => (int) env('CARDLINK_TIMEOUT', 20),
     ],
 
+    'didit' => [
+        // Базовый URL API Didit (https://docs.didit.me) и тайм-аут HTTP-запросов, секунды.
+        // Учётные данные (api_key, workflow_id, webhook secret) хранятся не здесь, а в Setting —
+        // см. App\Filament\Admin\Pages\KycSettings (раздел «Комплаенс» → «Верификация (Didit)»).
+        'base_url' => env('DIDIT_BASE_URL', 'https://verification.didit.me'),
+        'timeout' => (int) env('DIDIT_TIMEOUT', 20),
+    ],
+
 ];

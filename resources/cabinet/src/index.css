@@ -876,6 +876,25 @@ html::-webkit-scrollbar {
     .modal-sheet-handle { display: none; }
     .modal-sheet-header { padding: 20px 24px 4px; }
     .modal-sheet-body { padding: 12px 24px 24px; }
+    .modal-sheet-lg { max-width: 480px; }
+}
+
+/*
+ * Попап верификации Didit (KycVerificationModal) — та же основа .modal-overlay/.modal-sheet,
+ * что и у обычных модалок (Modal.tsx size="lg"), но без внутренних отступов у body — iframe
+ * вставляется в весь размер без полей.
+ */
+.modal-sheet-body-flush {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+.kyc-iframe {
+    width: 100%;
+    height: min(700px, 85vh);
+    border: none;
 }
 
 /*

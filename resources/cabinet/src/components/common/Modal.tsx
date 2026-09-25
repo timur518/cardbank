@@ -5,6 +5,8 @@ interface ModalProps {
     title: string;
     onClose: () => void;
     children: ReactNode;
+    /** 'lg' — шире и без внутренних отступов у body (встраиваемый iframe, см. KycVerificationModal). */
+    size?: 'default' | 'lg';
 }
 
 /**
@@ -15,7 +17,7 @@ interface ModalProps {
  * и закрытия — через класс is-visible (см. .modal-* в index.css), закрытие
  * откладывается на время transition, чтобы лист/диалог успел доехать до края.
  */
-export function Modal({ title, onClose, children }: ModalProps) {
+export function Modal({ title, onClose, children, size = 'default' }: ModalProps) {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
@@ -31,7 +33,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
     return (
         <div className={`modal-overlay${visible ? ' is-visible' : ''}`} onClick={handleClose}>
             <div
-                className={`modal-sheet${visible ? ' is-visible' : ''}`}
+                className={`modal-sheet${visible ? ' is-visible' : ''}${size === 'lg' ? ' modal-sheet-lg' : ''}`}
                 role="dialog"
                 aria-modal="true"
                 onClick={(event) => event.stopPropagation()}
@@ -43,7 +45,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
                         <XMarkIcon className="h-4 w-4" />
                     </button>
                 </div>
-                <div className="modal-sheet-body">{children}</div>
+                <div className={`modal-sheet-body${size === 'lg' ? ' modal-sheet-body-flush' : ''}`}>{children}</div>
             </div>
         </div>
     );
