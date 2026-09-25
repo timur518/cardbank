@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\PaymentMethods\Schemas;
 
+use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\KeyValueEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
@@ -23,6 +24,7 @@ class PaymentMethodInfolist
                         TextEntry::make('status')
                             ->label('Статус')
                             ->badge(),
+                        IconEntry::make('requires_kyc')->label('Требуется KYC')->boolean(),
                         TextEntry::make('fee_percent')->label('Комиссия способа')->suffix('%'),
                         TextEntry::make('gateway_code')
                             ->label('Интеграция')

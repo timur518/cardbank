@@ -66,10 +66,16 @@ class DiditService
             ],
         );
 
-        // NotStarted/Declined -> Pending сразу при открытии попапа, чтобы в профиле не мигал
-        // старый статус, пока пользователь проходит шаги внутри iframe; Approved не понижаем.
-        if ($user->kyc_status !== KycStatus::Approved && $user->kyc_status !== KycStatus::Pending) {
-            $user->update(['kyc_status' => KycStatus::Pending]);
+        // Синхронизируем kyc_status сразу по фактическому статусу сессии (на случай, если из-за
+        // идемпотентности Didit вернул уже существующую незавершённую сессию в более продвинутом
+        // статусе — In Progress/Awaiting User/Resubmitted, см. «Idempotency» в
+        // https://docs.didit.me/sessions-api/create-session). Для обычного первого запуска (status=Not
+        // Started) это но-оп и не требует записи — у пользователя уже KycStatus::NotStarted по
+        // умолчанию, и кнопка запуска верификации в профиле остаётся видимой. Approved не понижаем.
+        $mappedStatus = $this->mapUserStatus($status);
+
+        if ($user->kyc_status !== KycStatus::Approved && $user->kyc_status !== $mappedStatus) {
+            $user->update(['kyc_status' => $mappedStatus]);
         }
 
         return ['url' => $url, 'session_id' => $sessionId, 'status' => $status];
@@ -100,10 +106,11 @@ class DiditService
     public function mapUserStatus(string $diditStatus): KycStatus
     {
         return match ($diditStatus) {
+            'Not Started' => KycStatus::NotStarted,
             'Approved' => KycStatus::Approved,
             'Declined' => KycStatus::Declined,
             'Expired', 'Abandoned', 'Kyc Expired' => KycStatus::NotStarted,
-            default => KycStatus::Pending,
+            default => KycStatus::Pending, // In Progress, In Review, Resubmitted, Awaiting User
         };
     }
 

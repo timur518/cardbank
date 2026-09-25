@@ -26,9 +26,9 @@ class KycSettings extends Page implements HasForms
 
     protected static string|UnitEnum|null $navigationGroup = 'Комплаенс';
 
-    protected static ?string $navigationLabel = 'Верификация (Didit)';
+    protected static ?string $navigationLabel = 'Настройки KYC';
 
-    protected static ?string $title = 'Верификация личности — Didit';
+    protected static ?string $title = 'Настройки KYC';
 
     protected static ?int $navigationSort = 4;
 
@@ -54,12 +54,12 @@ class KycSettings extends Page implements HasForms
     {
         return $schema
             ->components([
-                Section::make('Учётные данные Didit')
+                Section::make('Данные для подключения')
                     ->description(
-                        'Business Console → API & Webhooks (business.didit.me). Адрес для вебхука (событие status.updated, webhook_version v3): '
+                        'Адрес для вебхука (событие status.updated, webhook_version v3): '
                         .url('/api/webhooks/didit')
                     )
-                    ->columns(2)
+                    ->columns(1)
                     ->schema([
                         TextInput::make('didit_api_key')
                             ->label('API Key')
@@ -70,8 +70,7 @@ class KycSettings extends Page implements HasForms
                         TextInput::make('didit_webhook_secret')
                             ->label('Webhook Secret Key')
                             ->password()
-                            ->revealable()
-                            ->columnSpanFull(),
+                            ->revealable(),
                     ]),
             ])
             ->statePath('data');

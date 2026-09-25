@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\PaymentMethods\Schemas;
 use App\Enums\ActiveStatus;
 use App\Enums\PaymentGatewayCode;
 use App\Enums\PaymentMethodType;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -36,6 +37,9 @@ class PaymentMethodForm
                             ->label('Статус')
                             ->options(ActiveStatus::class)
                             ->required(),
+                        Checkbox::make('requires_kyc')
+                            ->label('Требуется KYC')
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Комиссии и лимиты')
