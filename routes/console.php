@@ -33,6 +33,12 @@ Schedule::command('providers:sync-card-catalog')
     ->daily()
     ->withoutOverlapping();
 
+// Рейтинг успешных платежей карточных продуктов по мерчантам (CardsPro `products/search-by-merchant`),
+// см. App\Console\Commands\Providers\SyncMerchantProductRates и админку «Настройки» -> «Рейтинг платежей по мерчантам».
+Schedule::command('providers:sync-merchant-rates')
+    ->daily()
+    ->withoutOverlapping();
+
 // Общая для всех платёжных систем отмена заказов без вебхука об оплате дольше 30 минут (см.
 // App\Console\Commands\Payments\CancelExpiredPaymentOrders).
 Schedule::command('payments:cancel-expired-orders')

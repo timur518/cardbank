@@ -22,6 +22,10 @@ class MerchantInfolist
                             ->columnSpanFull(),
                         TextEntry::make('code')->label('Код мерчанта'),
                         TextEntry::make('name')->label('Название мерчанта'),
+                        TextEntry::make('provider_merchant_key')
+                            ->label('Ключ для CardsPro')
+                            ->state(fn ($record) => $record->providerSearchKey())
+                            ->helperText('Фактическое значение параметра merchant при запросе рейтинга платежей.'),
                         TextEntry::make('category')->label('Категория')->badge(),
                         TextEntry::make('color')->label('Цвет')->placeholder('—'),
                         TextEntry::make('is_active')->label('Активен')->formatStateUsing(fn (bool $state) => $state ? 'Да' : 'Нет'),

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Справочник мерчантов — по подстроке в {@see CardTransaction::merchant} определяем,
@@ -19,6 +20,7 @@ class Merchant extends Model
 
     protected $fillable = [
         'code',
+        'provider_merchant_key',
         'name',
         'category',
         'logo_svg',
@@ -80,5 +82,23 @@ class Merchant extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(CardTransaction::class);
+    }
+
+    public function productRates(): HasMany
+    {
+        return $this->hasMany(MerchantProductRate::class);
+    }
+
+    /**
+     * Значение параметра `merchant` для CardsPro `GET /products/search-by-merchant`
+     * (см. App\Console\Commands\Providers\SyncMerchantProductRates) — обычно то же,
+     * что и в примерах CardsPro ("github", "google": строчными буквами, без пробелов).
+     * Если у мерчанта не задан провайдерский ключ явно, используем такой слаг от
+     * названия — для большинства однословных названий (Netflix, Spotify) это совпадёт;
+     * если CardsPro не находит по нему продукт, ключ можно проставить вручную.
+     */
+    public function providerSearchKey(): string
+    {
+        return $this->provider_merchant_key ?: Str::slug($this->name, '');
     }
 }

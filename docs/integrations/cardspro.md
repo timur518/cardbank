@@ -249,7 +249,7 @@ POST: CAP-SIGN = sha256(CAP-NONCE + json_тело_запроса + query_string 
 ## Фоновая синхронизация
 
 Данные о картах/провайдерах живут не только по вебхукам — вебхук может потеряться,
-не дойти или прийти с задержкой. Поэтому есть пять универсальных (не привязанных к
+не дойти или прийти с задержкой. Поэтому есть шесть универсальных (не привязанных к
 конкретному провайдеру — работают со всеми `CardProvider::where('status', 'active')`)
 фоновых команд-подстраховок. Зарегистрированы в `routes/console.php` через
 `Schedule::command(...)`; на сервере нужен один крон-entry:
@@ -265,6 +265,7 @@ POST: CAP-SIGN = sha256(CAP-NONCE + json_тело_запроса + query_string 
 | `providers:sync-pending-operations` | Опрашивает `GET /request/status` по всем незавершённым `CardProviderOperation` и применяет результат | 2 мин |
 | `providers:sync-account-balances` | Перезаписывает `CardProvider::reserve_balance_usd` реальным балансом мастер-счёта (`GET /account/balance`) | 1 час |
 | `providers:sync-card-catalog` | Сверяет `GET /products` с «Карточными продуктами», заводит расхождения на новые/пропавшие коды продуктов. С `--sync` дополнительно заводит `CardProduct` на новые коды (неактивными, без цены/себестоимости — их API не отдаёт) и обновляет у всех продуктов лимиты выпуска/пополнения (`issue_min_amount`/`issue_max_amount`/`topup_min_amount`/`topup_max_amount`) | 1 раз в сутки |
+| `providers:sync-merchant-rates` | Опрашивает `GET /products/search-by-merchant` по каждому мерчанту из справочника `Merchant` и сохраняет рейтинг успешных платежей каждого карточного продукта в `MerchantProductRate` (по `provider_product_code`). Матрица по активным продуктам — админка «Настройки» -> «Рейтинг платежей по мерчантам» | 1 раз в сутки |
 
 ### Архитектура: как это остаётся универсальным
 

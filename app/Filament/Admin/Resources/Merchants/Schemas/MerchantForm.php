@@ -33,6 +33,11 @@ class MerchantForm
                             ->required()
                             ->maxLength(191)
                             ->placeholder('Augment AI'),
+                        TextInput::make('provider_merchant_key')
+                            ->label('Ключ мерчанта у CardsPro')
+                            ->maxLength(191)
+                            ->placeholder('github, google — как в примерах CardsPro')
+                            ->helperText('Значение параметра merchant для `GET /products/search-by-merchant`. Если пусто — используется автоматический слаг от названия мерчанта.'),
                         Select::make('category')
                             ->label('Категория')
                             ->options(MerchantCategory::class)
