@@ -37,6 +37,7 @@
         </div>
         <div class="mt-10">
             <p class="max-w-4xl text-xs leading-relaxed text-[#3A3C40]/35">Сервис «Можно» не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p>
+            <p class="mt-2 text-xs text-[#3A3C40]/30">Platega test</p>
         </div>
     </div>
 </footer>
