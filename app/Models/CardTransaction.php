@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\CardTransactionStatus;
 use App\Enums\CardTransactionType;
+use App\Services\Integrations\CardsPro\CardsProService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -62,10 +63,10 @@ class CardTransaction extends Model
     /**
      * Идемпотентно записывает операцию по карте, пришедшую от провайдера (вебхук
      * CARD_TRANSACTION или опрос GET /{san}/transactions у CardsPro — см.
-     * {@see \App\Services\Integrations\CardsPro\CardsProService::normalizeTransactionPayload()}
-     * и {@see \App\Services\Integrations\CardsPro\CardsProService::normalizePolledTransaction()}).
+     * {@see CardsProService::normalizeTransactionPayload()}
+     * и {@see CardsProService::normalizePolledTransaction()}).
      *
-     * У CardsPro авторизация (холд, `authorization`, наш {@see \App\Enums\CardTransactionStatus::Pending})
+     * У CardsPro авторизация (холд, `authorization`, наш {@see CardTransactionStatus::Pending})
      * и её расчёт (`expense`) — одна и та же покупка под ДВУМЯ разными provider_tx_id: расчёт
      * ссылается на id холда через originTxId/originTxnId. Без учёта этой связи обычный
      * updateOrCreate по provider_tx_id заводил на такую покупку вторую строку — холд и расчёт
@@ -151,6 +152,7 @@ class CardTransaction extends Model
         }
 
         $target = $existingBySameId ?? $originHold;
+        $previousStatus = $target?->status;
 
         $attributes = [
             'provider_tx_id' => $tx['provider_tx_id'],
@@ -174,7 +176,45 @@ class CardTransaction extends Model
             $transaction = static::create($attributes + ['card_id' => $cardId]);
         }
 
+        static::recordOwnMerchantStat($cardId, $merchantId, $tx['type'], $tx['status'], $previousStatus);
+
         return ['transaction' => $transaction, 'isNew' => ! $alreadyRecorded];
+    }
+
+    /**
+     * Собственная (не от CardsPro) статистика успешных/отказанных покупок по мерчанту
+     * ({@see MerchantProductRate::recordOutcome()}). Считаем только терминальные исходы покупки
+     * (успешное списание — `Purchase`+`Success`, отказ в авторизации — `Decline`+`Declined`),
+     * холды (`Pending`) в статистику не попадают. Сравнение с $previousStatus защищает от двойного
+     * учёта при повторной доставке того же события (вебхук/опрос повторно присылает тот
+     * же терминальный статус повторно) — считаем, только если статус действительно изменился
+     * (была новая строка, либо холд впервые сошёлся в терминальный).
+     */
+    private static function recordOwnMerchantStat(
+        int $cardId,
+        ?int $merchantId,
+        CardTransactionType $type,
+        CardTransactionStatus $status,
+        ?CardTransactionStatus $previousStatus,
+    ): void {
+        if ($merchantId === null || $previousStatus === $status) {
+            return;
+        }
+
+        $isSuccessfulPurchase = $type === CardTransactionType::Purchase && $status === CardTransactionStatus::Success;
+        $isDeclinedAttempt = $type === CardTransactionType::Decline && $status === CardTransactionStatus::Declined;
+
+        if (! $isSuccessfulPurchase && ! $isDeclinedAttempt) {
+            return;
+        }
+
+        $cardProductId = Card::where('id', $cardId)->value('card_product_id');
+
+        if ($cardProductId === null) {
+            return;
+        }
+
+        MerchantProductRate::recordOutcome($merchantId, $cardProductId, $status);
     }
 
     public function card(): BelongsTo

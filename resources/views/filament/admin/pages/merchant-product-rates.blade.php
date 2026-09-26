@@ -33,12 +33,19 @@
                                 </td>
                                 <td style="padding: 8px 12px; font-weight: 500;">{{ $row['merchant']->name }}</td>
                                 @foreach ($products as $product)
-                                    <td style="padding: 8px 12px; text-align: right;">
-                                        @php $rate = $row['rates'][$product->id] ?? null; @endphp
-                                        @if ($rate === null)
-                                            <span style="color: #9ca3af;">—</span>
-                                        @else
-                                            {{ number_format($rate * 100, 0) }}%
+                                    <td style="padding: 8px 12px; text-align: right; white-space: nowrap;">
+                                        @php $stat = $row['rates'][$product->id] ?? null; @endphp
+                                        <div>
+                                            @if ($stat === null || $stat->rate === null)
+                                                <span style="color: #9ca3af;">—</span>
+                                            @else
+                                                {{ number_format($stat->rate * 100, 0) }}%
+                                            @endif
+                                        </div>
+                                        @if ($stat && ($stat->success_count > 0 || $stat->decline_count > 0))
+                                            <div style="font-size: 11px; color: #6b7280;" title="Успешно / Отказ / Собственный рейтинг">
+                                                {{ $stat->success_count }}/{{ $stat->decline_count }}/{{ number_format($stat->own_rate * 100, 0) }}%
+                                            </div>
                                         @endif
                                     </td>
                                 @endforeach

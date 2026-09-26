@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Pages;
 
 use App\Models\CardProduct;
 use App\Models\Merchant;
+use App\Models\MerchantProductRate;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Icons\Heroicon;
@@ -40,7 +41,7 @@ class MerchantProductRatesPage extends Page
     }
 
     /**
-     * @return Collection<int, array{merchant: Merchant, rates: array<int, float|null>}>
+     * @return Collection<int, array{merchant: Merchant, rates: array<int, MerchantProductRate|null>}>
      */
     public function getRows(): Collection
     {
@@ -55,7 +56,7 @@ class MerchantProductRatesPage extends Page
                 'merchant' => $merchant,
                 'rates' => $products->mapWithKeys(
                     fn (CardProduct $product) => [
-                        $product->id => $merchant->productRates->firstWhere('card_product_id', $product->id)?->rate,
+                        $product->id => $merchant->productRates->firstWhere('card_product_id', $product->id),
                     ]
                 )->all(),
             ]);
