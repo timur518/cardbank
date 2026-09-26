@@ -4,6 +4,7 @@
             <div>
                 <p class="brand-mark"><a href="/" class="brand-mark"><img src="/assets/images/logo.svg" width="155px"></a></p>
                 <p class="mt-4 max-w-sm text-sm leading-relaxed text-[#3A3C40]/50">Виртуальные карты для платежей, подписок и покупок по всему миру.</p>
+                <p class="footer-title mt-6">Служба поддержки</p>
                 <p class="mt-2 text-sm text-[#3A3C40]/50"><a href="mailto:info@mojno.cc" class="hover:text-[#3A3C40]">info@mojno.cc</a></p>
             </div>
             <div>
