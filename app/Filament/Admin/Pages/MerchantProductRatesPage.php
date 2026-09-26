@@ -57,6 +57,8 @@ class MerchantProductRatesPage extends Page implements HasTable
                 ])
             )
             ->defaultSort('name')
+            ->paginationPageOptions([25, 50, 100])
+            ->defaultPaginationPageOption(50)
             ->emptyStateHeading('Мерчантов пока нет')
             ->emptyStateDescription('Добавьте мерчантов в разделе «Настройки» → «Мерчанты».')
             ->emptyStateIcon('heroicon-o-building-storefront')
