@@ -9,9 +9,11 @@ use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Mail\PasswordResetMail;
+use App\Mail\WelcomeMail;
 use App\Models\Notification;
 use App\Models\User;
-use App\Notifications\NewPasswordNotification;
+use App\Services\Mail\SafeMailer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -84,6 +86,7 @@ class AuthController extends Controller
 
         // Отправка приветственного уведомления
         Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
+        SafeMailer::send($user->email, new WelcomeMail($user));
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
@@ -106,7 +109,7 @@ class AuthController extends Controller
         if ($user) {
             $newPassword = Str::password(12);
             $user->update(['password' => $newPassword]);
-            $user->notify(new NewPasswordNotification($newPassword));
+            SafeMailer::send($user->email, new PasswordResetMail($user, $newPassword));
 
             // Отправка уведомления о смене пароля
             Notification::notify($user, NotificationEvent::PasswordResetRequested, ['email' => $user->email], '/profile');

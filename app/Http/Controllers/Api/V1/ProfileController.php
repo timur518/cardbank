@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\UpdatePasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Mail\PasswordChangedMail;
 use App\Models\Notification;
+use App\Services\Mail\SafeMailer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -52,7 +54,9 @@ class ProfileController extends Controller
         $user->update(['password' => $request->validated('password')]);
 
         // Отправка уведомления о смене пароля
-        Notification::notify($user, NotificationEvent::PasswordChanged, ['datetime' => now()->format('d.m.Y H:i')], '/profile');
+        $changedAt = now();
+        Notification::notify($user, NotificationEvent::PasswordChanged, ['datetime' => $changedAt->format('d.m.Y H:i')], '/profile');
+        SafeMailer::send($user->email, new PasswordChangedMail($user, $changedAt));
 
         return response()->json(['message' => 'Пароль изменён']);
     }

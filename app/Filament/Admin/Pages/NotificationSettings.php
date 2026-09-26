@@ -2,7 +2,9 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Mail\TestMail;
 use App\Models\Setting;
+use App\Services\Mail\MailConfigurator;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
@@ -13,6 +15,8 @@ use Filament\Pages\Page;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 use UnitEnum;
 
 class NotificationSettings extends Page implements HasForms
@@ -125,10 +129,27 @@ class NotificationSettings extends Page implements HasForms
                     TextInput::make('to')->label('Email получателя')->email()->required(),
                 ])
                 ->action(function (array $data) {
-                    Notification::make()
-                        ->title("Тестовое письмо отправлено на {$data['to']}")
-                        ->success()
-                        ->send();
+                    // Сначала сохраняем текущее (возможно ещё не сохранённое) состояние формы, чтобы
+                    // тест сразу проверял введённые SMTP-настройки. Сохраняем в БД для будущих запросов
+                    // и сразу же применяем к мейлеру в текущем запросе — App\Providers\AppServiceProvider::boot()
+                    // уже отработал до save() и не видит новых значений без повторного вызова.
+                    $this->save();
+                    MailConfigurator::apply($this->form->getState());
+
+                    try {
+                        Mail::to($data['to'])->send(new TestMail);
+
+                        Notification::make()
+                            ->title("Тестовое письмо отправлено на {$data['to']}")
+                            ->success()
+                            ->send();
+                    } catch (Throwable $e) {
+                        Notification::make()
+                            ->title('Не удалось отправить письмо')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->send();
+                    }
                 }),
 
             Action::make('testTelegram')

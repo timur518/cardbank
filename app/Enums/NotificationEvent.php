@@ -76,7 +76,7 @@ enum NotificationEvent
             self::CardFrozen => 'Карта заморожена',
             self::CardUnfrozen => 'Карта разморожена',
             self::CardClosed => 'Карта закрыта',
-            self::CardPurchaseDeclined => 'Операция отклонена',
+            self::CardPurchaseDeclined => 'Недостаточно средств',
             self::TopupSuccess => 'Баланс пополнен',
             self::TopupFailed => 'Пополнение не прошло',
             self::PasswordChanged => 'Пароль изменён',

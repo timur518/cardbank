@@ -54,6 +54,11 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Публичный адрес SPA личного кабинета (отдельное приложение, см.
+    // resources/cabinet/vite.config.ts) — используется для ссылок в письмах на
+    // конкретные страницы ЛК (App\Services\Mail\EmailBranding::cabinetUrl()).
+    'cabinet_url' => env('CABINET_URL', 'https://mne.mojno.cc'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

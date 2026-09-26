@@ -8,6 +8,8 @@ use App\Enums\CardStatus;
 use App\Enums\CardTransactionStatus;
 use App\Enums\CardTransactionType;
 use App\Enums\NotificationEvent;
+use App\Mail\CardToppedUpMail;
+use App\Mail\InsufficientFundsMail;
 use App\Models\Card;
 use App\Models\CardProvider;
 use App\Models\CardProviderOperation;
@@ -15,6 +17,7 @@ use App\Models\CardStatusHistory;
 use App\Models\CardTransaction;
 use App\Models\Notification;
 use App\Services\CardProviderOperationResolver;
+use App\Services\Mail\SafeMailer;
 use Throwable;
 
 /**
@@ -32,9 +35,7 @@ use Throwable;
  */
 class CardsProWebhookHandler
 {
-    public function __construct(protected CardProvider $provider)
-    {
-    }
+    public function __construct(protected CardProvider $provider) {}
 
     /**
      * @param  array<string, mixed>  $payload
@@ -72,7 +73,7 @@ class CardsProWebhookHandler
 
         Notification::notify($card->user, NotificationEvent::OtpCodeReceived, [
             'code' => $otpCode,
-        ], '/cards/' . $card->uuid);
+        ], '/cards/'.$card->uuid);
     }
 
     /**
@@ -157,7 +158,7 @@ class CardsProWebhookHandler
      * по карте.
      *
      * Строка транзакции обычно уже существует к этому моменту со status=Pending — её заводит
-     * {@see \App\Services\Integrations\CardsPro\CardsProOrderProcessor::recordPendingTransaction()} сразу
+     * {@see CardsProOrderProcessor::recordPendingTransaction()} сразу
      * после запроса `orders/topup`. Здесь она по тому же `docid`/`request_id` переводится в
      * Success (при EXECUTED) или Declined (при DECLINED), а не создаётся вторая. Если pending-строки
      * нет (например в ответе на `orders/topup` не было docid), EXECUTED всё равно создаёт строку
@@ -196,7 +197,7 @@ class CardsProWebhookHandler
             Notification::notify($card->user, NotificationEvent::TopupFailed, [
                 'last4' => $card->card_last4,
                 'amount' => NotificationEvent::money($pending->amount, $pending->currency),
-            ], '/cards/' . $card->uuid);
+            ], '/cards/'.$card->uuid);
 
             return;
         }
@@ -237,12 +238,16 @@ class CardsProWebhookHandler
         if (! $wasAlreadySuccess) {
             $this->refreshCardBalance($card);
 
-            //Отправка уведомления об успешном пополнении баланса
+            $formattedAmount = NotificationEvent::money($amount, $payload['params']['currency'] ?? $card->currency);
+            $formattedBalance = NotificationEvent::money($card->balance, $card->currency);
+
+            // Отправка уведомления об успешном пополнении баланса
             Notification::notify($card->user, NotificationEvent::TopupSuccess, [
                 'last4' => $card->card_last4,
-                'amount' => NotificationEvent::money($amount, $payload['params']['currency'] ?? $card->currency),
-                'balance' => NotificationEvent::money($card->balance, $card->currency),
-            ], '/cards/' . $card->uuid);
+                'amount' => $formattedAmount,
+                'balance' => $formattedBalance,
+            ], '/cards/'.$card->uuid);
+            SafeMailer::send($card->user->email, new CardToppedUpMail($card, $formattedAmount, $formattedBalance));
         }
     }
 
@@ -294,7 +299,7 @@ class CardsProWebhookHandler
         };
 
         if ($event) {
-            //Универсальный отправитель уведомлений
+            // Универсальный отправитель уведомлений
             Notification::notify($card->user, $event, ['last4' => $card->card_last4]);
         }
     }
@@ -348,13 +353,16 @@ class CardsProWebhookHandler
 
         // Тот же флаг isNew подстраховывает от повторного уведомления на ретрай того же вебхука.
         if ($result['isNew'] && $status === CardTransactionStatus::Declined) {
+            $formattedAmount = NotificationEvent::money($amount, $payload['billCurrency'] ?? $card->currency);
+            $merchant = $payload['merchantName'] ?? null;
 
-            //Отправка уведомления об неуспешной оплате
+            // Отправка уведомления «Недостаточно средств» — на этих картах отклон почти всегда именно из-за нехватки баланса.
             Notification::notify($card->user, NotificationEvent::CardPurchaseDeclined, [
                 'last4' => $card->card_last4,
-                'amount' => NotificationEvent::money($amount, $payload['billCurrency'] ?? $card->currency),
-                'merchant' => $payload['merchantName'] ?? null,
-            ], '/cards/' . $card->uuid);
+                'amount' => $formattedAmount,
+                'merchant' => $merchant,
+            ], '/cards/'.$card->uuid);
+            SafeMailer::send($card->user->email, new InsufficientFundsMail($card, $formattedAmount, $merchant));
         }
     }
 

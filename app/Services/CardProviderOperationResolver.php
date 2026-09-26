@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
+use App\Console\Commands\Providers\SyncPendingOperations;
 use App\Enums\CardProviderOperationStatus;
 use App\Enums\CardProviderOperationType;
 use App\Enums\CardStatus;
 use App\Enums\CardTransactionStatus;
 use App\Enums\ExpenseCategory;
 use App\Enums\NotificationEvent;
+use App\Mail\CardIssuedMail;
+use App\Mail\CardToppedUpMail;
 use App\Models\Card;
 use App\Models\CardProvider;
 use App\Models\CardProviderOperation;
@@ -16,13 +19,16 @@ use App\Models\CardTransaction;
 use App\Models\Expense;
 use App\Models\Notification;
 use App\Models\Setting;
+use App\Services\Integrations\CardsPro\CardsProOrderProcessor;
+use App\Services\Integrations\CardsPro\CardsProWebhookHandler;
 use App\Services\Integrations\ProviderIntegrationResolver;
+use App\Services\Mail\SafeMailer;
 use Throwable;
 
 /**
  * Применяет финальный результат асинхронной операции провайдера (выпуск/пополнение/
  * вывод/блокировка) к нашим моделям — одинаково для обоих источников результата:
- * вебхука (пришёл раньше) и {@see \App\Console\Commands\Providers\SyncPendingOperations}
+ * вебхука (пришёл раньше) и {@see SyncPendingOperations}
  * (опросил и обнаружил, что вебхук потерялся). Кто бы ни узнал результат первым,
  * {@see resolve()} атомарно «забирает» операцию (`UPDATE ... WHERE status = pending`),
  * так что повторный вызов из другого источника не применит эффект дважды.
@@ -46,7 +52,7 @@ class CardProviderOperationResolver
             // это отдельный существующий пробел поведения, не связанный с уведомлениями.
             if ($operation->type === CardProviderOperationType::Issue) {
                 $card = $operation->card_id ? Card::find($operation->card_id) : null;
-                //Отправка уведомления об ошибке при выпуске карты
+                // Отправка уведомления об ошибке при выпуске карты
                 Notification::notify($card?->user, NotificationEvent::CardIssueFailed);
             }
 
@@ -120,8 +126,9 @@ class CardProviderOperationResolver
 
         $this->recordIssueExpenses($card, $operation);
 
-        //Отправка уведомления об успешном выпуске карты
-        Notification::notify($card->user, NotificationEvent::CardIssued, ['last4' => $card->card_last4], '/cards/' . $card->uuid);
+        // Отправка уведомления об успешном выпуске карты
+        Notification::notify($card->user, NotificationEvent::CardIssued, ['last4' => $card->card_last4], '/cards/'.$card->uuid);
+        SafeMailer::send($card->user->email, new CardIssuedMail($card));
     }
 
     /**
@@ -214,9 +221,9 @@ class CardProviderOperationResolver
 
     /**
      * Переводит pending-строку CardTransaction (заведённую при инициации пополнения,
-     * {@see \App\Services\Integrations\CardsPro\CardsProOrderProcessor::recordPendingTransaction()}) в Success
+     * {@see CardsProOrderProcessor::recordPendingTransaction()}) в Success
      * и уведомляет клиента. Страховка на случай, если вебхук CARD_TOPUP так и не дошёл —
-     * {@see \App\Services\Integrations\CardsPro\CardsProWebhookHandler::handleTopup()} делает то же самое,
+     * {@see CardsProWebhookHandler::handleTopup()} делает то же самое,
      * если он дошёл. `docid` у CardProviderOperation и `provider_tx_id` у CardTransaction — одно
      * и то же значение из ответа `orders/topup`.
      */
@@ -239,11 +246,15 @@ class CardProviderOperationResolver
 
         $transaction->update(['status' => CardTransactionStatus::Success]);
 
+        $amount = NotificationEvent::money($transaction->amount, $transaction->currency);
+        $balance = NotificationEvent::money($card->balance, $card->currency);
+
         Notification::notify($card->user, NotificationEvent::TopupSuccess, [
             'last4' => $card->card_last4,
-            'amount' => NotificationEvent::money($transaction->amount, $transaction->currency),
-            'balance' => NotificationEvent::money($card->balance, $card->currency),
-        ], '/cards/' . $card->uuid);
+            'amount' => $amount,
+            'balance' => $balance,
+        ], '/cards/'.$card->uuid);
+        SafeMailer::send($card->user->email, new CardToppedUpMail($card, $amount, $balance));
     }
 
     /**
@@ -280,7 +291,7 @@ class CardProviderOperationResolver
 
         $card->update(['status' => CardStatus::Failed]);
 
-        //Отправка уведомления об отказе в выпуске карты
+        // Отправка уведомления об отказе в выпуске карты
         Notification::notify($card->user, NotificationEvent::CardIssueFailed);
 
         return $operation;
@@ -310,11 +321,11 @@ class CardProviderOperationResolver
         ]);
 
         if ($amount > 0) {
-            //Отправка уведомления об неудачном пополнении баланса карты
+            // Отправка уведомления об неудачном пополнении баланса карты
             Notification::notify($card->user, NotificationEvent::TopupFailed, [
                 'last4' => $card->card_last4,
                 'amount' => NotificationEvent::money($amount, $card->currency),
-            ], '/cards/' . $card->uuid);
+            ], '/cards/'.$card->uuid);
         }
 
         return $operation;
@@ -366,7 +377,7 @@ class CardProviderOperationResolver
         ]);
 
         $card->update(['status' => CardStatus::Closed, 'closed_at' => now()]);
-        //Отправляем уведомление о блокировке карты
+        // Отправляем уведомление о блокировке карты
         Notification::notify($card->user, NotificationEvent::CardClosed, ['last4' => $card->card_last4]);
     }
 }
