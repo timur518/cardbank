@@ -14,7 +14,7 @@
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#ffffff;border-radius:24px;">
 <tr>
 <td align="center" style="padding:32px 24px 8px;">
-<img src="{{ \App\Services\Mail\EmailBranding::logoUrl() }}" width="56" height="56" alt="{{ \App\Services\Mail\EmailBranding::siteName() }}" style="display:block;border:0;outline:none;width:56px;height:56px;">
+<img src="{{ \App\Services\Mail\EmailBranding::logoUrl() }}" width="130" alt="{{ \App\Services\Mail\EmailBranding::siteName() }}" style="display:block;border:0;outline:none;width:130px;">
 </td>
 </tr>
 <tr>
