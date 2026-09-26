@@ -4,6 +4,7 @@
             <div>
                 <p class="brand-mark"><a href="/" class="brand-mark"><img src="/assets/images/logo.svg" width="155px"></a></p>
                 <p class="mt-4 max-w-sm text-sm leading-relaxed text-[#3A3C40]/50">Виртуальные карты для платежей, подписок и покупок по всему миру.</p>
+                <p class="mt-2 text-sm text-[#3A3C40]/50"><a href="mailto:info@mojno.cc" class="hover:text-[#3A3C40]">info@mojno.cc</a></p>
             </div>
             <div>
                 <p class="footer-title">Продукт</p>
@@ -33,7 +34,9 @@
                 </ul>
             </div>
         </div>
-        <p class="mt-16 max-w-4xl text-xs leading-relaxed text-[#3A3C40]/35">«Можно» не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p>
-        <p class="mt-5 text-xs text-[#3A3C40]/30">Администратор сервиса: ИП Халяпов Тимур Рамилевич, ИНН: 161104109911</p>
+        <div class="mt-10 space-y-1">
+            <p class="max-w-4xl text-xs leading-relaxed text-[#3A3C40]/35">Сервис «Можно» не является банком и не выпускает карты самостоятельно. Карты эмитирует лицензированный партнёр-эмитент.</p>
+            <p class="text-xs text-[#3A3C40]/30">Администратор сервиса: ИП Халяпов Тимур Рамилевич, ИНН: 161104109911, ОГРН: 317169000002931.</p>
+        </div>
     </div>
 </footer>
