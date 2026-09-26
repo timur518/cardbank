@@ -18,13 +18,8 @@
 </td>
 </tr>
 <tr>
-<td align="center" style="padding:0 24px 24px;">
-<span style="font-size:13px;letter-spacing:.04em;color:#77736e;text-transform:uppercase;">{{ \App\Services\Mail\EmailBranding::siteName() }}</span>
-</td>
-</tr>
-<tr>
 <td style="padding:0 32px 8px;">
-<h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#3A3C40;font-weight:600;">{{ $heading }}</h1>
+<h1 align="center" style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#3A3C40;font-weight:600;text-align:center;">{{ $heading }}</h1>
 {{ $slot }}
 </td>
 </tr>
@@ -36,8 +31,8 @@
 </tr>
 @endisset
 <tr>
-<td style="padding:24px 32px 32px;border-top:1px solid #dedbd6;">
-<p style="margin:16px 0 0;font-size:13px;color:#77736e;line-height:1.5;">Это автоматическое письмо от {{ \App\Services\Mail\EmailBranding::siteName() }}. Если у вас есть вопросы, напишите нам: <a href="mailto:{{ \App\Services\Mail\EmailBranding::supportEmail() }}" style="color:#f37338;text-decoration:none;">{{ \App\Services\Mail\EmailBranding::supportEmail() }}</a></p>
+<td align="center" style="padding:24px 32px 32px;border-top:1px solid #dedbd6;text-align:center;">
+<p style="margin:16px 0 0;font-size:13px;color:#77736e;line-height:1.5;text-align:center;">Это автоматическое письмо. Если у вас есть вопросы, напишите нам: <a href="mailto:{{ \App\Services\Mail\EmailBranding::supportEmail() }}" style="color:#f37338;text-decoration:none;">{{ \App\Services\Mail\EmailBranding::supportEmail() }}</a></p>
 </td>
 </tr>
 </table>
