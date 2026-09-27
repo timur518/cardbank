@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Resources\CardProducts\Tables;
 
 use App\Models\CardProduct;
-use App\Models\Setting;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
@@ -113,26 +112,26 @@ class CardProductsTable
     }
 
     /**
-     * Цена продажи, себестоимость и прибыль — тремя строками в одной ячейке, в рублях и в долларах через «/». Себестоимость и прибыль —
-     * см. CardProduct::costUsd()/getCostRubAttribute()/getEstimatedProfitAttribute().
+     * Четыре строки в одной ячейке, каждая в рублях и в долларах через «/»: цена продажи карты, общая сумма
+     * к оплате (карта + типовое пополнение), расходы банка и прибыль —
+     * см. CardProduct::getTotalPayableRubAttribute()/getExpensesRubAttribute()/getEstimatedProfitAttribute().
      */
     protected static function formatCosts(CardProduct $record): string
     {
-        $rawRate = (float) (Setting::get('currency_rate_usd') ?? 0);
+        $rawRate = CardProduct::rawRateUsd();
 
         $priceRub = (float) $record->price_rub;
-        $priceUsd = $rawRate > 0 ? $priceRub / $rawRate : 0.0;
-
-        $costRub = (float) $record->cost_rub;
-        $costUsd = $record->costUsd();
-
+        $totalPayableRub = (float) $record->total_payable_rub;
+        $expensesRub = (float) $record->expenses_rub;
         $profitRub = (float) $record->estimated_profit;
-        $profitUsd = $priceUsd - $costUsd;
+
+        $toUsd = fn (float $rub): float => $rawRate > 0 ? $rub / $rawRate : 0.0;
 
         return implode('<br>', [
-            self::formatDualAmount($priceRub, $priceUsd),
-            sprintf('<span class="text-danger-600">−%s</span>', self::formatDualAmount($costRub, $costUsd)),
-            sprintf('<span class="text-success-600">%s</span>', self::formatDualAmount($profitRub, $profitUsd)),
+            self::formatDualAmount($priceRub, $toUsd($priceRub)),
+            self::formatDualAmount($totalPayableRub, $toUsd($totalPayableRub)),
+            sprintf('<span class="text-danger-600">−%s</span>', self::formatDualAmount($expensesRub, $toUsd($expensesRub))),
+            sprintf('<span class="text-success-600">%s</span>', self::formatDualAmount($profitRub, $toUsd($profitRub))),
         ]);
     }
 

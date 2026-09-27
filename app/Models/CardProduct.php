@@ -99,42 +99,67 @@ class CardProduct extends Model
     }
 
     /**
-     * Себестоимость выпуска в долларах: стоимость выпуска у провайдера плюс типовое пополнение
-     * (Setting::calc_topup_amount_usd, тот же дефолт, что и в калькуляторе «Валютной системы»)
-     * с учётом комиссии пополнения именно этого продукта (provider_topup_fee_percent).
+     * Сумма типового пополнения при продаже карты (Setting::calc_topup_amount_usd) и комиссия за пополнение
+     * карты (Setting::calc_card_topup_fee_percent) — оба значения берутся из блока «Калькулятор» страницы
+     * «Валютная система», а не из полей самого карточного продукта.
      */
-    public function costUsd(): float
+    protected static function topupWithFeeUsd(): float
     {
         $topupUsd = (float) (Setting::get('calc_topup_amount_usd') ?? 0);
+        $feePercent = (float) (Setting::get('calc_card_topup_fee_percent') ?? 0);
 
-        return (float) $this->provider_issue_cost_usd + $topupUsd * (1 + (float) $this->provider_topup_fee_percent / 100);
+        return $topupUsd * (1 + $feePercent / 100);
     }
 
     /**
-     * Курс USD с наценкой (курс ЦБ × (1 + наценка%)) — тот же курс, по которому клиент
-     * покупает доллары пополнения, см. CurrencySettings::calculatorSellRateUsd().
+     * Сырой курс ЦБ, без наценки — по нему считаются фактические расходы банка в долларах (стоимость
+     * выпуска и пополнения у провайдера) — мы платим их без наценки, она есть только в том, что мы
+     * берём с клиента.
+     */
+    public static function rawRateUsd(): float
+    {
+        return (float) (Setting::get('currency_rate_usd') ?? 0);
+    }
+
+    /**
+     * Курс USD с нашей наценкой (курс ЦБ × (1 + наценка%)) — по нему клиент фактически платит за
+     * доллары пополнения, см. CurrencySettings::calculatorSellRateUsd().
      */
     public static function sellRateUsd(): float
     {
-        $rate = (float) (Setting::get('currency_rate_usd') ?? 0);
         $markup = (float) (Setting::get('currency_markup_usd_percent') ?? 0);
 
-        return $rate * (1 + $markup / 100);
+        return self::rawRateUsd() * (1 + $markup / 100);
     }
 
     /**
-     * Себестоимость выпуска в рублях: costUsd(), переведённая по курсу с наценкой.
+     * Общая сумма к оплате клиентом при покупке карты с типовым пополнением: цена продажи (price_rub)
+     * плюс сумма пополнения с комиссией, купленная у нас по курсу с наценкой (сколько клиент
+     * реально платит за весь заказ, см. OrderController::convertTopup()).
      */
-    public function getCostRubAttribute(): string
+    public function getTotalPayableRubAttribute(): string
     {
-        return number_format($this->costUsd() * self::sellRateUsd(), 2, '.', '');
+        return number_format((float) $this->price_rub + self::topupWithFeeUsd() * self::sellRateUsd(), 2, '.', '');
     }
 
     /**
-     * Расчётная прибыль с одного выпуска: цена продажи минус себестоимость (cost_rub).
+     * Фактические расходы банка в рублях: стоимость выпуска у провайдера плюс сумма пополнения
+     * с комиссией, переведённые по сырому курсу (без наценки, потому что это наши
+     * реальные валютные затраты, а не то, что мы берём с клиента).
+     */
+    public function getExpensesRubAttribute(): string
+    {
+        $expensesUsd = (float) $this->provider_issue_cost_usd + self::topupWithFeeUsd();
+
+        return number_format($expensesUsd * self::rawRateUsd(), 2, '.', '');
+    }
+
+    /**
+     * Расчётная прибыль с одной продажи: общая сумма к оплате (карта + пополнение) минус
+     * фактические расходы банка.
      */
     public function getEstimatedProfitAttribute(): string
     {
-        return number_format((float) $this->price_rub - (float) $this->cost_rub, 2, '.', '');
+        return number_format((float) $this->total_payable_rub - (float) $this->expenses_rub, 2, '.', '');
     }
 }
