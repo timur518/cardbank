@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Models\CardProduct;
 use App\Models\Setting;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
@@ -207,17 +208,53 @@ class CurrencySettings extends Page implements HasForms
      */
     public function calculatorRows(): array
     {
+        $d = $this->data;
+
+        return $this->computeRows(
+            cardPriceRub: (float) ($d['calc_card_price_rub'] ?? 0),
+            providerIssueCostUsd: (float) ($d['calc_provider_issue_cost_usd'] ?? 0),
+        );
+    }
+
+    /**
+     * То же пошаговое разложение маржи, что и {@see calculatorRows()}, но по каждому активному
+     * карточному продукту: стоимость карты (`price_rub`) и себестоимость выпуска у провайдера
+     * (`provider_issue_cost_usd`) берутся из самого продукта, а все остальные величины (сумма
+     * типового пополнения, комиссии приёма/вывода/мастер-счёта/пополнения карты, курс с наценкой)
+     * — из полей блока «Калькулятор» этой же страницы.
+     *
+     * @return array<int, array{product: CardProduct, rows: array<int, array<string, mixed>>}>
+     */
+    public function cardProductRows(): array
+    {
+        return CardProduct::query()
+            ->where('active', true)
+            ->orderByDesc('sort')
+            ->get()
+            ->map(fn (CardProduct $product) => [
+                'product' => $product,
+                'rows' => $this->computeRows(
+                    cardPriceRub: (float) $product->price_rub,
+                    providerIssueCostUsd: (float) $product->provider_issue_cost_usd,
+                ),
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<int, array{label: string, rub: float, usd: float, remainderRub: float, remainderUsd: float, percentOfReceived: float}>
+     */
+    protected function computeRows(float $cardPriceRub, float $providerIssueCostUsd): array
+    {
         $rawRate = $this->calculatorRawRateUsd();
         $sellRate = $this->calculatorSellRateUsd();
         $toUsd = fn (float $rub): float => $rawRate > 0 ? $rub / $rawRate : 0.0;
 
         $d = $this->data;
-        $cardPriceRub = (float) ($d['calc_card_price_rub'] ?? 0);
         $topupUsd = (float) ($d['calc_topup_amount_usd'] ?? 0);
         $acceptFeePercent = (float) ($d['calc_accept_fee_percent'] ?? 0);
         $withdrawalFeePercent = (float) ($d['calc_withdrawal_fee_percent'] ?? 0);
         $masterTopupFeePercent = (float) ($d['calc_master_topup_fee_percent'] ?? 0);
-        $providerIssueCostUsd = (float) ($d['calc_provider_issue_cost_usd'] ?? 0);
         $cardTopupFeePercent = (float) ($d['calc_card_topup_fee_percent'] ?? 0);
 
         $rows = [];

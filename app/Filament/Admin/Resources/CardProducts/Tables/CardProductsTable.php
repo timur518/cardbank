@@ -13,7 +13,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Number;
 
 class CardProductsTable
 {
@@ -48,11 +47,10 @@ class CardProductsTable
                     ->formatStateUsing(fn (CardProduct $record) => self::formatLimits($record))
                     ->html()
                     ->toggleable(),
-                TextColumn::make('costs')
-                    ->label('Стоимости')
-                    ->state(fn (CardProduct $record) => (string) $record->getKey())
-                    ->formatStateUsing(fn (CardProduct $record) => self::formatCosts($record))
-                    ->html(),
+                TextColumn::make('price_rub')
+                    ->label('Стоимость')
+                    ->money('RUB')
+                    ->sortable(),
                 TextColumn::make('wallets')
                     ->label('Apple/GooglePay')
                     ->state(fn (CardProduct $record) => (string) $record->getKey())
@@ -81,7 +79,7 @@ class CardProductsTable
     }
 
     /**
-     * Лимиты выпуска и пополнения в две строки: «Выпуск: 1–100 000 $» / «Пополнение: 1–100 000 $».
+     * Лимиты выпуска и пополнения в две строки: «Выпуск: 1-100 000 $» / «Пополнение: 1-100 000 $».
      */
     protected static function formatLimits(CardProduct $record): string
     {
@@ -89,12 +87,12 @@ class CardProductsTable
         $topup = self::formatRange($record->topup_min_amount, $record->topup_max_amount);
 
         if ($issue === null && $topup === null) {
-            return '—';
+            return '-';
         }
 
         return implode('<br>', [
-            'Выпуск: '.($issue ?? '—'),
-            'Пополнение: '.($topup ?? '—'),
+            'Выпуск: '.($issue ?? '-'),
+            'Пополнение: '.($topup ?? '-'),
         ]);
     }
 
@@ -104,43 +102,11 @@ class CardProductsTable
             return null;
         }
 
-        $range = ($min !== null ? number_format((float) $min, 0, ',', ' ') : '—')
-            .'–'
-            .($max !== null ? number_format((float) $max, 0, ',', ' ') : '—');
+        $range = ($min !== null ? number_format((float) $min, 0, ',', ' ') : '-')
+            .'-'
+            .($max !== null ? number_format((float) $max, 0, ',', ' ') : '-');
 
         return $range.' $';
-    }
-
-    /**
-     * Четыре строки в одной ячейке, каждая в рублях и в долларах через «/»: цена продажи карты, общая сумма
-     * к оплате (карта + типовое пополнение), расходы банка и прибыль —
-     * см. CardProduct::getTotalPayableRubAttribute()/getExpensesRubAttribute()/getEstimatedProfitAttribute().
-     */
-    protected static function formatCosts(CardProduct $record): string
-    {
-        $rawRate = CardProduct::rawRateUsd();
-
-        $priceRub = (float) $record->price_rub;
-        $totalPayableRub = (float) $record->total_payable_rub;
-        $expensesRub = (float) $record->expenses_rub;
-        $profitRub = (float) $record->estimated_profit;
-
-        $toUsd = fn (float $rub): float => $rawRate > 0 ? $rub / $rawRate : 0.0;
-
-        return implode('<br>', [
-            self::formatDualAmount($priceRub, $toUsd($priceRub)),
-            self::formatDualAmount($totalPayableRub, $toUsd($totalPayableRub)),
-            sprintf('<span class="text-danger-600">−%s</span>', self::formatDualAmount($expensesRub, $toUsd($expensesRub))),
-            sprintf('<span class="text-success-600">%s</span>', self::formatDualAmount($profitRub, $toUsd($profitRub))),
-        ]);
-    }
-
-    /**
-     * «12 000 ₽ / 130 $» — рублёвая и долларовая суммы через «/» в одной строке.
-     */
-    protected static function formatDualAmount(float $rub, float $usd): string
-    {
-        return Number::currency($rub, 'RUB').' / '.Number::currency($usd, 'USD');
     }
 
     /**
