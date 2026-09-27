@@ -22,7 +22,7 @@ class PayoutRequestResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBanknotes;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Маркетинг';
+    protected static string|\UnitEnum|null $navigationGroup = 'Партнерка';
 
     protected static ?string $navigationLabel = 'Заявки на выплату';
 
@@ -30,7 +30,7 @@ class PayoutRequestResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Заявки на выплату';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

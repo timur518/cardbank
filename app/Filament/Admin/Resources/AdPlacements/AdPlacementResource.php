@@ -30,7 +30,7 @@ class AdPlacementResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Рекламные размещения';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 7;
 
     public static function form(Schema $schema): Schema
     {
