@@ -99,11 +99,42 @@ class CardProduct extends Model
     }
 
     /**
-     * Расчётная прибыль с одного выпуска.
-     * TODO: учитывать курс USD/RUB, когда появится модуль курсов валют — пока приблизительная оценка.
+     * Себестоимость выпуска в долларах: стоимость выпуска у провайдера плюс типовое пополнение
+     * (Setting::calc_topup_amount_usd, тот же дефолт, что и в калькуляторе «Валютной системы»)
+     * с учётом комиссии пополнения именно этого продукта (provider_topup_fee_percent).
+     */
+    public function costUsd(): float
+    {
+        $topupUsd = (float) (Setting::get('calc_topup_amount_usd') ?? 0);
+
+        return (float) $this->provider_issue_cost_usd + $topupUsd * (1 + (float) $this->provider_topup_fee_percent / 100);
+    }
+
+    /**
+     * Курс USD с наценкой (курс ЦБ × (1 + наценка%)) — тот же курс, по которому клиент
+     * покупает доллары пополнения, см. CurrencySettings::calculatorSellRateUsd().
+     */
+    public static function sellRateUsd(): float
+    {
+        $rate = (float) (Setting::get('currency_rate_usd') ?? 0);
+        $markup = (float) (Setting::get('currency_markup_usd_percent') ?? 0);
+
+        return $rate * (1 + $markup / 100);
+    }
+
+    /**
+     * Себестоимость выпуска в рублях: costUsd(), переведённая по курсу с наценкой.
+     */
+    public function getCostRubAttribute(): string
+    {
+        return number_format($this->costUsd() * self::sellRateUsd(), 2, '.', '');
+    }
+
+    /**
+     * Расчётная прибыль с одного выпуска: цена продажи минус себестоимость (cost_rub).
      */
     public function getEstimatedProfitAttribute(): string
     {
-        return number_format((float) $this->price_rub - (float) $this->provider_issue_cost_usd, 2, '.', '');
+        return number_format((float) $this->price_rub - (float) $this->cost_rub, 2, '.', '');
     }
 }

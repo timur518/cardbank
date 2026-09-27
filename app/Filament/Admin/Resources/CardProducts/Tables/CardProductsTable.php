@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\CardProducts\Tables;
 
 use App\Models\CardProduct;
+use App\Models\Setting;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
@@ -93,8 +94,8 @@ class CardProductsTable
         }
 
         return implode('<br>', [
-            'Выпуск: ' . ($issue ?? '—'),
-            'Пополнение: ' . ($topup ?? '—'),
+            'Выпуск: '.($issue ?? '—'),
+            'Пополнение: '.($topup ?? '—'),
         ]);
     }
 
@@ -105,22 +106,42 @@ class CardProductsTable
         }
 
         $range = ($min !== null ? number_format((float) $min, 0, ',', ' ') : '—')
-            . '–'
-            . ($max !== null ? number_format((float) $max, 0, ',', ' ') : '—');
+            .'–'
+            .($max !== null ? number_format((float) $max, 0, ',', ' ') : '—');
 
-        return $range . ' $';
+        return $range.' $';
     }
 
     /**
-     * Цена продажи, себестоимость и наценка — тремя строками в одной ячейке.
+     * Цена продажи, себестоимость и прибыль — тремя строками в одной ячейке, в рублях и в долларах через «/». Себестоимость и прибыль —
+     * см. CardProduct::costUsd()/getCostRubAttribute()/getEstimatedProfitAttribute().
      */
     protected static function formatCosts(CardProduct $record): string
     {
+        $rawRate = (float) (Setting::get('currency_rate_usd') ?? 0);
+
+        $priceRub = (float) $record->price_rub;
+        $priceUsd = $rawRate > 0 ? $priceRub / $rawRate : 0.0;
+
+        $costRub = (float) $record->cost_rub;
+        $costUsd = $record->costUsd();
+
+        $profitRub = (float) $record->estimated_profit;
+        $profitUsd = $priceUsd - $costUsd;
+
         return implode('<br>', [
-            Number::currency((float) $record->price_rub, 'RUB'),
-            Number::currency((float) $record->provider_issue_cost_usd, 'USD'),
-            Number::currency((float) $record->estimated_profit, 'RUB'),
+            self::formatDualAmount($priceRub, $priceUsd),
+            sprintf('<span class="text-danger-600">−%s</span>', self::formatDualAmount($costRub, $costUsd)),
+            sprintf('<span class="text-success-600">%s</span>', self::formatDualAmount($profitRub, $profitUsd)),
         ]);
+    }
+
+    /**
+     * «12 000 ₽ / 130 $» — рублёвая и долларовая суммы через «/» в одной строке.
+     */
+    protected static function formatDualAmount(float $rub, float $usd): string
+    {
+        return Number::currency($rub, 'RUB').' / '.Number::currency($usd, 'USD');
     }
 
     /**
