@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Pages;
 
 use App\Models\Setting;
 use BackedEnum;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -16,6 +17,7 @@ use UnitEnum;
 
 class CurrencySettings extends Page implements HasForms
 {
+    use HasPageShield;
     use InteractsWithForms;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCurrencyDollar;
@@ -335,19 +337,19 @@ class CurrencySettings extends Page implements HasForms
             }
         }
 
-        $topLeft = $paddingX . ',' . $paddingY;
-        $topRight = ($width - $paddingX) . ',' . $paddingY;
-        $bottomLeft = $paddingX . ',' . ($height - $paddingY);
-        $bottomRight = ($width - $paddingX) . ',' . ($height - $paddingY);
+        $topLeft = $paddingX.','.$paddingY;
+        $topRight = ($width - $paddingX).','.$paddingY;
+        $bottomLeft = $paddingX.','.($height - $paddingY);
+        $bottomRight = ($width - $paddingX).','.($height - $paddingY);
 
         $staircaseForward = collect($staircase)->map(fn (array $p): string => "{$p['x']},{$p['y']}")->implode(' ');
         $staircaseBackward = collect($staircase)->reverse()->map(fn (array $p): string => "{$p['x']},{$p['y']}")->implode(' ');
 
         // Зелёная зона «Поступление» (остаток): от ступенчатой границы вниз, до низа графика.
-        $incomeAreaPoints = $staircaseForward . ' ' . $bottomRight . ' ' . $bottomLeft;
+        $incomeAreaPoints = $staircaseForward.' '.$bottomRight.' '.$bottomLeft;
 
         // Красная зона «Расходы» (уже израсходовано): от верха графика до ступенчатой границы.
-        $expenseAreaPoints = $topLeft . ' ' . $topRight . ' ' . $staircaseBackward;
+        $expenseAreaPoints = $topLeft.' '.$topRight.' '.$staircaseBackward;
 
         return [
             'width' => $width,

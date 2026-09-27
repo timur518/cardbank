@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Pages;
 use App\Models\CardTransaction;
 use App\Models\ComplianceAlert;
 use BackedEnum;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -19,6 +20,7 @@ use UnitEnum;
 
 class ComplianceReports extends Page implements HasForms
 {
+    use HasPageShield;
     use InteractsWithForms;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;

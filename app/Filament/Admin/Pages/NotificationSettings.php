@@ -6,6 +6,7 @@ use App\Mail\TestMail;
 use App\Models\Setting;
 use App\Services\Mail\MailConfigurator;
 use BackedEnum;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -21,6 +22,7 @@ use UnitEnum;
 
 class NotificationSettings extends Page implements HasForms
 {
+    use HasPageShield;
     use InteractsWithForms;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBell;

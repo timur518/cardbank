@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Pages;
 use App\Models\CardProduct;
 use App\Models\Merchant;
 use BackedEnum;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\EmbeddedTable;
 use Filament\Schemas\Schema;
@@ -26,6 +27,7 @@ use UnitEnum;
  */
 class MerchantProductRatesPage extends Page implements HasTable
 {
+    use HasPageShield;
     use InteractsWithTable;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
