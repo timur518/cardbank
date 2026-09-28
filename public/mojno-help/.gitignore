@@ -1,0 +1,6 @@
+/vendor/
+.env
+chat_history.json
+bot.pid
+bot.log
+
