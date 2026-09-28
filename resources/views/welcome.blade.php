@@ -284,6 +284,10 @@
                     ],
                 ];
 
+                // Порядок карточек в форме оформления — тоже как в админке (CardProduct.sort), так же как в блоке #products выше.
+                $applySortOrder = $cardProducts->keys()->flip();
+                usort($cardOptions, fn (array $a, array $b) => ($applySortOrder[$a['key']] ?? PHP_INT_MAX) <=> ($applySortOrder[$b['key']] ?? PHP_INT_MAX));
+
                 $tips = [
                     ['Мгновенный выпуск карты', 'Можно пользоваться сразу после пополнения баланса'],
                     ['Карты с ApplePay / GooglePay', 'Оплачивайте покупки телефоном или смарт-часами'],
