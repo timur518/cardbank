@@ -1324,6 +1324,11 @@ html::-webkit-scrollbar {
 }
 .chat-fab:hover { background: var(--color-orange-dark); transform: translateY(-2px); }
 .chat-fab:active { transform: scale(.94); }
+/* На мобильном chat-panel занимает почти всю высоту, и нижний правый угол фиксированной
+кнопки (выше z-index, чем у панели) попадает на место кнопки отправки сообщения
+внутри iframe — прячем её, когда панель открыта (закрыть чат можно через
+.chat-panel-close в шапке панели). На десктопе (ниже, @media 640px+) перекрытия нет — кнопка остаётся видимой. */
+.chat-fab.is-open { display: none; }
 
 .chat-panel {
     position: fixed;
@@ -1402,6 +1407,7 @@ html::-webkit-scrollbar {
 
 @media (min-width: 640px) {
     .chat-fab { bottom: 24px; }
+    .chat-fab.is-open { display: flex; }
     .chat-panel {
         inset: auto;
         right: 24px;

@@ -62,7 +62,13 @@ export function ChatWidget() {
         <>
             <button
                 type="button"
-                className="chat-fab"
+                // is-open — на мобильных скрывает кнопку через CSS, пока открыта панель
+                // (chat-panel): на мобильном её кнопка-крестик по позиции перекрывает
+                // кнопку отправки сообщения внутри iframe-виджета (chat.js/chat.css в
+                // public/mojno-help). Закрыть чат на мобильном можно через chat-panel-close
+                // в шапке панели. На десктопе (см. index.css, @media 640px+) кнопка
+                // перекрытия не создаёт и остаётся видимой как обычно.
+                className={`chat-fab${open ? ' is-open' : ''}`}
                 aria-label={open ? 'Закрыть чат с консультантом' : 'Открыть чат с консультантом'}
                 onClick={() => setOpen((value) => !value)}
             >

@@ -139,6 +139,11 @@ textarea {
     flex: 1;
     resize: none;
     max-height: 96px;
+    overflow-y: auto;
+    /* Поле авторастёт по вводу (см. chat.js, height=scrollHeight) до max-height, дальше
+    приходится прокручивать — скрываем только визуальную полоску прокрутки, сам
+    скролл (и ввод длинного текста колёсиком) остаётся рабочим. */
+    scrollbar-width: none;
     border: 1.5px solid var(--border);
     border-radius: 16px;
     padding: 10px 14px;
@@ -146,6 +151,7 @@ textarea {
     color: var(--ink);
     background: var(--bg);
 }
+textarea::-webkit-scrollbar { display: none; }
 textarea:focus { outline: none; border-color: var(--orange); }
 textarea::placeholder { color: var(--muted); }
 
