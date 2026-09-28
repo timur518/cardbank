@@ -378,7 +378,7 @@
                         </div>
                         <label class="apply-consent">
                             <input type="checkbox" name="consent" required>
-                            <span>Я даю согласие на обработку персональных данных и принимаю пользовательское соглашение</span>
+                            <span>Регистрируясь, я соглашаюсь с <a href="{{ route('legal.offer') }}" target="_blank" rel="noopener">публичной офертой</a>, <a href="{{ route('legal.privacy-policy') }}" target="_blank" rel="noopener">политикой конфиденциальности</a> и <a href="{{ route('legal.kyc-aml') }}" target="_blank" rel="noopener">политикой KYC/AML</a>, а также даю <a href="{{ route('legal.personal-data-consent') }}" target="_blank" rel="noopener">согласие на обработку моих данных</a></span>
                         </label>
                         <button type="submit" class="btn btn-hero-orange apply-submit">
                             Зарегистрироваться и пополнить

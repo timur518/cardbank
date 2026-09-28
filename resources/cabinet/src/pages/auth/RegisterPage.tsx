@@ -176,7 +176,21 @@ export function RegisterPage() {
                         checked={values.personal_data_consent}
                         onChange={(e) => setField('personal_data_consent', e.target.checked)}
                     />
-                    Согласен на обработку персональных данных
+                    <span>
+                        Регистрируясь, я соглашаюсь с{' '}
+                        <a href="https://mojno.cc/oferta" target="_blank" rel="noopener noreferrer" className="font-semibold text-ink underline">
+                            публичной офертой
+                        </a>,{' '}
+                        <a href="https://mojno.cc/privacy-policy" target="_blank" rel="noopener noreferrer" className="font-semibold text-ink underline">
+                            политикой конфиденциальности
+                        </a>{' '}и{' '}
+                        <a href="https://mojno.cc/kyc-aml" target="_blank" rel="noopener noreferrer" className="font-semibold text-ink underline">
+                            политикой KYC/AML
+                        </a>, а также даю{' '}
+                        <a href="https://mojno.cc/personal-data-consent" target="_blank" rel="noopener noreferrer" className="font-semibold text-ink underline">
+                            согласие на обработку моих данных
+                        </a>
+                    </span>
                 </label>
 
                 <button type="submit" className="btn btn-primary btn-block" disabled={isSubmitting}>
