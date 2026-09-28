@@ -88,7 +88,7 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/5"></div>
                     <div class="oval-slide-badges">
                         <span class="rounded-full bg-white/90 px-4 py-2 text-xs font-bold uppercase tracking-[.08em] text-[#3A3C40]">{{ $scene['tag'] }}</span>
-                        <span class="rounded-full bg-white px-6 py-3 text-center text-lg font-semibold leading-snug tracking-[-.01em] text-[#3A3C40] sm:text-xl">{{ $scene['title'] }}</span>
+                        <span class="oval-slide-title rounded-full bg-white px-6 py-3 text-center text-lg font-semibold leading-snug tracking-[-.01em] text-[#3A3C40] sm:text-xl">{{ $scene['title'] }}</span>
                     </div>
                 </article>
             @endforeach

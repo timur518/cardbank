@@ -151,6 +151,7 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
     .oval-carousel{margin-top:0;padding-bottom:40px}
     .oval-slide{flex-basis:min(1000px,82vw);border-radius:40px;height:300px;box-shadow:0 10px 20px #3A3C4029}
     .oval-slide-badges{gap:8px;padding:0 20px}
+    .oval-slide-title{font-size:14px}
     .product-panel{border-radius:28px}
     .product-visual{min-height:300px}
     .product-copy{padding:40px 20px}
