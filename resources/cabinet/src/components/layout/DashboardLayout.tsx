@@ -24,6 +24,10 @@ export function DashboardLayout() {
     const [scrolled, setScrolled] = useState(false);
     const notifications = useNotifications();
 
+    // Страница выпуска новой карты шире остальных — на десктопе там желательна ширина 1000px, все остальные
+    // страницы ЛК остаются на 830px; на мобилке разницы нет (экран и так уже 830px, lg: не сработает).
+    const mainMaxWidthClass = location.pathname === '/cards/new' ? 'max-w-[830px] lg:max-w-[1000px]' : 'max-w-[830px]';
+
     useEffect(() => {
         function updateScrolled() {
             setScrolled(window.scrollY > 20);
@@ -111,7 +115,7 @@ export function DashboardLayout() {
             {/* key={location.pathname} — заставляет React перемонтировать этот div при каждом переходе между
                 страницами, чтобы .page-transition запускалась заново каждый раз, а не только один
                 раз при первом рендере лейаута. */}
-            <main className="mx-auto max-w-[830px] px-4 py-6 pb-28 md:pb-8 lg:px-8 lg:py-8">
+            <main className={`mx-auto px-4 py-6 pb-28 md:pb-8 lg:px-8 lg:py-8 ${mainMaxWidthClass}`}>
                 <div key={location.pathname} className="page-transition">
                     <Outlet />
                 </div>
