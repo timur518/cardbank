@@ -12,11 +12,11 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
     </div>
-    <div data-mobile-menu id="mobile-menu" class="nav-pill mx-auto mt-2 hidden max-w-[1400px] flex-col gap-1 rounded-3xl px-5 py-4 lg:hidden">
+    <div data-mobile-menu id="mobile-menu" class="nav-pill absolute inset-x-0 top-full z-40 mx-auto mt-2 hidden grid max-w-[1400px] grid-cols-2 gap-1 rounded-3xl px-5 py-4 lg:hidden">
         <a href="/#lifestyle" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Возможности</a>
         <a href="/#products" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Карты</a>
         <a href="/#how" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Как это работает</a>
         <a href="/#faq" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Вопросы</a>
-        <a href="https://mne.mojno.cc/" class="btn btn-primary mt-2 justify-center text-sm">Личный кабинет</a>
+        <a href="https://mne.mojno.cc/" class="btn btn-primary col-span-2 mt-2 justify-center text-sm">Личный кабинет</a>
     </div>
 </header>

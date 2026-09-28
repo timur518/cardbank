@@ -27,10 +27,10 @@
     {{-- ================= HERO ================= --}}
     <section id="hero" class="px-6 pt-[20px] lg:px-10 lg:-mt-[115px]">
         <div class="mx-auto max-w-[1400px]">
-            <div class="relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[750px] lg:rounded-[40px]">
+            <div class="hero-frame relative isolate flex h-[460px] items-end overflow-hidden rounded-[32px] sm:h-[560px] lg:h-[750px] lg:rounded-[40px]">
                 <video
                     src="{{ asset('assets/images/herobg.mp4') }}"
-                    class="absolute inset-0 h-full w-full object-cover"
+                    class="hero-video absolute inset-0 h-full w-full object-cover"
                     autoplay
                     loop
                     muted
