@@ -7,29 +7,10 @@ interface CardProductChoiceProps {
     onSelect: () => void;
 }
 
-/** Описание карточных продуктов — тот же текст, что и в блоке #products на лендинге
- * (resources/views/welcome.blade.php). В CardProduct такого текста нет (там только
- * служебное поле description), поэтому копия держится здесь локально и подбирается
- * по product.key. Преимущества (маркированный список) берутся из product.advantages —
- * того же поля, что редактируется визуальным редактором в админке (CardProductForm). */
-const PRODUCT_COPY: Record<string, { desc: string }> = {
-    black: {
-        desc: 'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов',
-    },
-    orange: {
-        desc: 'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-    },
-    white: {
-        desc: 'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-    },
-};
-
-/** Карточка одного продукта на первом шаге оформления карты — визуал,
- * описание, преимущества и цена (как на лендинге), с кнопкой перехода
- * ко второму шагу (пополнение и оплата). */
+/** Карточка одного продукта на первом шаге оформления карты — визуал, описание
+ * и преимущества из админки (CardProduct.description и CardProduct.advantages),
+ * цена, с кнопкой перехода ко второму шагу (пополнение и оплата). */
 export function CardProductChoice({ product, onSelect }: CardProductChoiceProps) {
-    const copy = PRODUCT_COPY[product.key] ?? { desc: product.description ?? '' };
-
     return (
         <div className="flex flex-col rounded-[28px] bg-surface p-5 shadow-sm">
             {product.skin ? (
@@ -56,7 +37,7 @@ export function CardProductChoice({ product, onSelect }: CardProductChoiceProps)
                     {product.coming_soon && <span className="apply-card-badge">Скоро</span>}
                 </div>
 
-                {copy.desc && <p className="mt-2 text-sm leading-relaxed text-muted">{copy.desc}</p>}
+                {product.description && <p className="mt-2 text-sm leading-relaxed text-muted">{product.description}</p>}
 
                 {product.advantages && (
                     <div className="advantages-list mt-4" dangerouslySetInnerHTML={{ __html: product.advantages }} />

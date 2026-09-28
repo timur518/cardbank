@@ -138,6 +138,11 @@
                         'price' => $priceFor('white'),
                     ],
                 ];
+
+                // Порядок карточек на лендинге — как в админке (CardProduct.sort), а не как в этом массиве.
+                // $cardProducts уже отсортирован по sort в routes/web.php, просто переставляем маркетинговый массив под него.
+                $sortOrder = $cardProducts->keys()->flip();
+                usort($products, fn (array $a, array $b) => ($sortOrder[$a['key']] ?? PHP_INT_MAX) <=> ($sortOrder[$b['key']] ?? PHP_INT_MAX));
             @endphp
 
             <div class="mt-16 space-y-8 lg:mt-24">
