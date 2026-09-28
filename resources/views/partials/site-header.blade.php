@@ -12,7 +12,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" /></svg>
         </button>
     </div>
-    <div data-mobile-menu id="mobile-menu" class="nav-pill absolute left-[30px] right-[30px] top-full z-40 mx-auto mt-2 hidden grid max-w-[1400px] grid-cols-2 gap-1 rounded-3xl px-5 py-4 lg:hidden">
+    <div data-mobile-menu id="mobile-menu" class="nav-pill absolute left-[20px] right-[20px] top-full z-40 mt-2 hidden grid grid-cols-2 gap-1 rounded-3xl px-5 py-4 lg:hidden">
         <a href="/#lifestyle" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Возможности</a>
         <a href="/#products" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Карты</a>
         <a href="/#how" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Как это работает</a>
