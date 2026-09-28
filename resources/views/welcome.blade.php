@@ -314,8 +314,6 @@
 
                     return '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z"/></svg>';
                 };
-
-                $formatRub = fn (float $amount) => number_format(round($amount), 0, ',', ' ') . ' ₽';
             @endphp
 
 
@@ -334,6 +332,8 @@
                                     data-price-rub="{{ $cardProduct->price_rub ?? 0 }}"
                                     data-fee-percent="{{ $cardProduct->provider_topup_fee_percent ?? 0 }}"
                                     data-product-id="{{ $cardProduct->id ?? '' }}"
+                                    data-topup-min="{{ $cardProduct->topup_min_amount ?? '' }}"
+                                    data-topup-max="{{ $cardProduct->topup_max_amount ?? '' }}"
                                 >
                                 <span class="apply-card-thumb {{ $card['thumb'] ? '' : 'apply-card-thumb-white' }}">
                                     @if ($card['thumb'])
@@ -410,7 +410,6 @@
                                         <span class="apply-pay-icon" aria-hidden="true">{!! $paymentIcon($method) !!}</span>
                                         <span class="apply-pay-info">
                                             <span class="apply-pay-name">{{ $method->name }}</span>
-                                            <span class="apply-pay-desc">От {{ $formatRub((float) $method->min_amount) }} до {{ $formatRub((float) $method->max_amount) }}</span>
                                         </span>
                                     </label>
                                 @endforeach
@@ -420,11 +419,13 @@
                         <div class="apply-field">
                             <label for="apply-topup-amount">Сумма для пополнения карты</label>
                             <div class="apply-amount-row">
-                                <div class="apply-amount-input-group">
-                                    <input type="text" id="apply-topup-amount" name="amount" inputmode="numeric" data-topup-amount-input placeholder="50" required>
+                                <div class="apply-amount-input-group apply-amount-input-group-usd">
+                                    <input type="text" id="apply-topup-amount" name="amount" inputmode="numeric" data-topup-amount-input placeholder="50" value="25" required>
+                                    <span class="apply-amount-suffix" aria-hidden="true">$</span>
                                 </div>
                                 <p class="apply-amount-total" data-topup-total>К оплате: 0 ₽</p>
                             </div>
+                            <p class="apply-hint" data-topup-limits></p>
                         </div>
 
                         <p class="apply-error" data-topup-error hidden></p>

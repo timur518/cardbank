@@ -113,6 +113,12 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
     .apply-amount-total{flex:1 1 50%;padding-left:4px}
 }
 .apply-field .apply-amount-input-group input{border-radius:14px;width:100%}
+/* Суффикс $ внутри поля суммы пополнения — поле всегда в долларах (см. app.js). */
+.apply-amount-input-group-usd{position:relative}
+.apply-amount-input-group-usd input{padding-right:38px}
+.apply-amount-suffix{position:absolute;top:50%;right:16px;transform:translateY(-50%);font-size:.95rem;font-weight:700;color:var(--muted);pointer-events:none}
+/* Лимиты пополнения выбранной карты под полем суммы (заполняется в app.js). */
+[data-topup-limits]:empty{display:none}
 .apply-topup-note{margin-top:14px;text-align:center}
 .faq-plus{display:flex;height:42px;width:42px;flex-shrink:0;align-items:center;justify-content:center;border:1px solid rgba(20,20,19,.15);border-radius:50%;font-size:24px;font-weight:400;transition:.3s}.faq-item[data-open=true] .faq-plus{transform:rotate(45deg);background:#3A3C40;color:#fff}.faq-answer{max-height:0;overflow:hidden;opacity:0;transition:max-height .4s ease,opacity .3s}.faq-item[data-open=true] .faq-answer{opacity:1}
 .footer-title{font-size:.7rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;opacity:.35}.footer-links{margin-top:16px;display:grid;gap:10px;font-size:.9rem;color:rgba(20,20,19,.62)}.footer-links a:hover{color:#3A3C40}

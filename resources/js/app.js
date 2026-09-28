@@ -759,6 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-topup-form]').forEach((form) => {
         const amountInput = form.querySelector('[data-topup-amount-input]');
         const totalEl = form.querySelector('[data-topup-total]');
+        const limitsEl = form.querySelector('[data-topup-limits]');
         const usdRate = parseFloat(form.dataset.usdRate) || 0;
 
         if (!amountInput || !totalEl) {
@@ -780,6 +781,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const totalRub = priceRub + topupRub;
 
             totalEl.textContent = `К оплате: ${formatRub(totalRub)}`;
+
+            if (limitsEl) {
+                const min = parseFloat(card?.dataset.topupMin);
+                const max = parseFloat(card?.dataset.topupMax);
+
+                limitsEl.textContent = Number.isFinite(min) && Number.isFinite(max)
+                    ? `Минимум ${Math.round(min)}$, максимум ${Math.round(max)}$`
+                    : '';
+            }
         };
 
         amountInput.addEventListener('input', updateTotal);
