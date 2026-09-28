@@ -97,7 +97,7 @@ class OrderController extends Controller
         });
 
         $gateway = PaymentGatewayResolver::for(PaymentMethod::findOrFail($data['payment_method_id']));
-        $payment = $gateway->initiate($totalRub, "Заказ на выпуск карты #{$card->id}", (string) $income->id);
+        $payment = $gateway->initiate($totalRub, "Заказ для {$request->user()->email}", (string) $income->id);
         $income->update(['payment_transaction_id' => $payment['transaction_id'], 'payment_url' => $payment['payment_url']]);
 
         return $this->issueResponse($card, $income, $idempotencyKey);
@@ -147,7 +147,7 @@ class OrderController extends Controller
         ]);
 
         $gateway = PaymentGatewayResolver::for(PaymentMethod::findOrFail($data['payment_method_id']));
-        $payment = $gateway->initiate($topupRub, "Пополнение карты #{$card->id}", (string) $income->id);
+        $payment = $gateway->initiate($topupRub, "Пополнение для {$request->user()->email}", (string) $income->id);
         $income->update(['payment_transaction_id' => $payment['transaction_id'], 'payment_url' => $payment['payment_url']]);
 
         return $this->topupResponse($income, $idempotencyKey);
