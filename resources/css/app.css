@@ -72,6 +72,9 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 .apply-consent{margin-top:26px;display:flex;gap:12px;align-items:flex-start;font-size:.82rem;line-height:1.5;color:var(--muted);cursor:pointer}
 .apply-consent a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .apply-consent a:hover{color:#3A3C40}
+.apply-error{margin-top:16px;padding:12px 16px;border-radius:14px;background:#fdecea;color:#a12b1a;font-size:.85rem;line-height:1.45}
+.apply-error[hidden]{display:none}
+.apply-submit[disabled]{opacity:.6;cursor:not-allowed}
 .apply-consent input{margin-top:3px;flex-shrink:0;width:18px;height:18px;accent-color:#3A3C40}
 .apply-submit{margin-top:26px;width:100%;justify-content:center}
 @media(min-width:640px){.apply-grid-2{grid-template-columns:1fr 1fr}}

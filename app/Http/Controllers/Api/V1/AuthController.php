@@ -6,6 +6,7 @@ use App\Enums\KycStatus;
 use App\Enums\NotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ForgotPasswordRequest;
+use App\Http\Requests\Api\V1\LandingRegisterRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Resources\Api\V1\UserResource;
@@ -87,6 +88,47 @@ class AuthController extends Controller
         // Отправка приветственного уведомления
         Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
         SafeMailer::send($user->email, new WelcomeMail($user));
+
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+
+        return (new UserResource($user))->response()->setStatusCode(201);
+    }
+
+    /**
+     * Регистрация с лендинга (блок #apply в welcome.blade.php): в отличие от register()
+     * пароль клиент не вводит сам — он генерируется автоматически и отправляется письмом
+     * (WelcomeMail), как и при восстановлении пароля в forgotPassword(). Сразу после регистрации
+     * логинит через ту же сессионную аутентификацию Sanctum, чтобы лендинг мог сразу
+     * продолжить оформление карты (POST /api/v1/orders/issue) без отдельного шага входа.
+     */
+    public function registerLanding(LandingRegisterRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        $generatedPassword = Str::password(12);
+
+        $user = User::create([
+            'name' => trim($data['first_name'].' '.$data['last_name']),
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'middle_name' => $data['middle_name'] ?? null,
+            'phone' => $data['phone'],
+            'email' => $data['email'],
+            'date_of_birth' => $data['date_of_birth'],
+            'password' => $generatedPassword,
+            'personal_data_consent_at' => now(),
+            'utm_source' => $data['utm_source'] ?? null,
+            'utm_medium' => $data['utm_medium'] ?? null,
+            'utm_campaign' => $data['utm_campaign'] ?? null,
+            'utm_content' => $data['utm_content'] ?? null,
+            'kyc_status' => KycStatus::NotStarted,
+            'is_blocked' => false,
+        ]);
+
+        $user->assignRole('customer');
+
+        Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
+        SafeMailer::send($user->email, new WelcomeMail($user, $generatedPassword));
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();

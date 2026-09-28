@@ -503,8 +503,71 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Форма оформления карты: переход между шагами «Заявка» → «Загрузка» →
-    // «Пополнение баланса». Чисто фронтенд, без отправки данных на бэкенд.
+    // Аутентифицированные запросы к бэкенду для формы оформления карты (регистрация + оплата) —
+    // лендинг и его API на одном домене, поэтому сессионная кука Sanctum (guard web) работает без
+    // отдельной настройки CORS/SANCTUM_STATEFUL_DOMAINS, как у SPA ЛК (см. resources/cabinet/src/api/client.ts) —
+    // главное, чтобы сам домен, с которого отдаётся лендинг (APP_URL), был в SANCTUM_STATEFUL_DOMAINS.
+    function readCookie(name) {
+        const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+        return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    async function ensureCsrfCookie() {
+        await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
+    }
+
+    async function apiPost(url, data) {
+        await ensureCsrfCookie();
+
+        const response = await fetch(url, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-XSRF-TOKEN': readCookie('XSRF-TOKEN') ?? '',
+            },
+            body: JSON.stringify(data),
+        });
+
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            const error = new Error(payload.message ?? 'Request failed');
+            error.payload = payload;
+            throw error;
+        }
+
+        return payload;
+    }
+
+    function firstApiErrorMessage(payload, fallback) {
+        const firstField = payload?.errors ? Object.values(payload.errors)[0] : null;
+        return firstField?.[0] ?? payload?.message ?? fallback;
+    }
+
+    function showFormError(el, message) {
+        if (!el) {
+            return;
+        }
+
+        el.textContent = message;
+        el.hidden = false;
+    }
+
+    function hideFormError(el) {
+        if (!el) {
+            return;
+        }
+
+        el.hidden = true;
+        el.textContent = '';
+    }
+
+    // Шаг 1: регистрация аккаунта (POST /api/v1/auth/register-landing — без поля пароля,
+    // он генерируется на бэкенде и приходит письмом), затем переход к шагу оплаты.
+    // Успешная регистрация сразу логинит через сессию (как и в ЛК), поэтому второй шаг
+    // (выпуск карты + оплата) может сразу обращаться к POST /api/v1/orders/issue без отдельного входа.
     document.querySelectorAll('[data-apply-form]').forEach((form) => {
         const wrap = form.closest('[data-apply-wrap]');
 
@@ -514,24 +577,104 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const loading = wrap.querySelector('[data-apply-step="loading"]');
         const topup = wrap.querySelector('[data-apply-step="topup"]');
+        const errorEl = form.querySelector('[data-apply-error]');
+        const submitButton = form.querySelector('.apply-submit');
 
-        form.addEventListener('submit', (event) => {
+        form.addEventListener('submit', async (event) => {
             event.preventDefault();
+            hideFormError(errorEl);
 
-            form.classList.remove('is-current');
-            loading?.classList.add('is-current');
+            const fio = form.querySelector('#apply-fio')?.value.trim() ?? '';
+            const [lastName = '', firstName = '', ...rest] = fio.split(/\s+/).filter(Boolean);
 
-            setTimeout(() => {
-                loading?.classList.remove('is-current');
-                topup?.classList.add('is-current');
-            }, 1600);
+            if (!lastName || !firstName) {
+                showFormError(errorEl, 'Укажите фамилию и имя в поле ФИО.');
+                return;
+            }
+
+            const utm = new URLSearchParams(window.location.search);
+
+            submitButton?.setAttribute('disabled', 'disabled');
+
+            try {
+                await apiPost('/api/v1/auth/register-landing', {
+                    first_name: firstName,
+                    last_name: lastName,
+                    middle_name: rest.join(' ') || undefined,
+                    phone: form.querySelector('#apply-phone')?.value ?? '',
+                    email: form.querySelector('#apply-email')?.value ?? '',
+                    date_of_birth: form.querySelector('#apply-dob')?.value ?? '',
+                    personal_data_consent: form.querySelector('input[name="consent"]')?.checked ?? false,
+                    utm_source: utm.get('utm_source') ?? undefined,
+                    utm_medium: utm.get('utm_medium') ?? undefined,
+                    utm_campaign: utm.get('utm_campaign') ?? undefined,
+                    utm_content: utm.get('utm_content') ?? undefined,
+                });
+
+                form.classList.remove('is-current');
+                loading?.classList.add('is-current');
+
+                setTimeout(() => {
+                    loading?.classList.remove('is-current');
+                    topup?.classList.add('is-current');
+                }, 1200);
+            } catch (error) {
+                showFormError(errorEl, firstApiErrorMessage(error.payload, 'Не удалось зарегистрироваться. Проверьте введённые данные.'));
+                submitButton?.removeAttribute('disabled');
+            }
         });
     });
 
-    // Форма пополнения баланса: отправка пока не подключена к платёжной системе —
-    // только гасим перезагрузку страницы по умолчанию.
+    // Шаг 2: оплата и выпуск карты (POST /api/v1/orders/issue — тот же эндпоинт, что и в ЛК,
+    // см. NewCardOrderPage.tsx): создаёт карту и инициирует оплату, браузер редиректится на payment_url шлюза.
     document.querySelectorAll('[data-topup-form]').forEach((form) => {
-        form.addEventListener('submit', (event) => event.preventDefault());
+        const errorEl = form.querySelector('[data-topup-error]');
+        const submitButton = form.querySelector('.apply-submit');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            hideFormError(errorEl);
+
+            const cardInput = document.querySelector('input[name="card_product"]:checked');
+            const payInput = form.querySelector('input[name="pay_method"]:checked');
+            const amountInput = form.querySelector('[data-topup-amount-input]');
+            const amount = parseFloat((amountInput?.value ?? '').replace(/[^\d.,]/g, '').replace(',', '.'));
+
+            if (!cardInput?.dataset.productId) {
+                showFormError(errorEl, 'Выберите карту.');
+                return;
+            }
+
+            if (!payInput) {
+                showFormError(errorEl, 'Выберите способ оплаты.');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                showFormError(errorEl, 'Введите сумму пополнения.');
+                return;
+            }
+
+            submitButton?.setAttribute('disabled', 'disabled');
+
+            try {
+                const result = await apiPost('/api/v1/orders/issue', {
+                    card_product_id: Number(cardInput.dataset.productId),
+                    topup_amount: amount,
+                    topup_currency: 'USD',
+                    payment_method_id: Number(payInput.value),
+                });
+
+                if (result?.data?.payment_url) {
+                    window.location.href = result.data.payment_url;
+                } else {
+                    submitButton?.removeAttribute('disabled');
+                }
+            } catch (error) {
+                showFormError(errorEl, firstApiErrorMessage(error.payload, 'Не удалось оформить заказ. Попробуйте ещё раз.'));
+                submitButton?.removeAttribute('disabled');
+            }
+        });
     });
 
     // Форма пополнения баланса: селектор способа оплаты.

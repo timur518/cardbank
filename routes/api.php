@@ -29,6 +29,8 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     // Раздел 1. Аутентификация и профиль.
     Route::post('/auth/login', [AuthController::class, 'login'])->name('auth.login');
     Route::post('/auth/register', [AuthController::class, 'register'])->name('auth.register');
+    // Регистрация с лендинга (блок #apply в welcome.blade.php) — без поля пароля, он генерируется автоматически.
+    Route::post('/auth/register-landing', [AuthController::class, 'registerLanding'])->name('auth.register-landing');
     Route::post('/auth/password/forgot', [AuthController::class, 'forgotPassword'])->name('auth.password.forgot');
 
     // Раздел 2. Настройки (публично, нужны и до регистрации).

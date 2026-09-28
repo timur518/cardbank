@@ -327,6 +327,7 @@
                                     {{ $i === 0 ? 'checked' : '' }}
                                     data-price-rub="{{ $cardProduct->price_rub ?? 0 }}"
                                     data-fee-percent="{{ $cardProduct->provider_topup_fee_percent ?? 0 }}"
+                                    data-product-id="{{ $cardProduct->id ?? '' }}"
                                 >
                                 <span class="apply-card-thumb {{ $card['thumb'] ? '' : 'apply-card-thumb-white' }}">
                                     @if ($card['thumb'])
@@ -380,6 +381,7 @@
                             <input type="checkbox" name="consent" required>
                             <span>Регистрируясь, я соглашаюсь с <a href="{{ route('legal.offer') }}" target="_blank" rel="noopener">публичной офертой</a>, <a href="{{ route('legal.privacy-policy') }}" target="_blank" rel="noopener">политикой конфиденциальности</a> и <a href="{{ route('legal.kyc-aml') }}" target="_blank" rel="noopener">политикой KYC/AML</a>, а также даю <a href="{{ route('legal.personal-data-consent') }}" target="_blank" rel="noopener">согласие на обработку моих данных</a></span>
                         </label>
+                        <p class="apply-error" data-apply-error hidden></p>
                         <button type="submit" class="btn btn-hero-orange apply-submit">
                             Зарегистрироваться и пополнить
                             <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
@@ -419,6 +421,7 @@
                             </div>
                         </div>
 
+                        <p class="apply-error" data-topup-error hidden></p>
                         <button type="submit" class="btn btn-hero-orange apply-submit">
                             Оплатить и выпустить карту
                         </button>
