@@ -1,7 +1,15 @@
 <!doctype html>
 <html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>МОЖНО — консультант</title><link rel="stylesheet" href="chat.css"></head>
-<body><main><header><strong>МОЖНО</strong><span>Консультант по виртуальным картам</span></header>
+<body><script>if (new URLSearchParams(location.search).get('embed') === '1') document.body.classList.add('is-embedded');</script>
+<main>
+<header><span class="avatar">М</span><span class="titles"><strong>Консультант МОЖНО</strong><span>Обычно отвечает быстро</span></span></header>
 <div id="messages" role="log" aria-live="polite"><p class="bot">Здравствуйте! Помогу разобраться с виртуальными картами и оплатой сервисов. Что хотите оплатить?</p></div>
 <p class="notice">Не отправляйте номер карты, CVV, пароли и коды подтверждения.</p>
-<form id="form"><label for="message">Ваш вопрос</label><textarea id="message" maxlength="3000" rows="3" required></textarea><button id="send">Отправить</button><button id="clear" type="button">Очистить историю</button></form>
-<footer><a href="https://t.me/mojno_support" target="_blank" rel="noopener noreferrer">Поддержка</a><span>Отвечает ИИ-консультант</span></footer></main><script src="chat.js"></script></body></html>
+<form id="form">
+<label for="message">Ваш вопрос</label>
+<textarea id="message" maxlength="3000" rows="1" required placeholder="Напишите сообщение…"></textarea>
+<button id="clear" type="button" aria-label="Очистить историю"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+<button id="send" aria-label="Отправить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4Z"/></svg></button>
+</form>
+<footer><a href="https://t.me/mojno_support" target="_blank" rel="noopener noreferrer">Поддержка</a><span>Отвечает ИИ-консультант</span></footer>
+</main><script src="chat.js"></script></body></html>

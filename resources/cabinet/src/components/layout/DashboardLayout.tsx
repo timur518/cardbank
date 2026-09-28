@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { ChatWidget } from '../chat/ChatWidget';
 import { BrandLogo } from '../common/BrandLogo';
 import { NotificationsPanel } from '../notifications/NotificationsPanel';
 import { MobileTabBar } from './MobileTabBar';
@@ -122,6 +123,7 @@ export function DashboardLayout() {
             </main>
 
             <MobileTabBar />
+            <ChatWidget />
         </div>
     );
 }

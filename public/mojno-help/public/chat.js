@@ -10,3 +10,6 @@ async function request(body){
 }
 form.addEventListener('submit',async e=>{e.preventDefault();if(busy)return;const message=input.value.trim();if(!message)return;toggle(true);add(message,'user');input.value='';try{const data=await request({message});add(data.reply);}catch(e){add(e.message+' Поддержка: https://t.me/mojno_support');}finally{toggle(false);input.focus();}});
 document.querySelector('#clear').addEventListener('click',async()=>{if(busy)return;toggle(true);try{const data=await request({action:'clear'});log.replaceChildren();add(data.reply);}catch(e){add(e.message);}finally{toggle(false);}});
+// Классический чат: Enter отправляет сообщение, Shift+Enter — перенос строки; поле растёт по содержимому в пределах max-height из chat.css.
+input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();form.requestSubmit();}});
+input.addEventListener('input',()=>{input.style.height='auto';input.style.height=input.scrollHeight+'px';});
