@@ -104,13 +104,17 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 /* Форма пополнения баланса: сумма (переключатель ₽/$ + поле) и итоговая сумма «К оплате»
    в одной строке, каждый по 50%; кнопка оплаты — отдельно, во всю ширину; на мобилке
    сумма и итоговая строка идут друг под другом во всю ширину. */
-.apply-amount-row{display:flex;flex-direction:column;gap:10px}
-.apply-amount-input-group{display:flex;align-items:stretch}
-.apply-amount-total{margin:0;display:flex;align-items:center;font-weight:800;color:#101010;font-size:.95rem}
+.apply-amount-row{display:flex;flex-direction:column;flex-wrap:wrap;gap:10px}
+.apply-amount-input-group{display:flex;align-items:stretch;order:1}
+.apply-amount-total{margin:0;display:flex;align-items:center;font-weight:800;color:#101010;font-size:.95rem;order:3}
+/* На мобилке (flex-direction:column) подпись лимитов должна стоять сразу под полем ввода, а не под «К оплате» — порядок задан flex-порядком, DOM-порядок один для обеих версий. */
+.apply-amount-row [data-topup-limits]{order:2}
 @media(min-width:640px){
     .apply-amount-row{flex-direction:row;align-items:stretch;gap:14px}
     .apply-amount-input-group{flex:1 1 50%;min-width:0}
     .apply-amount-total{flex:1 1 50%;padding-left:4px}
+    /* На десктопе лимиты по-прежнему переносятся на новую строку под обеими колонками (как и раньше). */
+    .apply-amount-row [data-topup-limits]{order:3;flex-basis:100%}
 }
 .apply-field .apply-amount-input-group input{border-radius:14px;width:100%}
 /* Суффикс $ внутри поля суммы пополнения — поле всегда в долларах (см. app.js). */

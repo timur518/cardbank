@@ -424,8 +424,8 @@
                                     <span class="apply-amount-suffix" aria-hidden="true">$</span>
                                 </div>
                                 <p class="apply-amount-total" data-topup-total>К оплате: 0 ₽</p>
+                                <p class="apply-hint" data-topup-limits></p>
                             </div>
-                            <p class="apply-hint" data-topup-limits></p>
                         </div>
 
                         <p class="apply-error" data-topup-error hidden></p>
