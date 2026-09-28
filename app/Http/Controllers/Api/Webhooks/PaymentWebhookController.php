@@ -27,8 +27,8 @@ use Throwable;
  *   POST {APP_URL}/api/webhooks/payment/{id способа оплаты из «Способы оплаты»}
  *
  * Тело вебхука читается через Request::all() вместо Request::json() нарочно, чтобы
- * одинаково понимать и JSON (StubPaymentGateway), и form-urlencoded тело вебхука (CardLink и
- * большинство других платёжных систем) без ветвления по Content-Type.
+ * одинаково понимать JSON-тело вебхука любой подключённой платёжной системы
+ * (StubPaymentGateway, ParityPay) без ветвления по Content-Type.
  *
  * Контроллер намеренно тонкий: проверяет подпись/токен, всегда сохраняет сырое тело в
  * PaymentMethodMessage и передаёт разбор события в PaymentWebhookHandler.

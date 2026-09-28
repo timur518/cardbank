@@ -15,7 +15,7 @@ return new class extends Migration
             // Ссылка на оплату, которую вернул PaymentGatewayContract::initiate(), сохраняется
             // сразу при создании заказа. До этого поля OrderController «угадывал» ссылку по
             // шаблону StubPaymentGateway при повторном идемпотентном запросе — для реальных
-            // платёжных систем (CardLink и т.д.) формат ссылки провайдер-специфичен и не
+            // платёжных систем (ParityPay и т.д.) формат ссылки провайдер-специфичен и не
             // восстанавливается по одному только payment_transaction_id.
             $table->string('payment_url')->nullable()->after('payment_transaction_id');
         });

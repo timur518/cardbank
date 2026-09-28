@@ -67,7 +67,7 @@ class PaymentMethodForm
                             ->native(false),
                         KeyValue::make('settlement_config')
                             ->label('Ключи и параметры подключения')
-                            ->helperText('Для CardLink: api_token, shop_id (обязательны), success_url, fail_url, base_url (опционально).')
+                            ->helperText('Для ParityPay: shop_id, secret_key, webhook_secret_key (обязательны), success_url, fail_url, callback_url, base_url (опционально).')
                             ->keyLabel('Параметр')
                             ->valueLabel('Значение')
                             ->columnSpanFull(),

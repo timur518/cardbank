@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
  * {@see PaymentWebhookHandler::cancelUnpaidOrder()}, что и явный отказ платёжной
  * системы, но с итоговым статусом `IncomePaymentStatus::Cancelled` вместо `Failed`.
  *
- * Работает одинаково для StubPaymentGateway, CardLink и любой другой платёжной
+ * Работает одинаково для StubPaymentGateway, ParityPay и любой другой платёжной
  * системы — ничего провайдер-специфичного здесь нет, только возраст самого `Income`.
  */
 class CancelExpiredPaymentOrders extends Command
@@ -37,7 +37,7 @@ class CancelExpiredPaymentOrders extends Command
             $handler->cancelUnpaidOrder(
                 $income,
                 IncomePaymentStatus::Cancelled,
-                'Не поступило уведомление об оплате в течение ' . (int) $this->option('minutes') . ' минут после создания заказа',
+                'Не поступило уведомление об оплате в течение '.(int) $this->option('minutes').' минут после создания заказа',
             );
         }
 
