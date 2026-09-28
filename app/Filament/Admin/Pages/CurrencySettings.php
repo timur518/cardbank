@@ -259,8 +259,14 @@ class CurrencySettings extends Page implements HasForms
 
         $rows = [];
 
-        // Шаг 0: клиент платит цену карты + сумму пополнения, купленную у нас по курсу с наценкой.
-        $balance = $cardPriceRub + $topupUsd * $sellRate;
+        // fee-часть пополнения карты считается заранее: она входит в сумму, которую реально платит клиент
+        // (шаг 0, точно так же, как в OrderController::convertTopup()), и служит базой для комиссии шага 3.
+        $topupFeeUsd = $topupUsd * $cardTopupFeePercent / 100;
+
+        // Шаг 0: клиент платит цену карты + сумму пополнения вместе с комиссией провайдера за пополнение
+        // карты (точно так же, как в OrderController::convertTopup(): totalRub = (topupUsd + feeUsd) * sellRate),
+        // купленную у нас по курсу с наценкой.
+        $balance = $cardPriceRub + ($topupUsd + $topupFeeUsd) * $sellRate;
         $rows[] = ['label' => 'Поступление к нам', 'rub' => $balance, 'usd' => $toUsd($balance), 'remainderRub' => $balance, 'remainderUsd' => $toUsd($balance)];
 
         // Шаг 1: комиссия платёжной системы за приём этого платежа.
@@ -273,10 +279,9 @@ class CurrencySettings extends Page implements HasForms
         $balance -= $fee;
         $rows[] = ['label' => 'Комиссия за вывод средств', 'rub' => $fee, 'usd' => $toUsd($fee), 'remainderRub' => $balance, 'remainderUsd' => $toUsd($balance)];
 
-        // Себестоимость выпуска карты у провайдера и fee-часть пополнения карты считаются заранее в долларах:
-        // они нужны как база для комиссии шага 3 и не зависят от текущего остатка баланса.
+        // Себестоимость выпуска карты у провайдера считается в долларах, как база для комиссии шага 3 и
+        // не зависит от текущего остатка баланса.
         $costRub = $providerIssueCostUsd * $rawRate;
-        $topupFeeUsd = $topupUsd * $cardTopupFeePercent / 100;
 
         // Шаг 3: комиссия за конвертацию рублей в доллары и пополнение мастер-счёта у провайдера:
         // берёт не % от текущего остатка, а % от суммы, которую нужно загрузить на мастер-счёт
