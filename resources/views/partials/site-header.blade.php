@@ -5,7 +5,6 @@
             <a href="/#lifestyle" class="nav-link">Возможности</a>
             <a href="/#products" class="nav-link">Карты</a>
             <a href="/#how" class="nav-link">Как это работает</a>
-            <a href="/#partners" class="nav-link">Партнёрам</a>
             <a href="/#faq" class="nav-link">Вопросы</a>
         </nav>
         <div class="hidden lg:flex"><a href="https://mne.mojno.cc/" class="btn btn-primary btn-small">Личный кабинет</a></div>
@@ -17,7 +16,6 @@
         <a href="/#lifestyle" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Возможности</a>
         <a href="/#products" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Карты</a>
         <a href="/#how" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Как это работает</a>
-        <a href="/#partners" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Партнёрам</a>
         <a href="/#faq" class="rounded-xl px-3 py-2.5 text-[16px] text-[#3A3C40]">Вопросы</a>
         <a href="https://mne.mojno.cc/" class="btn btn-primary mt-2 justify-center text-sm">Личный кабинет</a>
     </div>

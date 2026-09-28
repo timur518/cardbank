@@ -13,7 +13,6 @@ import { CardDetailPage } from './pages/cards/CardDetailPage';
 import { CardsPage } from './pages/cards/CardsPage';
 import { NewCardOrderPage } from './pages/orders/NewCardOrderPage';
 import { TransactionsPage } from './pages/transactions/TransactionsPage';
-import { PartnershipPage } from './pages/partnership/PartnershipPage';
 import { ProfilePage } from './pages/profile/ProfilePage';
 import { TopupEntryPage } from './pages/topup/TopupEntryPage';
 
@@ -80,7 +79,6 @@ function AppContent() {
                         <Route path="/cards/new" element={<NewCardOrderPage />} />
                         <Route path="/cards/:id" element={<CardDetailPage />} />
                         <Route path="/transactions" element={<TransactionsPage />} />
-                        <Route path="/partnership" element={<PartnershipPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/topup" element={<TopupEntryPage />} />
                     </Route>

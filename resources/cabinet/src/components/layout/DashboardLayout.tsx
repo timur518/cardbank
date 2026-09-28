@@ -11,7 +11,6 @@ const NAV_ITEMS = [
     { to: '/', label: 'Главная', end: true },
     { to: '/cards', label: 'Мои карты', end: false },
     { to: '/transactions', label: 'Операции', end: false },
-    { to: '/partnership', label: 'Партнёрство', end: false },
 ];
 
 
