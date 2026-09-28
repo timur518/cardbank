@@ -98,6 +98,19 @@ header span::before {
     color: var(--ink);
     border-radius: 16px 16px 16px 4px;
 }
+.bot p { margin: 0; }
+.bot p + p { margin-top: 8px; }
+.bot ul, .bot ol { margin: 8px 0; padding-left: 20px; }
+.bot li + li { margin-top: 4px; }
+.bot strong { font-weight: 700; }
+.bot code {
+    background: rgba(58, 60, 64, .08);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 13px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.bot a { color: var(--orange-dark); }
 .user {
     align-self: flex-end;
     background: var(--orange);
