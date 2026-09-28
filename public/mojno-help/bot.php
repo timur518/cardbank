@@ -6,23 +6,35 @@ $token=setting('TELEGRAM_BOT_TOKEN');
 if ($token==='') { fwrite(STDERR,"Заполните TELEGRAM_BOT_TOKEN в .env\n");exit(1); }
 $processLock=fopen(__DIR__.'/storage/telegram.lock','c');
 if (!$processLock || !flock($processLock,LOCK_EX|LOCK_NB)) { fwrite(STDERR,"Бот уже запущен.\n");exit(1); }
-$http=new GuzzleHttp\Client(['base_uri'=>'https://api.telegram.org/bot'.$token.'/','timeout'=>45,'connect_timeout'=>10]);
-function telegram(GuzzleHttp\Client $http,string $method,array $payload=[]): array {
-    $r=$http->post($method,['json'=>$payload]);$d=json_decode((string)$r->getBody(),true,512,JSON_THROW_ON_ERROR);
-    if (!($d['ok']??false)) throw new RuntimeException('Telegram API error');return $d['result'];
-}
-function sendReply(GuzzleHttp\Client $http,int $chat,string $text,int $replyTo): void {
+// TELEGRAM_API_PROXY_URL — необязательный адрес прокси (POST JSON {token, method, ...полезная нагрузка}),
+// который отдаёт наружу ответ Telegram Bot API без изменений. Нужен, если у сервера нет
+// прямого доступа к api.telegram.org. Если не задан — обращаемся к Telegram напрямую, как раньше.
+$proxyUrl=rtrim(setting('TELEGRAM_API_PROXY_URL'),'/');
+// Таймаут с запасом: getUpdates ждёт до 30 секунд (long polling), плюс возможные
+// повторные попытки на стороне прокси при сетевых сбоях.
+$http=new GuzzleHttp\Client(['timeout'=>90,'connect_timeout'=>10]);
+$telegram=function(string $method,array $payload=[]) use ($http,$token,$proxyUrl): array {
+    $r=$proxyUrl!==''
+        ? $http->post($proxyUrl,['json'=>array_merge(['token'=>$token,'method'=>$method],$payload)])
+        : $http->post('https://api.telegram.org/bot'.$token.'/'.$method,['json'=>$payload]);
+    $d=json_decode((string)$r->getBody(),true,512,JSON_THROW_ON_ERROR);
+    if (!($d['ok']??false)) throw new RuntimeException('Telegram API error: '.($d['description']??'unknown'));
+    return $d['result'];
+};
+function sendReply(callable $telegram,int $chat,string $text,int $replyTo): void {
     // Запас учитывает лимит Telegram в UTF-16 для символов вне BMP.
-    foreach(mb_str_split($text,1800) as $chunk) telegram($http,'sendMessage',['chat_id'=>$chat,'text'=>$chunk,'reply_parameters'=>['message_id'=>$replyTo,'allow_sending_without_reply'=>true]]);
+    foreach(mb_str_split($text,1800) as $chunk) $telegram('sendMessage',['chat_id'=>$chat,'text'=>$chunk,'reply_parameters'=>['message_id'=>$replyTo,'allow_sending_without_reply'=>true]]);
 }
-try { $me=telegram($http,'getMe'); } catch(Throwable $e) { fwrite(STDERR,"Не удалось подключить Telegram. Проверьте токен и сеть.\n");exit(1); }
+try { $me=$telegram('getMe'); } catch(Throwable $e) { fwrite(STDERR,"Не удалось подключить Telegram. Проверьте токен и сеть.\n");exit(1); }
 $offsetPath=__DIR__.'/storage/telegram-offset';
 $offset=is_file($offsetPath)?(int)file_get_contents($offsetPath):0;
 $store=appStore();$assistant=consultant();
 echo "Консультант МОЖНО запущен.\n";
 while(true) {
     try {
-        $updates=telegram($http,'getUpdates',['offset'=>$offset,'timeout'=>30,'allowed_updates'=>['message']]);
+        // 20, а не 30: должно быть меньше REQUEST_TIMEOUT прокси (если используется),
+        // иначе прокси будет обрывать long-poll раньше ответа Telegram.
+        $updates=$telegram('getUpdates',['offset'=>$offset,'timeout'=>20,'allowed_updates'=>['message']]);
         $store->prune((int)setting('HISTORY_TTL_DAYS','30'));
         foreach($updates as $update) {
             try {
@@ -40,8 +52,8 @@ while(true) {
                 elseif(preg_match('/^\/clear(?:@\w+)?$/u',$text)) { $store->clear($id);$answer='История очищена.'; }
                 elseif($text==='') $answer='Какой сервис или покупку хотите оплатить?';
                 else $answer=$assistant->reply($id,$text)['reply'];
-                sendReply($http,$chat,$answer,(int)$m['message_id']);
-            } catch(InvalidArgumentException $e) { sendReply($http,$chat,$e->getMessage(),(int)$m['message_id']); }
+                sendReply($telegram,$chat,$answer,(int)$m['message_id']);
+            } catch(InvalidArgumentException $e) { sendReply($telegram,$chat,$e->getMessage(),(int)$m['message_id']); }
             catch(Throwable $e) { error_log('mojno: telegram_update_failed ['.get_class($e).']'); }
             finally {
                 // Не воспроизводится вся очередь после перезапуска; ошибку отправки видно в журнале.
