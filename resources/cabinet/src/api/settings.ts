@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import type { BrandSettings, CurrencyRates, ReferralSettings } from './types';
+import type { AnalyticsSettings, BrandSettings, CurrencyRates, ReferralSettings } from './types';
 
 export async function fetchBrandSettings(): Promise<BrandSettings> {
     const { data } = await apiClient.get<{ data: BrandSettings }>('/settings/brand');
@@ -16,5 +16,10 @@ export async function fetchReferralSettings(): Promise<ReferralSettings> {
 // всегда авторитетен, здесь только для отображения «К оплате» до отправки).
 export async function fetchCurrencyRates(): Promise<CurrencyRates> {
     const { data } = await apiClient.get<{ data: CurrencyRates }>('/settings/currency-rates');
+    return data.data;
+}
+
+export async function fetchAnalyticsSettings(): Promise<AnalyticsSettings> {
+    const { data } = await apiClient.get<{ data: AnalyticsSettings }>('/settings/analytics');
     return data.data;
 }

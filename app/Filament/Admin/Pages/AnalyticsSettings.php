@@ -5,8 +5,7 @@ namespace App\Filament\Admin\Pages;
 use App\Models\Setting;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
-use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -38,13 +37,28 @@ class AnalyticsSettings extends Page implements HasForms
      */
     public ?array $data = [];
 
+    /**
+     * Ключи таблицы settings, отдаваемые публично через GET /api/v1/settings/analytics
+     * (см. SettingsController::analytics()) и вставляемые в <head> и на лендинге
+     * (routes/web.php + welcome.blade.php), и в ЛК (utils/analytics.ts).
+     */
+    public const KEYS = [
+        'analytics_counter_id',
+        'analytics_pixel_ids',
+    ];
+
     public function mount(): void
     {
-        $stored = Setting::getMany(['analytics_counter_id', 'analytics_pixel_ids']);
+        $stored = Setting::getMany(self::KEYS);
+
+        // Старый формат analytics_pixel_ids — JSON-массив идентификаторов (TagsInput).
+        // Если значение распарсивается как массив — показываем его в textarea построчно, иначе берём как есть.
+        $pixelCode = $stored['analytics_pixel_ids'] ?? null;
+        $decodedPixelCode = json_decode((string) $pixelCode, true);
 
         $this->form->fill([
             'analytics_counter_id' => $stored['analytics_counter_id'],
-            'analytics_pixel_ids' => json_decode($stored['analytics_pixel_ids'] ?? '[]', true) ?: [],
+            'analytics_pixel_ids' => is_array($decodedPixelCode) ? implode("\n", $decodedPixelCode) : $pixelCode,
         ]);
     }
 
@@ -53,13 +67,18 @@ class AnalyticsSettings extends Page implements HasForms
         return $schema
             ->components([
                 Section::make('Аналитика и внешние сервисы')
+                    ->description('Код вставляется в <head> автоматически и на лендинге, и в личном кабинете.')
                     ->schema([
-                        TextInput::make('analytics_counter_id')
-                            ->label('Идентификатор счётчика посещаемости')
-                            ->maxLength(255),
-                        TagsInput::make('analytics_pixel_ids')
-                            ->label('Идентификаторы рекламных пикселей')
-                            ->placeholder('Введите идентификатор и нажмите Enter'),
+                        Textarea::make('analytics_counter_id')
+                            ->label('Код счётчика (например, Яндекс.Метрика)')
+                            ->helperText('Вставьте полный код счётчика целиком, включая тег <script>...</script>.')
+                            ->rows(12)
+                            ->columnSpanFull(),
+                        Textarea::make('analytics_pixel_ids')
+                            ->label('Код рекламных пикселей / прочих скриптов')
+                            ->helperText('Вставьте код пикселей (Facebook, VK и т.п.) или другой сторонний код для <head>.')
+                            ->rows(12)
+                            ->columnSpanFull(),
                     ]),
             ])
             ->statePath('data');
@@ -71,7 +90,7 @@ class AnalyticsSettings extends Page implements HasForms
 
         Setting::setMany([
             'analytics_counter_id' => $state['analytics_counter_id'],
-            'analytics_pixel_ids' => json_encode($state['analytics_pixel_ids'] ?? []),
+            'analytics_pixel_ids' => $state['analytics_pixel_ids'],
         ]);
 
         Notification::make()->title('Настройки аналитики сохранены')->success()->send();

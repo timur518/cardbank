@@ -199,6 +199,12 @@ export interface ReferralSettings {
 export type CurrencyCode = 'usd' | 'eur' | 'gbp';
 export type CurrencyRates = Record<CurrencyCode, string>;
 
+// Код счётчиков/пикселей из AnalyticsSettings (см. utils/analytics.ts)
+export interface AnalyticsSettings {
+    analytics_counter_id: string | null;
+    analytics_pixel_ids: string | null;
+}
+
 // Информация о карточном продукте
 export interface CardProduct {
     id: number;

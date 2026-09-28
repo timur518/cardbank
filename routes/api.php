@@ -37,6 +37,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::get('/settings/brand', [SettingsController::class, 'brand'])->name('settings.brand');
     Route::get('/settings/referral', [SettingsController::class, 'referral'])->name('settings.referral');
     Route::get('/settings/currency-rates', [SettingsController::class, 'currencyRates'])->name('settings.currency-rates');
+    Route::get('/settings/analytics', [SettingsController::class, 'analytics'])->name('settings.analytics');
 
     // Раздел 3. Каталог (публично).
     Route::get('/card-products', [CardProductController::class, 'index'])->name('card-products.index');

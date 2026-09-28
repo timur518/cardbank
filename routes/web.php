@@ -2,9 +2,11 @@
 
 use App\Enums\ActiveStatus;
 use App\Enums\LegalDocumentType;
+use App\Filament\Admin\Pages\AnalyticsSettings;
 use App\Models\CardProduct;
 use App\Models\LegalDocument;
 use App\Models\PaymentMethod;
+use App\Models\Setting;
 use App\Services\CurrencyRateService;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +27,10 @@ Route::get('/', function (CurrencyRateService $rates) {
         'cardProducts' => $cardProducts,
         'paymentMethods' => $paymentMethods,
         'usdSellRate' => $rates->sellRate('usd'),
+        // Код счётчика/пикселей из админки (Настройки -> Аналитика и внешние сервисы),
+        // вставляется в <head> в welcome.blade.php как есть (сырой HTML); тот же код отдаётся
+        // личному кабинету через GET /api/v1/settings/analytics (см. SettingsController::analytics()).
+        'analyticsCodes' => Setting::getMany(AnalyticsSettings::KEYS),
     ]);
 });
 

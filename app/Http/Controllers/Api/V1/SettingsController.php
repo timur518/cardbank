@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Filament\Admin\Pages\AnalyticsSettings;
 use App\Filament\Admin\Pages\BrandSettings;
 use App\Filament\Admin\Pages\ReferralSettings;
 use App\Http\Controllers\Controller;
@@ -34,6 +35,16 @@ class SettingsController extends Controller
     public function referral(): JsonResponse
     {
         return response()->json(['data' => Setting::getMany(ReferralSettings::KEYS)]);
+    }
+
+    /**
+     * Отдаёт сырой код счётчиков/пикселей из настроек AnalyticsSettings (вводится целиком
+     * в админке, включая теги <script>) — личный кабинет вставляет его в <head>
+     * через utils/analytics.ts; лендинг берёт тот же код напрямую через routes/web.php.
+     */
+    public function analytics(): JsonResponse
+    {
+        return response()->json(['data' => Setting::getMany(AnalyticsSettings::KEYS)]);
     }
 
     /**

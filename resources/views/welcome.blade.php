@@ -12,6 +12,12 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <meta name="mailru-domain" content="m7BvodbH4AQGo7RI" />
 
+    {{-- Код счётчика и пикселей/прочих скриптов из админки (Настройки -> Аналитика и внешние
+    сервисы), вставляется как есть (сырой HTML, включая <script>) — тот же код подтягивается
+    в личном кабинете через utils/analytics.ts. --}}
+    {!! $analyticsCodes['analytics_counter_id'] ?? '' !!}
+    {!! $analyticsCodes['analytics_pixel_ids'] ?? '' !!}
+
 </head>
 <body class="font-sans antialiased">
 
