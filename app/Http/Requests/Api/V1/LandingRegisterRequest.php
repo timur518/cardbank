@@ -46,6 +46,7 @@ class LandingRegisterRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'date_of_birth' => ['required', 'date_format:Y-m-d', 'before:today'],
             'personal_data_consent' => ['required', 'accepted'],
+            'referral_code' => ['nullable', 'string', 'max:255'],
             'utm_source' => ['nullable', 'string', 'max:255'],
             'utm_medium' => ['nullable', 'string', 'max:255'],
             'utm_campaign' => ['nullable', 'string', 'max:255'],

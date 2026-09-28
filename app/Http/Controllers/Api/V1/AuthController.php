@@ -117,6 +117,7 @@ class AuthController extends Controller
             'date_of_birth' => $data['date_of_birth'],
             'password' => $generatedPassword,
             'personal_data_consent_at' => now(),
+            'referral_code' => $data['referral_code'] ?? null,
             'utm_source' => $data['utm_source'] ?? null,
             'utm_medium' => $data['utm_medium'] ?? null,
             'utm_campaign' => $data['utm_campaign'] ?? null,

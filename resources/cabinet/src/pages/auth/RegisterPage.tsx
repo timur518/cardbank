@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { AuthLayout } from '../../components/auth/AuthLayout';
 import { FormField } from '../../components/common/FormField';
 import { extractErrorMessage } from '../../api/client';
 import { formatDateMask, formatPhoneMask, splitFio, transliterateFio } from '../../utils/masks';
+import { getTrackingCookie } from '../../utils/tracking';
 
 // Локальное состояние формы: ФИО вводится одним полем (как на лендинге), а
 // на first_name/last_name/middle_name (как ждёт RegisterRequest) разбивается
@@ -34,9 +35,13 @@ const initialValues: RegisterFormValues = {
 export function RegisterPage() {
     const { register } = useAuth();
     const navigate = useNavigate();
-    const [searchParams] = useSearchParams();
 
-    const [values, setValues] = useState<RegisterFormValues>(initialValues);
+    // Реферальный код предзаполняется из cookie (captureTrackingParams в main.tsx), если пользователь
+    // перешёл по ссылке-приглашению (?ref=...); поле остаётся редактируемым.
+    const [values, setValues] = useState<RegisterFormValues>(() => ({
+        ...initialValues,
+        referral_code: getTrackingCookie('ref') ?? '',
+    }));
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,7 +68,7 @@ export function RegisterPage() {
         setIsSubmitting(true);
 
         try {
-            // UTM-метки из URL — молча прикладываем к заявке, отдельных полей в форме нет.
+            // UTM-метки — молча прикладываем к заявке из cookie (captureTrackingParams в main.tsx), отдельных полей в форме нет.
             await register({
                 first_name,
                 last_name,
@@ -75,10 +80,10 @@ export function RegisterPage() {
                 password_confirmation: values.password_confirmation,
                 personal_data_consent: values.personal_data_consent,
                 referral_code: values.referral_code || undefined,
-                utm_source: searchParams.get('utm_source') ?? undefined,
-                utm_medium: searchParams.get('utm_medium') ?? undefined,
-                utm_campaign: searchParams.get('utm_campaign') ?? undefined,
-                utm_content: searchParams.get('utm_content') ?? undefined,
+                utm_source: getTrackingCookie('utm_source'),
+                utm_medium: getTrackingCookie('utm_medium'),
+                utm_campaign: getTrackingCookie('utm_campaign'),
+                utm_content: getTrackingCookie('utm_content'),
             });
             navigate('/', { replace: true });
         } catch (submitError) {

@@ -1,5 +1,61 @@
 import './bootstrap';
 
+// UTM-метки и реферальный код (?ref= в ссылках-приглашениях, см. PartnershipPage.tsx) сохраняются в
+// cookie на 60 дней при заходе на лендинг с ними в URL — чтобы дожить до регистрации,
+// даже если она произойдёт позже или на другой странице/вкладке без этих параметров в URL.
+// Cookie ставится с Domain=mojno.cc (без самого верхнего уровня на localhost/IP), поэтому видна
+// и личному кабинету на mne.mojno.cc (там же имена cookie и та же логика в tracking.ts).
+const TRACKING_COOKIE_TTL_DAYS = 60;
+const TRACKING_PARAMS = { utm_source: ['utm_source'], utm_medium: ['utm_medium'], utm_campaign: ['utm_campaign'], utm_content: ['utm_content'], ref: ['ref', 'referral_code'] };
+
+function trackingCookieDomain() {
+    const host = window.location.hostname;
+
+    if (host === 'localhost' || /^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+        return null;
+    }
+
+    const parts = host.split('.');
+
+    return parts.length > 2 ? parts.slice(-2).join('.') : host;
+}
+
+function setTrackingCookie(name, value) {
+    const domain = trackingCookieDomain();
+    const expires = new Date(Date.now() + TRACKING_COOKIE_TTL_DAYS * 24 * 60 * 60 * 1000).toUTCString();
+    let cookie = `mojno_${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+
+    if (domain) {
+        cookie += `; domain=${domain}`;
+    }
+
+    if (window.location.protocol === 'https:') {
+        cookie += '; secure';
+    }
+
+    document.cookie = cookie;
+}
+
+function getTrackingCookie(name) {
+    const match = document.cookie.match(new RegExp(`(?:^|; )mojno_${name}=([^;]*)`));
+
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+function captureTrackingParams() {
+    const params = new URLSearchParams(window.location.search);
+
+    Object.entries(TRACKING_PARAMS).forEach(([cookieKey, queryKeys]) => {
+        const value = queryKeys.map((key) => params.get(key)).find((v) => v);
+
+        if (value) {
+            setTrackingCookie(cookieKey, value);
+        }
+    });
+}
+
+captureTrackingParams();
+
 document.addEventListener('DOMContentLoaded', () => {
     // Reveal-анимация: элементы появляются один раз при попадании в viewport.
     const revealables = document.querySelectorAll('[data-reveal]');
@@ -592,11 +648,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const utm = new URLSearchParams(window.location.search);
-
             submitButton?.setAttribute('disabled', 'disabled');
 
             try {
+                // UTM-метки и реферальный код берём из cookie (см. captureTrackingParams выше), а не из текущего URL —
+                // к моменту сабмита формы они могли уже пропасть из URL, если пользователь перешёл по сайту.
                 await apiPost('/api/v1/auth/register-landing', {
                     first_name: firstName,
                     last_name: lastName,
@@ -605,10 +661,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: form.querySelector('#apply-email')?.value ?? '',
                     date_of_birth: form.querySelector('#apply-dob')?.value ?? '',
                     personal_data_consent: form.querySelector('input[name="consent"]')?.checked ?? false,
-                    utm_source: utm.get('utm_source') ?? undefined,
-                    utm_medium: utm.get('utm_medium') ?? undefined,
-                    utm_campaign: utm.get('utm_campaign') ?? undefined,
-                    utm_content: utm.get('utm_content') ?? undefined,
+                    referral_code: getTrackingCookie('ref') ?? undefined,
+                    utm_source: getTrackingCookie('utm_source') ?? undefined,
+                    utm_medium: getTrackingCookie('utm_medium') ?? undefined,
+                    utm_campaign: getTrackingCookie('utm_campaign') ?? undefined,
+                    utm_content: getTrackingCookie('utm_content') ?? undefined,
                 });
 
                 form.classList.remove('is-current');
