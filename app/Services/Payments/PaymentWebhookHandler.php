@@ -2,11 +2,11 @@
 
 namespace App\Services\Payments;
 
+use App\Console\Commands\Payments\CancelExpiredPaymentOrders;
 use App\Enums\CardStatus;
 use App\Enums\IncomePaymentStatus;
 use App\Enums\IncomeType;
 use App\Enums\NotificationEvent;
-use App\Models\Card;
 use App\Models\CardStatusHistory;
 use App\Models\Income;
 use App\Models\Notification;
@@ -23,8 +23,10 @@ use App\Services\Integrations\CardsPro\CardsProOrderProcessor;
  */
 class PaymentWebhookHandler
 {
-    public function __construct(protected CardsProOrderProcessor $orderProcessor)
-    {
+    public function __construct(
+        protected CardsProOrderProcessor $orderProcessor,
+        protected SandboxOrderProcessor $sandboxOrderProcessor,
+    ) {
         //
     }
 
@@ -61,9 +63,14 @@ class PaymentWebhookHandler
 
         $topupUsd = (float) $income->topup_usd;
 
+        // Режим песочницы (PaymentMethod.sandbox_mode) — оплата принята по-настоящему, но
+        // сам выпуск/пополнение у провайдера имитируется SandboxOrderProcessor'ом без единого
+        // реального запроса к CardsPro (см. его докблок).
+        $processor = $income->paymentMethod?->sandbox_mode ? $this->sandboxOrderProcessor : $this->orderProcessor;
+
         match ($income->type) {
-            IncomeType::CardIssue => $this->orderProcessor->initiateIssue($card, $topupUsd),
-            IncomeType::CardTopup => $this->orderProcessor->initiateTopup($card, $topupUsd),
+            IncomeType::CardIssue => $processor->initiateIssue($card, $topupUsd),
+            IncomeType::CardTopup => $processor->initiateTopup($card, $topupUsd),
             default => null,
         };
     }
@@ -71,7 +78,7 @@ class PaymentWebhookHandler
     /**
      * Отменяет неоплаченный заказ — общая функция для любой платёжной системы:
      * вызывается и как из этого хендлера (вебхук с итогом 'failed'), и из
-     * {@see \App\Console\Commands\Payments\CancelExpiredPaymentOrders} (нет вебхука вовсе спустя
+     * {@see CancelExpiredPaymentOrders} (нет вебхука вовсе спустя
      * 30 минут после создания заказа) — разница только в итоговом payment_status и тексте
      * причины в истории статусов карты.
      *
@@ -97,7 +104,7 @@ class PaymentWebhookHandler
             Notification::notify($card->user, NotificationEvent::TopupFailed, [
                 'last4' => $card->card_last4,
                 'amount' => NotificationEvent::money($income->amount, $income->currency),
-            ], '/cards/' . $card->uuid);
+            ], '/cards/'.$card->uuid);
 
             return;
         }

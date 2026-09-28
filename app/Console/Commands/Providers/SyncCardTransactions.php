@@ -23,7 +23,7 @@ use Throwable;
  * сливающий расчёт с его холдом по origin_tx_id вместо второй строки на ту же покупку. Если
  * среди впервые увиденных операций была хотя бы одна, двигающая деньги, баланс карты не
  * досчитывается локально, а перезапрашивается у провайдера один раз за карту за прогон
- * (см. {@see \App\Models\Card::refreshBalanceFromProvider()}).
+ * (см. {@see Card::refreshBalanceFromProvider()}).
  */
 class SyncCardTransactions extends Command
 {
@@ -44,6 +44,7 @@ class SyncCardTransactions extends Command
             Card::where('provider_id', $provider->id)
                 ->whereIn('status', [CardStatus::Active, CardStatus::Frozen])
                 ->whereNotNull('provider_card_id')
+                ->where('is_sandbox', false)
                 ->chunkById(50, function ($cards) use ($integration, &$createdTotal, &$failed) {
                     foreach ($cards as $card) {
                         $since = $card->history_checked_at ?? $card->issued_at;
@@ -94,7 +95,7 @@ class SyncCardTransactions extends Command
                 });
         }
 
-        $this->info("Новых операций: {$createdTotal}." . ($failed > 0 ? " Ошибок: {$failed}." : ''));
+        $this->info("Новых операций: {$createdTotal}.".($failed > 0 ? " Ошибок: {$failed}." : ''));
 
         return self::SUCCESS;
     }

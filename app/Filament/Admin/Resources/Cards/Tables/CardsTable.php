@@ -11,12 +11,14 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -47,23 +49,28 @@ class CardsTable
                     ->label('Поступления')
                     ->state(fn (Card $record) => self::paidIncomeUsd($record))
                     ->money('USD')
-                    ->description(fn (Card $record) => number_format(self::paidIncomeRub($record), 2, ',', ' ') . ' ₽')
+                    ->description(fn (Card $record) => number_format(self::paidIncomeRub($record), 2, ',', ' ').' ₽')
                     ->alignEnd(),
                 TextColumn::make('profit_usd')
                     ->label('Прибыль')
                     ->state(fn (Card $record) => self::paidIncomeUsd($record) - self::expenseUsd($record))
                     ->money('USD')
-                    ->description(fn (Card $record) => number_format(self::paidIncomeRub($record) - self::expenseRub($record), 2, ',', ' ') . ' ₽')
+                    ->description(fn (Card $record) => number_format(self::paidIncomeRub($record) - self::expenseRub($record), 2, ',', ' ').' ₽')
                     ->color(fn (Card $record) => (self::paidIncomeUsd($record) - self::expenseUsd($record)) >= 0 ? 'success' : 'danger')
                     ->alignEnd(),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge(),
+                IconColumn::make('is_sandbox')
+                    ->label('Песочница')
+                    ->boolean(),
             ])
             ->filters([
                 SelectFilter::make('status')
                     ->label('Статус')
                     ->options(CardStatus::class),
+                TernaryFilter::make('is_sandbox')
+                    ->label('Песочница'),
                 SelectFilter::make('card_product_id')
                     ->label('Продукт')
                     ->relationship('cardProduct', 'name'),

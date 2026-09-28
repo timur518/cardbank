@@ -29,6 +29,7 @@ class PaymentMethodInfolist
                         TextEntry::make('gateway_code')
                             ->label('Интеграция')
                             ->placeholder('Тестовая заглушка'),
+                        IconEntry::make('sandbox_mode')->label('Режим песочницы')->boolean(),
                     ]),
 
                 Section::make('Технические настройки')

@@ -10,8 +10,10 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class PaymentMethodsTable
@@ -47,6 +49,9 @@ class PaymentMethodsTable
                 TextColumn::make('fee_percent')
                     ->label('Комиссия')
                     ->suffix('%'),
+                IconColumn::make('sandbox_mode')
+                    ->label('Песочница')
+                    ->boolean(),
             ])
             ->filters([
                 SelectFilter::make('type')
@@ -58,6 +63,8 @@ class PaymentMethodsTable
                 SelectFilter::make('status')
                     ->label('Статус')
                     ->options(ActiveStatus::class),
+                TernaryFilter::make('sandbox_mode')
+                    ->label('Песочница'),
             ])
             ->recordActions([
                 ViewAction::make(),

@@ -17,6 +17,7 @@ class PaymentMethod extends Model
         'name',
         'type',
         'gateway_code',
+        'sandbox_mode',
         'currency',
         'status',
         'requires_kyc',
@@ -31,6 +32,7 @@ class PaymentMethod extends Model
         return [
             'type' => PaymentMethodType::class,
             'gateway_code' => PaymentGatewayCode::class,
+            'sandbox_mode' => 'boolean',
             'status' => ActiveStatus::class,
             'requires_kyc' => 'boolean',
             'settlement_config' => 'array',

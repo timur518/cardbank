@@ -35,6 +35,7 @@ class Card extends Model
         'price_rub',
         'issue_cost_usd',
         'status',
+        'is_sandbox',
         'billing_country',
         'billing_city',
         'billing_region',
@@ -46,16 +47,17 @@ class Card extends Model
         'history_checked_at',
     ];
 
-//    protected $hidden = [
-//        'card_number',
-//        'expiry',
-//        'cvv',
-//    ];
+    //    protected $hidden = [
+    //        'card_number',
+    //        'expiry',
+    //        'cvv',
+    //    ];
 
     protected function casts(): array
     {
         return [
             'status' => CardStatus::class,
+            'is_sandbox' => 'boolean',
             'balance' => 'decimal:2',
             'fee_debt' => 'decimal:2',
             'price_rub' => 'decimal:2',
@@ -93,7 +95,7 @@ class Card extends Model
      */
     public function refreshBalanceFromProvider(): void
     {
-        if (! $this->provider_card_id) {
+        if (! $this->provider_card_id || $this->is_sandbox) {
             return;
         }
 
@@ -141,7 +143,7 @@ class Card extends Model
             return '•••• ••••';
         }
 
-        return mb_substr($number, 0, 4) . ' •••• •••• ' . mb_substr($number, -4);
+        return mb_substr($number, 0, 4).' •••• •••• '.mb_substr($number, -4);
     }
 
     /**

@@ -9,6 +9,7 @@ use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -70,6 +71,14 @@ class PaymentMethodForm
                             ->helperText('Для ParityPay: shop_id, secret_key, webhook_secret_key (обязательны), success_url, fail_url, callback_url, base_url (опционально).')
                             ->keyLabel('Параметр')
                             ->valueLabel('Значение')
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Песочница')
+                    ->schema([
+                        Toggle::make('sandbox_mode')
+                            ->label('Режим песочницы')
+                            ->helperText('Способ оплаты принимает платежи и обрабатывает вебхуки как обычно, но выпуск/пополнение карты у провайдера (CardsPro) не выполняется — вместо реальной карты сохраняется случайный тестовый набор данных. Для тестирования приёма платежей и вебхуков без реального выпуска карт.')
                             ->columnSpanFull(),
                     ]),
             ]);

@@ -42,6 +42,7 @@ class SyncCardBalances extends Command
             Card::where('provider_id', $provider->id)
                 ->whereIn('status', [CardStatus::Active, CardStatus::Frozen])
                 ->whereNotNull('provider_card_id')
+                ->where('is_sandbox', false)
                 ->where(fn ($query) => $query->whereNull('balance_checked_at')->orWhere('balance_checked_at', '<', $staleBefore))
                 ->chunkById(50, function ($cards) use ($integration, &$updated, &$failed) {
                     foreach ($cards as $card) {
@@ -73,7 +74,7 @@ class SyncCardBalances extends Command
                 });
         }
 
-        $this->info("Обновлено карт: {$updated}." . ($failed > 0 ? " Ошибок: {$failed}." : ''));
+        $this->info("Обновлено карт: {$updated}.".($failed > 0 ? " Ошибок: {$failed}." : ''));
 
         return self::SUCCESS;
     }
