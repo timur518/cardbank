@@ -18,6 +18,7 @@ class CardProductResource extends JsonResource
             'key' => $this->key,
             'name' => $this->name,
             'description' => $this->description,
+            'advantages' => $this->advantages,
             // В БД хранится относительный путь на диске public — фронтенду нужен готовый URL.
             'skin' => $this->skin ? Storage::disk('public')->url($this->skin) : null,
             'currency' => $this->currency,

@@ -205,6 +205,7 @@ export interface CardProduct {
     key: string;
     name: string;
     description: string | null;
+    advantages: string | null;
     skin: string | null;
     currency: string;
     network: string | null;

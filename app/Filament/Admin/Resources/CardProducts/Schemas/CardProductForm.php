@@ -59,6 +59,16 @@ class CardProductForm
                                             ->columnSpanFull(),
                                     ]),
 
+                                Section::make('Преимущества')
+                                    ->columnSpanFull()
+                                    ->schema([
+                                        RichEditor::make('advantages')
+                                            ->label('')
+                                            ->helperText('Маркированный список преимуществ карты — выводится одним столбцом на лендинге и на шаге выбора карты в ЛК. Пример: «Apple Pay, Google Pay, Samsung Pay», «Пополнение от 10$».')
+                                            ->toolbarButtons(['bulletList', 'undo', 'redo'])
+                                            ->columnSpanFull(),
+                                    ]),
+
                                 Section::make('Карта и сеть')
                                     ->columnSpanFull()
                                     ->columns(3)

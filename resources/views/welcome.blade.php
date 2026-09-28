@@ -109,12 +109,15 @@
                 $priceFor = fn (string $key) => isset($cardProducts[$key])
                     ? number_format((float) $cardProducts[$key]->price_rub, 0, ',', ' ')
                     : '—';
+                // Маркированный список преимуществ тоже из админки (CardProduct.advantages, вкладка «Карта» в карточном продукте) —
+                // готовый HTML из RichEditor, выводится как есть, стили в .product-advantages (app.css).
+                $advantagesFor = fn (string $key) => $cardProducts[$key]->advantages ?? null;
 
                 $products = [
                     [
                         'key'=>'black', 'class'=>'product-black', 'eyebrow'=>'Карта BLACK', 'title'=>'Для интернета. Подписок. Сервисов.',
                         'desc'=>'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов',
-                        'points'=>['Для онлайн покупок','Пополнение от 25$','Обслуживание - бесплатно'],
+                        'advantages'=>$advantagesFor('black'),
                         'bgImage'=>'blackcardbg.png',
                         'cta'=>'Оформить карту Black',
                         'price' => $priceFor('black'),
@@ -122,7 +125,7 @@
                     [
                         'key'=>'orange', 'class'=>'product-orange', 'eyebrow'=>'Карта ORANGE', 'title'=>'Для путешествий. Телефона. Покупок.',
                         'desc'=>'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-                        'points'=>['Поддерживает Apple Pay и Google Pay','Пополнение от 25$','Можно платить в магазинах и кафе'],
+                        'advantages'=>$advantagesFor('orange'),
                         'bgImage'=>'orangecardbg.png',
                         'cta'=>'Оформить карту Orange',
                         'price' => $priceFor('orange'),
@@ -130,7 +133,7 @@
                     [
                         'key'=>'white', 'class'=>'product-white', 'eyebrow'=>'Карта WHITE', 'title'=>'Универсальная',
                         'desc'=>'Универсальная платежная карта с минимальным пополнением. Добавляйте в Apple Pay, Google Pay, Samsung Pay, оплачивайте покупки телефоном или часами или обычным методом для онлайн сервисов и магазинов.',
-                        'points'=>['Apple Pay, Google Pay, Samsung Pay','Пополнение от 10$','Для онлайна и для оффлайна'],
+                        'advantages'=>$advantagesFor('white'),
                         'bgImage'=>'whitecardbg.png', 'cta'=>'Оформить карту White',
                         'price' => $priceFor('white'),
                     ],
@@ -147,11 +150,9 @@
                             <span class="eyebrow">{{ $product['eyebrow'] }}</span>
                             <h3 class="mt-5 text-[clamp(2.4rem,4.2vw,4.8rem)] font-medium leading-[.94] tracking-[-.045em]">{{ $product['title'] }}</h3>
                             <p class="mt-7 max-w-2xl text-lg leading-relaxed opacity-70">{{ $product['desc'] }}</p>
-                            <ul class="mt-8 grid gap-4 sm:grid-cols-3">
-                                @foreach ($product['points'] as $point)
-                                    <li class="flex items-center gap-3 text-sm font-semibold leading-relaxed"><span class="h-2 w-2 flex-shrink-0 rounded-full bg-current"></span>{{ $point }}</li>
-                                @endforeach
-                            </ul>
+                            @if ($product['advantages'])
+                                <div class="product-advantages mt-8">{!! $product['advantages'] !!}</div>
+                            @endif
                             <div class="mt-10 flex flex-wrap items-center gap-5 border-t border-current/15 pt-7">
                                 <a href="#" class="btn {{ in_array($product['key'], ['black', 'white']) ? 'btn-hero-orange' : 'btn-dark-on-orange' }}">{{ $product['cta'] }}</a>
                                 <span class="product-price-note text-sm opacity-50">{{ $product['price'] }} ₽ за выпуск · 0 ₽ в месяц</span>

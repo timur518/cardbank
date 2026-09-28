@@ -1,4 +1,3 @@
-import { CheckIcon } from '@heroicons/react/24/outline';
 import type { CardProduct } from '../../api/types';
 import { NetworkBadge } from '../common/NetworkBadge';
 import { formatRub } from '../../utils/format';
@@ -8,22 +7,20 @@ interface CardProductChoiceProps {
     onSelect: () => void;
 }
 
-/** Описание и преимущества карточных продуктов — тот же текст, что и в блоке
- * #products на лендинге (resources/views/welcome.blade.php). В CardProduct
- * такого текста нет (там только служебное поле description), поэтому копия
- * держится здесь локально и подбирается по product.key. */
-const PRODUCT_COPY: Record<string, { desc: string; points: string[] }> = {
+/** Описание карточных продуктов — тот же текст, что и в блоке #products на лендинге
+ * (resources/views/welcome.blade.php). В CardProduct такого текста нет (там только
+ * служебное поле description), поэтому копия держится здесь локально и подбирается
+ * по product.key. Преимущества (маркированный список) берутся из product.advantages —
+ * того же поля, что редактируется визуальным редактором в админке (CardProductForm). */
+const PRODUCT_COPY: Record<string, { desc: string }> = {
     black: {
         desc: 'Главная карта для онлайн платежей. Оплата ИИ-сервисов, облачных платформ, рекламы, подписок и зарубежных интернет-магазинов',
-        points: ['Оформление за 3 минуты', 'Пополнение Российской картой или по СБП', 'Обслуживание - бесплатно'],
     },
     orange: {
         desc: 'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-        points: ['Поддерживает Apple Pay и Google Pay', 'Можно платить в магазинах и кафе', 'Работает с Apple Watch и Wear OS'],
     },
     white: {
         desc: 'Карта для жизни вне экрана. Добавляйте в Apple Pay и Google Pay, оплачивайте покупки телефоном или часами в кафе, ресторанах, отелях и магазинах.',
-        points: ['Поддерживает Apple Pay и Google Pay', 'Можно платить в магазинах и кафе', 'Работает с Apple Watch и Wear OS'],
     },
 };
 
@@ -31,7 +28,7 @@ const PRODUCT_COPY: Record<string, { desc: string; points: string[] }> = {
  * описание, преимущества и цена (как на лендинге), с кнопкой перехода
  * ко второму шагу (пополнение и оплата). */
 export function CardProductChoice({ product, onSelect }: CardProductChoiceProps) {
-    const copy = PRODUCT_COPY[product.key] ?? { desc: product.description ?? '', points: [] };
+    const copy = PRODUCT_COPY[product.key] ?? { desc: product.description ?? '' };
 
     return (
         <div className="flex flex-col rounded-[28px] bg-surface p-5 shadow-sm">
@@ -61,15 +58,8 @@ export function CardProductChoice({ product, onSelect }: CardProductChoiceProps)
 
                 {copy.desc && <p className="mt-2 text-sm leading-relaxed text-muted">{copy.desc}</p>}
 
-                {copy.points.length > 0 && (
-                    <ul className="mt-4 flex flex-col gap-2">
-                        {copy.points.map((point) => (
-                            <li key={point} className="flex items-start gap-2 text-sm font-medium text-ink">
-                                <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
-                                {point}
-                            </li>
-                        ))}
-                    </ul>
+                {product.advantages && (
+                    <div className="advantages-list mt-4" dangerouslySetInnerHTML={{ __html: product.advantages }} />
                 )}
 
                 <div className="mt-auto pt-5">

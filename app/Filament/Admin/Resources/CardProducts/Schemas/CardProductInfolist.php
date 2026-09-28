@@ -39,6 +39,7 @@ class CardProductInfolist
                                         TextEntry::make('currency')->label('Валюта'),
                                         IconEntry::make('active')->label('Статус')->boolean(),
                                         TextEntry::make('description')->label('Описание')->placeholder('—')->columnSpanFull(),
+                                        TextEntry::make('advantages')->label('Преимущества')->html()->placeholder('—')->columnSpanFull(),
                                     ]),
 
                                 Section::make('Карта и сеть')

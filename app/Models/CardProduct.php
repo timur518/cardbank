@@ -17,6 +17,7 @@ class CardProduct extends Model
         'key',
         'name',
         'description',
+        'advantages',
         'skin',
         'currency',
         'network',

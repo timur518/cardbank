@@ -261,6 +261,13 @@ html::-webkit-scrollbar {
 .rich-text li { margin-bottom: .25em; }
 .rich-text a { color: var(--color-orange-dark); text-decoration: underline; }
 
+/* Преимущества карточного продукта (CardProduct.advantages) на шаге выбора карты — тот же
+   маркированный список, что и на лендинге (.product-advantages в app.css), но с оранжевой точкой. */
+.advantages-list ul { display: flex; flex-direction: column; gap: .5rem; margin: 0; padding: 0; list-style: none; }
+.advantages-list li { display: flex; align-items: flex-start; gap: .5rem; font-size: .875rem; font-weight: 500; color: var(--color-ink); line-height: 1.4; }
+.advantages-list li::before { content: ''; width: .375rem; height: .375rem; margin-top: .4rem; flex-shrink: 0; border-radius: 9999px; background: var(--color-orange); }
+.advantages-list p { margin: 0; }
+
 .auth-transition-wrapper {
     overflow: hidden;
     transition: height 260ms cubic-bezier(.16,1,.3,1);
