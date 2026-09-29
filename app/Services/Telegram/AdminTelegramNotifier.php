@@ -63,12 +63,12 @@ class AdminTelegramNotifier
             return;
         }
 
-        // Нужны только ERROR — более мягкие уровни (warning/notice/info/debug) и более
-        // серьёзные (critical/alert/emergency) не шлют алерт. Уровень определяется
-        // тем же механизмом, что и сам Laravel при записи в laravel.log (Handler::mapLogLevel()) —
-        // по умолчанию это ERROR для любого исключения, но может быть переопределен в bootstrap/app.php
+        // Нужны только ERROR и CRITICAL — более мягкие уровни (warning/notice/info/debug) и
+        // более серьёзные (alert/emergency) не шлют алерт. Уровень определяется тем же
+        // механизмом, что и сам Laravel при записи в laravel.log (Handler::mapLogLevel()) — по
+        // умолчанию это ERROR для любого исключения, но может быть переопределен в bootstrap/app.php
         // через \$exceptions->level().
-        if (self::resolvedLogLevel($e) !== LogLevel::ERROR) {
+        if (! in_array(self::resolvedLogLevel($e), [LogLevel::ERROR, LogLevel::CRITICAL], true)) {
             return;
         }
 
