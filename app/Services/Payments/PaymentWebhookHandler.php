@@ -3,6 +3,7 @@
 namespace App\Services\Payments;
 
 use App\Console\Commands\Payments\CancelExpiredPaymentOrders;
+use App\Enums\AdminTelegramEvent;
 use App\Enums\CardStatus;
 use App\Enums\IncomePaymentStatus;
 use App\Enums\IncomeType;
@@ -11,6 +12,7 @@ use App\Models\CardStatusHistory;
 use App\Models\Income;
 use App\Models\Notification;
 use App\Services\Integrations\CardsPro\CardsProOrderProcessor;
+use App\Services\Telegram\AdminTelegramNotifier;
 
 /**
  * Обрабатывает результат оплаты заказа от платёжной системы: находит `Income`
@@ -60,6 +62,13 @@ class PaymentWebhookHandler
         if (! $card) {
             return;
         }
+
+        AdminTelegramNotifier::notify(AdminTelegramEvent::NewIncome, [
+            'name' => $card->user->name,
+            'email' => $card->user->email,
+            'type' => $income->type->getLabel(),
+            'amount' => NotificationEvent::money((float) $income->amount, $income->currency),
+        ]);
 
         $topupUsd = (float) $income->topup_usd;
 

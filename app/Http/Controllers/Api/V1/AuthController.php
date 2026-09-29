@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\AdminTelegramEvent;
 use App\Enums\KycStatus;
 use App\Enums\NotificationEvent;
 use App\Http\Controllers\Controller;
@@ -15,6 +16,7 @@ use App\Mail\WelcomeMail;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\Mail\SafeMailer;
+use App\Services\Telegram\AdminTelegramNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -88,6 +90,11 @@ class AuthController extends Controller
         // Отправка приветственного уведомления
         Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
         SafeMailer::send($user->email, new WelcomeMail($user));
+        AdminTelegramNotifier::notify(AdminTelegramEvent::NewRegistration, [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+        ]);
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();
@@ -130,6 +137,11 @@ class AuthController extends Controller
 
         Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
         SafeMailer::send($user->email, new WelcomeMail($user, $generatedPassword));
+        AdminTelegramNotifier::notify(AdminTelegramEvent::NewRegistration, [
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+        ]);
 
         Auth::guard('web')->login($user);
         $request->session()->regenerate();

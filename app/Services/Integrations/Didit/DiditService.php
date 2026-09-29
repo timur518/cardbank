@@ -2,6 +2,7 @@
 
 namespace App\Services\Integrations\Didit;
 
+use App\Enums\AdminTelegramEvent;
 use App\Enums\DecisionStatus;
 use App\Enums\KycStatus;
 use App\Enums\KycVerificationType;
@@ -9,6 +10,7 @@ use App\Models\KycVerification;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\Integrations\Didit\Exceptions\DiditException;
+use App\Services\Telegram\AdminTelegramNotifier;
 
 /**
  * Оркестрация верификации личности через Didit (https://docs.didit.me): запуск
@@ -55,7 +57,7 @@ class DiditService
             throw new DiditException('Didit не вернул корректную сессию верификации.', 0, $session);
         }
 
-        KycVerification::query()->updateOrCreate(
+        $verification = KycVerification::query()->updateOrCreate(
             ['type' => KycVerificationType::Provider, 'provider_session_id' => $sessionId],
             [
                 'user_id' => $user->id,
@@ -65,6 +67,16 @@ class DiditService
                 'submitted_at' => now(),
             ],
         );
+
+        // Создание сессии идемпотентно (см. докблок выше) — при повторном открытии попапа
+        // верификации без завершения Didit вернёт ту же сессию повторно — не шлём
+        // админу второе уведомление на тот же запуск — только на действительно первый старт.
+        if ($verification->wasRecentlyCreated) {
+            AdminTelegramNotifier::notify(AdminTelegramEvent::KycStarted, [
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
+        }
 
         // Синхронизируем kyc_status сразу по фактическому статусу сессии (на случай, если из-за
         // идемпотентности Didit вернул уже существующую незавершённую сессию в более продвинутом

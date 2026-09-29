@@ -2,6 +2,7 @@
 
 namespace App\Services\Payments;
 
+use App\Enums\AdminTelegramEvent;
 use App\Enums\CardStatus;
 use App\Enums\CardTransactionStatus;
 use App\Enums\CardTransactionType;
@@ -13,6 +14,7 @@ use App\Models\CardTransaction;
 use App\Models\Notification;
 use App\Services\Integrations\CardsPro\CardsProOrderProcessor;
 use App\Services\Mail\SafeMailer;
+use App\Services\Telegram\AdminTelegramNotifier;
 use Illuminate\Support\Str;
 
 /**
@@ -52,6 +54,12 @@ class SandboxOrderProcessor
 
         Notification::notify($card->user, NotificationEvent::CardIssued, ['last4' => $card->card_last4], '/cards/'.$card->uuid);
         SafeMailer::send($card->user->email, new CardIssuedMail($card));
+        AdminTelegramNotifier::notify(AdminTelegramEvent::CardIssued, [
+            'name' => $card->user->name,
+            'email' => $card->user->email,
+            'card_product' => $card->cardProduct?->name,
+            'last4' => $card->card_last4,
+        ]);
     }
 
     /**

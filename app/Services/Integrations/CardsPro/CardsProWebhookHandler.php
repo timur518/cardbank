@@ -2,6 +2,7 @@
 
 namespace App\Services\Integrations\CardsPro;
 
+use App\Enums\AdminTelegramEvent;
 use App\Enums\CardProviderOperationType;
 use App\Enums\CardsProCallbackType;
 use App\Enums\CardStatus;
@@ -18,6 +19,7 @@ use App\Models\CardTransaction;
 use App\Models\Notification;
 use App\Services\CardProviderOperationResolver;
 use App\Services\Mail\SafeMailer;
+use App\Services\Telegram\AdminTelegramNotifier;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -436,6 +438,18 @@ class CardsProWebhookHandler
                 'merchant' => $merchant,
             ], '/cards/'.$card->uuid);
             SafeMailer::send($card->user->email, new InsufficientFundsMail($card, $formattedAmount, $merchant));
+        }
+
+        // Админ-уведомление только по состоявшимся покупкам (expense/verification_expense), а не по
+        // холдам (authorization) — холд ещё может быть отменён/развернут.
+        if ($result['isNew'] && $type === CardTransactionType::Purchase && $status === CardTransactionStatus::Success) {
+            AdminTelegramNotifier::notify(AdminTelegramEvent::PurchaseMade, [
+                'name' => $card->user->name,
+                'email' => $card->user->email,
+                'last4' => $card->card_last4,
+                'amount' => NotificationEvent::money($amount, $payload['billCurrency'] ?? $card->currency),
+                'merchant' => $payload['merchantName'] ?? null,
+            ]);
         }
     }
 

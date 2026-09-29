@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Console\Commands\Providers\SyncPendingOperations;
+use App\Enums\AdminTelegramEvent;
 use App\Enums\CardProviderOperationStatus;
 use App\Enums\CardProviderOperationType;
 use App\Enums\CardStatus;
@@ -22,6 +23,7 @@ use App\Models\Setting;
 use App\Services\Integrations\CardsPro\CardsProOrderProcessor;
 use App\Services\Integrations\CardsPro\CardsProWebhookHandler;
 use App\Services\Integrations\ProviderIntegrationResolver;
+use App\Services\Telegram\AdminTelegramNotifier;
 use App\Services\Mail\SafeMailer;
 use Throwable;
 
@@ -129,6 +131,12 @@ class CardProviderOperationResolver
         // Отправка уведомления об успешном выпуске карты
         Notification::notify($card->user, NotificationEvent::CardIssued, ['last4' => $card->card_last4], '/cards/'.$card->uuid);
         SafeMailer::send($card->user->email, new CardIssuedMail($card));
+        AdminTelegramNotifier::notify(AdminTelegramEvent::CardIssued, [
+            'name' => $card->user->name,
+            'email' => $card->user->email,
+            'card_product' => $card->cardProduct?->name,
+            'last4' => $card->card_last4,
+        ]);
     }
 
     /**

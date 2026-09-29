@@ -2,12 +2,14 @@
 
 namespace App\Services\Integrations\Didit;
 
+use App\Enums\AdminTelegramEvent;
 use App\Enums\DecisionStatus;
 use App\Enums\KycVerificationType;
 use App\Enums\NotificationEvent;
 use App\Models\KycVerification;
 use App\Models\Notification;
 use App\Models\Setting;
+use App\Services\Telegram\AdminTelegramNotifier;
 use Illuminate\Http\Request;
 use stdClass;
 
@@ -152,8 +154,19 @@ class DiditWebhookHandler
 
         if ($newStatus === DecisionStatus::Approved) {
             Notification::notify($user, NotificationEvent::KycApproved, [], '/profile');
+            AdminTelegramNotifier::notify(AdminTelegramEvent::KycResult, [
+                'name' => $user->name,
+                'email' => $user->email,
+                'approved' => true,
+            ]);
         } elseif ($newStatus === DecisionStatus::Declined) {
             Notification::notify($user, NotificationEvent::KycDeclined, ['reason' => $declineReason], '/profile');
+            AdminTelegramNotifier::notify(AdminTelegramEvent::KycResult, [
+                'name' => $user->name,
+                'email' => $user->email,
+                'approved' => false,
+                'reason' => $declineReason,
+            ]);
         }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Pages;
 use App\Mail\TestMail;
 use App\Models\Setting;
 use App\Services\Mail\MailConfigurator;
+use App\Services\Telegram\AdminTelegramNotifier;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
@@ -162,10 +163,35 @@ class NotificationSettings extends Page implements HasForms
                     TextInput::make('chat_id')->label('Чат или канал')->required(),
                 ])
                 ->action(function (array $data) {
-                    Notification::make()
-                        ->title("Тестовое сообщение отправлено в чат {$data['chat_id']}")
-                        ->success()
-                        ->send();
+                    // Сначала сохраняем текущее (возможно ещё не сохранённое) состояние формы, чтобы тест
+                    // сразу проверял введённый токен бота.
+                    $this->save();
+
+                    $botToken = (string) ($this->form->getState()['notifications_bot_token'] ?? '');
+
+                    if ($botToken === '') {
+                        Notification::make()
+                            ->title('Сначала заполните токен бота')
+                            ->danger()
+                            ->send();
+
+                        return;
+                    }
+
+                    $sent = AdminTelegramNotifier::send($botToken, $data['chat_id'], '✅ Тестовое сообщение из админ-панели.');
+
+                    if ($sent) {
+                        Notification::make()
+                            ->title("Тестовое сообщение отправлено в чат {$data['chat_id']}")
+                            ->success()
+                            ->send();
+                    } else {
+                        Notification::make()
+                            ->title('Не удалось отправить сообщение')
+                            ->body('Проверьте токен бота и chat_id, подробности в логах.')
+                            ->danger()
+                            ->send();
+                    }
                 }),
 
             Action::make('testPush')

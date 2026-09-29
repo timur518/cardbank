@@ -2,6 +2,7 @@
 
 namespace App\Services\Integrations\CardsPro;
 
+use App\Enums\AdminTelegramEvent;
 use App\Enums\CardProviderOperationStatus;
 use App\Enums\CardProviderOperationType;
 use App\Enums\CardTransactionStatus;
@@ -13,6 +14,7 @@ use App\Models\CardProviderOperation;
 use App\Models\CardTransaction;
 use App\Models\Notification;
 use App\Services\CardProviderOperationResolver;
+use App\Services\Telegram\AdminTelegramNotifier;
 
 /**
  * Запускает у CardsPro выпуск карты или пополнение уже выпущенной карты после того, как
@@ -53,6 +55,12 @@ class CardsProOrderProcessor
         // действительно принята в обработку (INPROCESS/EXECUTED).
         if (($raw['status'] ?? null) !== 'DECLINED') {
             Notification::notify($card->user, NotificationEvent::CardOrderAccepted, [], '/cards/' . $card->uuid);
+            AdminTelegramNotifier::notify(AdminTelegramEvent::CardIssueStarted, [
+                'name' => $card->user->name,
+                'email' => $card->user->email,
+                'card_product' => $product->name,
+                'amount' => NotificationEvent::money($topupUsd, $product->currency),
+            ]);
         }
     }
 
