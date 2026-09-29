@@ -23,9 +23,9 @@ class CardTransactionInfolist
                     ->label('Сумма без комиссии')
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->placeholder('—')
-                    ->helperText('Оригинальная сумма транзакции у эмитента, до комиссии CardsPro.'),
+                    ->helperText('Оригинальная сумма транзакции у эмитента, до комиссии провайдера.'),
                 TextEntry::make('commission_amount')
-                    ->label('Комиссия CardsPro')
+                    ->label('Комиссия')
                     ->money(fn (CardTransaction $record) => $record->currency)
                     ->placeholder('—')
                     ->helperText('Комиссия провайдера за операцию: сумма без комиссии + комиссия = итоговая сумма.'),
@@ -40,7 +40,7 @@ class CardTransactionInfolist
                 TextEntry::make('origin_tx_id')
                     ->label('ID исходного холда')
                     ->placeholder('—')
-                    ->helperText('originTxId/originTxnId у CardsPro — если заполнен, расчёт был слит с этим холдом в одну запись.'),
+                    ->helperText('Идентификатор исходного холда у провайдера — если заполнен, расчёт был слит с этим холдом в одну запись.'),
                 TextEntry::make('occurred_at')->label('Дата операции')->dateTime('d.m.Y H:i'),
             ]);
     }
