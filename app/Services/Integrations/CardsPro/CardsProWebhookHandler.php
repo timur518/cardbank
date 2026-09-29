@@ -53,11 +53,8 @@ class CardsProWebhookHandler
             CardsProCallbackType::CardIssue => $this->handleIssue($payload),
             CardsProCallbackType::OtpCode => $this->handleOtpCode($payload),
             CardsProCallbackType::ExtraFeeCard => $this->handleExtraFeeCard($payload),
-            // EXTRA_FEE_CAP, KYC_CHANGE:
-            // осознанно не обрабатываются автоматически — см. docblock класса. Согласно
-            // docs.cardspro.com/api/operations-callbacks, EXTRA_FEE_CAP («Extra-Fee Capitalist Charge
-            // Callback») — это комиссия, проведённая через расчётный сервис Capitalist, а не
-            // через саму карту (san) — на транзакцию карты она не влияет, поэтому не обрабатывается здесь.
+            CardsProCallbackType::ExtraFeeCap => $this->handleExtraFeeCap($payload),
+            // KYC_CHANGE: осознанно не обрабатывается автоматически — см. docblock класса.
             default => null,
         };
     }
@@ -111,6 +108,26 @@ class CardsProWebhookHandler
         if ($card = $transaction->card) {
             $this->refreshCardBalance($card);
         }
+    }
+
+    /**
+     * EXTRA_FEE_CAP (`{ san, txId, amount, feeType, settlementDiff }`) — комиссия, проведённая через
+     * расчётный сервис Capitalist. Не привязана к конкретной строке в «Транзакциях по карте» —
+     * сам CardsPro в своём кабинете тоже не показывает её в таблице операций. Но по факту она всё
+     * равно уменьшает реальный баланс карты у провайдера (проверено сверкой баланса карты с суммой
+     * видимых операций — без учёта EXTRA_FEE_CAP они не сходятся ровно на её сумму). Поэтому
+     * саму транзакцию/комиссию клиента не трогаем (как и сам CardsPro), а только сразу подтягиваем
+     * баланс карты у провайдера, не ждём ближайший цикл providers:sync-card-balances.
+     */
+    protected function handleExtraFeeCap(array $payload): void
+    {
+        $card = $this->findCard((string) ($payload['san'] ?? ''));
+
+        if (! $card) {
+            return;
+        }
+
+        $this->refreshCardBalance($card);
     }
 
     /**
