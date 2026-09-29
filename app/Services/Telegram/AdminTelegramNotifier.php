@@ -4,9 +4,12 @@ namespace App\Services\Telegram;
 
 use App\Enums\AdminTelegramEvent;
 use App\Models\Setting;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Psr\Log\LogLevel;
+use ReflectionMethod;
 use Throwable;
 
 /**
@@ -60,6 +63,15 @@ class AdminTelegramNotifier
             return;
         }
 
+        // Нужны только ERROR — более мягкие уровни (warning/notice/info/debug) и более
+        // серьёзные (critical/alert/emergency) не шлют алерт. Уровень определяется
+        // тем же механизмом, что и сам Laravel при записи в laravel.log (Handler::mapLogLevel()) —
+        // по умолчанию это ERROR для любого исключения, но может быть переопределен в bootstrap/app.php
+        // через \$exceptions->level().
+        if (self::resolvedLogLevel($e) !== LogLevel::ERROR) {
+            return;
+        }
+
         try {
             $file = str_replace(base_path().'/', '', $e->getFile());
 
@@ -75,6 +87,28 @@ class AdminTelegramNotifier
             self::send($botToken, $chatId, $message);
         } catch (Throwable) {
             // Сборка самого алерта не должна порождать новое исключение внутри report().
+        }
+    }
+
+    /**
+     * Уровень лога, с которым исключение будет записано в laravel.log — через рефлексию
+     * к protected Handler::mapLogLevel(), так как у него нет публичного аналога. При любой
+     * ошибке рефлексии возвращает ERROR — чтобы не заглушить алерт из-за возможных
+     * в будущем изменений в API Laravel.
+     */
+    protected static function resolvedLogLevel(Throwable $e): string
+    {
+        try {
+            // app(ExceptionHandler::class) — тот же синглтон, что и реально обработал исключение
+            // (с учётом возможных \$exceptions->level() из bootstrap/app.php) — app(Handler::class)
+            // напрямую соберёт другой, ненастроенный экземпляр.
+            $handler = app(ExceptionHandler::class);
+            $method = new ReflectionMethod($handler, 'mapLogLevel');
+            $method->setAccessible(true);
+
+            return (string) $method->invoke($handler, $e);
+        } catch (Throwable) {
+            return LogLevel::ERROR;
         }
     }
 
