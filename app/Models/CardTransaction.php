@@ -196,7 +196,15 @@ class CardTransaction extends Model
 
         static::recordOwnMerchantStat($cardId, $merchantId, $tx['type'], $tx['status'], $previousStatus);
 
-        return ['transaction' => $transaction, 'isNew' => ! $alreadyRecorded];
+        return [
+            'transaction' => $transaction,
+            'isNew' => ! $alreadyRecorded,
+            // Статус целевой строки до этого вызова (null, если строка только что создана) —
+            // позволяет вызывающей стороне (CardsProWebhookHandler) отличить расчёт, завершивший
+            // уже известный pending-холд (о котором админ уже был уведомлён), от полностью
+            // нового расчёта без предшествующего холда.
+            'previous_status' => $previousStatus,
+        ];
     }
 
     /**

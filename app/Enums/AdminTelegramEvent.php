@@ -14,7 +14,8 @@ namespace App\Enums;
  * - CardIssueStarted: 'name', 'email', 'card_product', 'amount' (уже отформатированная строка, см. money())
  * - NewIncome: 'name', 'email', 'type' (строка "Выпуск карты"/"Пополнение карты"), 'amount'
  * - CardIssued: 'name', 'email', 'card_product', 'last4'
- * - PurchaseMade: 'name', 'email', 'last4', 'amount', 'merchant' (?string)
+ * - PurchaseMade: 'name', 'email', 'last4', 'amount', 'merchant' (?string), 'pending' (bool —
+ *   true для холда/авторизации, false для состоявшегося расчёта)
  * - KycStarted: 'name', 'email'
  * - KycResult: 'name', 'email', 'approved' (bool), 'reason' (?string, только для отказа)
  */
@@ -45,9 +46,14 @@ enum AdminTelegramEvent
             self::CardIssued => "✅ <b>Карта выпущена</b>\n\n{$params['name']} ({$params['email']})\n"
                 ."Продукт: {$params['card_product']}\nКарта: •••• {$params['last4']}",
 
-            self::PurchaseMade => "🛒 <b>Покупка по карте</b>\n\n{$params['name']} ({$params['email']})\n"
-                ."Карта: •••• {$params['last4']}\nСумма: {$params['amount']}"
-                .(! empty($params['merchant']) ? "\nМерчант: {$params['merchant']}" : ''),
+            self::PurchaseMade => ($params['pending'] ?? false)
+                ? "🕐 <b>Покупка по карте (в обработке)</b>\n\n{$params['name']} ({$params['email']})\n"
+                    ."Карта: •••• {$params['last4']}\nСумма: {$params['amount']}"
+                    .(! empty($params['merchant']) ? "\nМерчант: {$params['merchant']}" : '')
+                    ."\n\nАвторизация ещё не рассчитана мерчантом — может занять время или быть отменена."
+                : "🛒 <b>Покупка по карте</b>\n\n{$params['name']} ({$params['email']})\n"
+                    ."Карта: •••• {$params['last4']}\nСумма: {$params['amount']}"
+                    .(! empty($params['merchant']) ? "\nМерчант: {$params['merchant']}" : ''),
 
             self::KycStarted => "🪪 <b>Начата верификация KYC</b>\n\n{$params['name']} ({$params['email']})",
 

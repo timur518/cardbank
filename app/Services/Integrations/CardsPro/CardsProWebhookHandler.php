@@ -440,15 +440,23 @@ class CardsProWebhookHandler
             SafeMailer::send($card->user->email, new InsufficientFundsMail($card, $formattedAmount, $merchant));
         }
 
-        // Админ-уведомление только по состоявшимся покупкам (expense/verification_expense), а не по
-        // холдам (authorization) — холд ещё может быть отменён/развернут.
-        if ($result['isNew'] && $type === CardTransactionType::Purchase && $status === CardTransactionStatus::Success) {
+        // Админ-уведомление по покупке шлёт два варианта: новый холд (Pending — некоторые
+        // мерчанты очень долго не присылают расчёт, админ не должен узнавать с задержкой)
+        // и состоявшийся расчёт, но только если он не завершает уже известный
+        // pending-холд (previous_status !== Pending) — иначе про одну и ту же покупку
+        // пришло бы два уведомления — одно на холд, второе на расчёт.
+        $isNewHold = $result['isNew'] && $type === CardTransactionType::Purchase && $status === CardTransactionStatus::Pending;
+        $isFreshSettlement = $result['isNew'] && $type === CardTransactionType::Purchase && $status === CardTransactionStatus::Success
+            && $result['previous_status'] !== CardTransactionStatus::Pending;
+
+        if ($isNewHold || $isFreshSettlement) {
             AdminTelegramNotifier::notify(AdminTelegramEvent::PurchaseMade, [
                 'name' => $card->user->name,
                 'email' => $card->user->email,
                 'last4' => $card->card_last4,
                 'amount' => NotificationEvent::money($amount, $payload['billCurrency'] ?? $card->currency),
                 'merchant' => $payload['merchantName'] ?? null,
+                'pending' => $isNewHold,
             ]);
         }
     }
