@@ -9,6 +9,7 @@ use App\Models\CardTransaction;
 use App\Models\Merchant;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ViewColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
@@ -23,35 +24,27 @@ class CardTransactionsTable
             ->defaultSort('occurred_at', 'desc')
             ->columns([
                 TextColumn::make('id')->label('ID')->sortable(),
-                TextColumn::make('card.masked_number')->label('Карта'),
-                TextColumn::make('card.user.email')->label('Пользователь'),
-                TextColumn::make('type')
-                    ->label('Тип операции')
-                    ->badge(),
+                ViewColumn::make('merchantRecord.logo_svg')
+                    ->label('')
+                    ->view('filament.tables.columns.card-transaction-merchant-logo'),
                 TextColumn::make('merchantRecord.name')
                     ->label('Мерчант')
                     ->description(fn (CardTransaction $record) => $record->merchant)
                     ->placeholder(fn (CardTransaction $record) => $record->merchant ?: '—')
                     ->searchable(['merchant']),
-                TextColumn::make('amount')
+                TextColumn::make('type')
+                    ->label('Тип операции')
+                    ->badge(),
+                ViewColumn::make('amount')
                     ->label('Сумма')
-                    ->money(fn (CardTransaction $record) => $record->currency)
+                    ->view('filament.tables.columns.card-transaction-amounts')
                     ->sortable(),
-                TextColumn::make('cost_amount')
-                    ->label('Без комиссии')
-                    ->money(fn (CardTransaction $record) => $record->currency)
-                    ->placeholder('—')
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('commission_amount')
-                    ->label('Комиссия CardsPro')
-                    ->money(fn (CardTransaction $record) => $record->currency)
-                    ->placeholder('—')
-                    ->sortable()
-                    ->toggleable(),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge(),
+                TextColumn::make('card.user.email')
+                    ->label('Пользователь')
+                    ->description(fn (CardTransaction $record) => $record->card?->masked_number),
                 TextColumn::make('occurred_at')
                     ->label('Дата')
                     ->dateTime('d.m.Y H:i')
