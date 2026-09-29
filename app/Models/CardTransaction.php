@@ -154,13 +154,31 @@ class CardTransaction extends Model
         $target = $existingBySameId ?? $originHold;
         $previousStatus = $target?->status;
 
+        // Если целевой строке уже применён комиссия из EXTRA_FEE_CARD (см. CardsProWebhookHandler::handleExtraFeeCard()),
+        // а текущее событие (завершение холда через originTxnId или повторный опрос
+        // GET /{san}/transactions) сам по себе не знает про комиссию (`commission_amount` = null) — не
+        // затираем уже применённую комиссию на null (иначе amount откатится к $0.98 вместо $1.23 ровно в
+        // момент расчёта холда). Если же новые данные явно несут свою комиссию (не null) —
+        // она авторитетнее и заменяет старую.
+        $commissionAmount = $tx['commission_amount'];
+        $amount = $tx['amount'];
+
+        if ($commissionAmount === null && $target !== null && $target->commission_amount !== null) {
+            $commissionAmount = (float) $target->commission_amount;
+            $baseCostAmount = $tx['cost_amount'] ?? ($target->cost_amount !== null ? (float) $target->cost_amount : null);
+
+            if ($baseCostAmount !== null) {
+                $amount = $baseCostAmount + $commissionAmount;
+            }
+        }
+
         $attributes = [
             'provider_tx_id' => $tx['provider_tx_id'],
             'origin_tx_id' => $tx['origin_tx_id'],
             'type' => $tx['type'],
-            'amount' => $tx['amount'],
+            'amount' => $amount,
             'cost_amount' => $tx['cost_amount'] ?? null,
-            'commission_amount' => $tx['commission_amount'],
+            'commission_amount' => $commissionAmount,
             'currency' => $tx['currency'],
             'merchant' => $tx['merchant'],
             'merchant_id' => $merchantId,
