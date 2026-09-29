@@ -53,9 +53,10 @@ class OrderController extends Controller
         $product = CardProduct::findOrFail($data['card_product_id']);
         [$topupUsd, $topupRub] = $this->convertTopup((float) $data['topup_amount'], $data['topup_currency'], $product);
 
-        if ($topupUsd < (float) $product->topup_min_amount || $topupUsd > (float) $product->topup_max_amount) {
+        // Выпуск карты валидируется по issue_min_amount/issue_max_amount — это лимиты CardsPro именно для первоначального пополнения при issueCard(), они отличаются от topup_min_amount/topup_max_amount (лимиты пополнения уже активной карты в topup()). Без этой проверки бэкенд пропускал сумму, которая проходила по лимитам пополнения, но была ниже минимума для выпуска — CardsPro отвечал HTTP 400 на issueCard() уже после оплаты.
+        if ($topupUsd < (float) $product->issue_min_amount || $topupUsd > (float) $product->issue_max_amount) {
             throw ValidationException::withMessages([
-                'topup_amount' => 'Сумма пополнения некорректна. Проверьте условия пополнения.',
+                'topup_amount' => 'Сумма пополнения некорректна. Проверьте условия выпуска.',
             ]);
         }
 

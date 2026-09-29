@@ -332,8 +332,8 @@
                                     data-price-rub="{{ $cardProduct->price_rub ?? 0 }}"
                                     data-fee-percent="{{ $cardProduct->provider_topup_fee_percent ?? 0 }}"
                                     data-product-id="{{ $cardProduct->id ?? '' }}"
-                                    data-topup-min="{{ $cardProduct->topup_min_amount ?? '' }}"
-                                    data-topup-max="{{ $cardProduct->topup_max_amount ?? '' }}"
+                                    data-issue-min="{{ $cardProduct->issue_min_amount ?? '' }}"
+                                    data-issue-max="{{ $cardProduct->issue_max_amount ?? '' }}"
                                 >
                                 <span class="apply-card-thumb {{ $card['thumb'] ? '' : 'apply-card-thumb-white' }}">
                                     @if ($card['thumb'])

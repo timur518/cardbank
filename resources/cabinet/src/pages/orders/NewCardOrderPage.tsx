@@ -187,8 +187,8 @@ export function NewCardOrderPage() {
                                 </div>
                                 {selectedProduct && (
                                     <p className="apply-hint">
-                                        Пополнение: от ${selectedProduct.topup_min_amount ?? '10'} до $
-                                        {selectedProduct.topup_max_amount ?? '—'}
+                                        Пополнение: от ${selectedProduct.issue_min_amount ?? '10'} до $
+                                        {selectedProduct.issue_max_amount ?? '—'}
                                     </p>
                                 )}
                             </div>

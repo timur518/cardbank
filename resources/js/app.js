@@ -783,8 +783,9 @@ document.addEventListener('DOMContentLoaded', () => {
             totalEl.textContent = `К оплате: ${formatRub(totalRub)}`;
 
             if (limitsEl) {
-                const min = parseFloat(card?.dataset.topupMin);
-                const max = parseFloat(card?.dataset.topupMax);
+                // Лимиты суммы при выпуске карты (issue_min_amount/issue_max_amount) — не путать с лимитами пополнения уже выпущенной карты (topup_min_amount/topup_max_amount) — это разные лимиты CardsPro.
+                const min = parseFloat(card?.dataset.issueMin);
+                const max = parseFloat(card?.dataset.issueMax);
 
                 limitsEl.textContent = Number.isFinite(min) && Number.isFinite(max)
                     ? `Минимум ${Math.round(min)}$, максимум ${Math.round(max)}$`
