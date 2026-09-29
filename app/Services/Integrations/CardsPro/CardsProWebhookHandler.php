@@ -54,8 +54,10 @@ class CardsProWebhookHandler
             CardsProCallbackType::OtpCode => $this->handleOtpCode($payload),
             CardsProCallbackType::ExtraFeeCard => $this->handleExtraFeeCard($payload),
             // EXTRA_FEE_CAP, KYC_CHANGE:
-            // осознанно не обрабатываются автоматически — см. docblock класса. EXTRA_FEE_CAP списывается с
-            // нашего мастер-счёта (CAP), а не с карты клиента — на его транзакцию она не влияет.
+            // осознанно не обрабатываются автоматически — см. docblock класса. Согласно
+            // docs.cardspro.com/api/operations-callbacks, EXTRA_FEE_CAP («Extra-Fee Capitalist Charge
+            // Callback») — это комиссия, проведённая через расчётный сервис Capitalist, а не
+            // через саму карту (san) — на транзакцию карты она не влияет, поэтому не обрабатывается здесь.
             default => null,
         };
     }
