@@ -31,4 +31,19 @@ class CardsProException extends RuntimeException
     {
         return $this->responseBody;
     }
+
+    /**
+     * Laravel автоматически подмешивает этот массив в контекст лога при report($e) —
+     * без него виден только текст-обёртка "CardsPro API вернул ошибку N...", а сам
+     * ответ CardsPro (за что именно отклонён запрос) терялся безвозвратно.
+     *
+     * @return array<string, mixed>
+     */
+    public function context(): array
+    {
+        return [
+            'cardspro_status_code' => $this->statusCode,
+            'cardspro_response' => $this->responseBody,
+        ];
+    }
 }
