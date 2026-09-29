@@ -7,7 +7,7 @@
     {{-- Заголовок/описание сформулированы по реальному содержимому лендинга (секции #hero, #how,
     #products ниже): 3 карты Visa/Mastercard, оформление онлайн за 3 минуты, пополнение из России
     через СБП. --}}
-    <title>Mojno — виртуальные карты для оплаты за рубежом: Visa и Mastercard</title>
+    <title>«Можно» — виртуальные карты для оплаты зарубежных сервисов</title>
     <meta name="description" content="Виртуальные карты Visa и Mastercard для оплаты ИИ-сервисов, подписок и покупок за рубежом. Оформление онлайн за 3 минуты, пополнение из России через СБП.">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://mojno.cc/">
@@ -25,13 +25,13 @@
     <meta property="og:site_name" content="Mojno">
     <meta property="og:locale" content="ru_RU">
     <meta property="og:url" content="https://mojno.cc/">
-    <meta property="og:title" content="Mojno — виртуальные карты для оплаты за рубежом">
+    <meta property="og:title" content="«Можно» — виртуальные карты для оплаты зарубежных сервисов">
     <meta property="og:description" content="Виртуальные карты Visa и Mastercard для оплаты ИИ-сервисов, подписок и покупок за рубежом. Оформление онлайн за 3 минуты, пополнение из России через СБП.">
     <meta property="og:image" content="{{ asset('assets/images/herobg.png') }}">
     <meta property="og:image:width" content="1713">
     <meta property="og:image:height" content="918">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Mojno — виртуальные карты для оплаты за рубежом">
+    <meta name="twitter:title" content="«Можно» — виртуальные карты для оплаты зарубежных сервисов">
     <meta name="twitter:description" content="Виртуальные карты Visa и Mastercard для оплаты ИИ-сервисов, подписок и покупок за рубежом.">
     <meta name="twitter:image" content="{{ asset('assets/images/herobg.png') }}">
 
