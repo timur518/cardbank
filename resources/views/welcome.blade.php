@@ -3,14 +3,60 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mojno - виртуальные карты для платежей по всему миру</title>
+
+    {{-- Заголовок/описание сформулированы по реальному содержимому лендинга (секции #hero, #how,
+    #products ниже): 3 карты Visa/Mastercard, оформление онлайн за 3 минуты, пополнение из России
+    через СБП. --}}
+    <title>Mojno — виртуальные карты для оплаты за рубежом: Visa и Mastercard</title>
+    <meta name="description" content="Виртуальные карты Visa и Mastercard для оплаты ИИ-сервисов, подписок и покупок за рубежом. Оформление онлайн за 3 минуты, пополнение из России через СБП.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://mojno.cc/">
+
     <link rel="icon" href="assets/images/favicon.svg" sizes="32x32" type="image/png">
     <link rel="icon" href="assets/images/favicon.svg" sizes="16x16" type="image/png">
-    <meta name="description" content="Виртуальные карты для оплаты сервисов, подписок и покупок по всему миру. Управление картами полностью онлайн.">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=sofia-sans:400,500,600,700,800&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <meta name="mailru-domain" content="m7BvodbH4AQGo7RI" />
+
+    {{-- Open Graph / Twitter Card — превью ссылки при шеринге главной страницы в соцсетях и
+    мессенджерах, на видимость самой страницы не влияют. --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Mojno">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:url" content="https://mojno.cc/">
+    <meta property="og:title" content="Mojno — виртуальные карты для оплаты за рубежом">
+    <meta property="og:description" content="Виртуальные карты Visa и Mastercard для оплаты ИИ-сервисов, подписок и покупок за рубежом. Оформление онлайн за 3 минуты, пополнение из России через СБП.">
+    <meta property="og:image" content="{{ asset('assets/images/herobg.png') }}">
+    <meta property="og:image:width" content="1713">
+    <meta property="og:image:height" content="918">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Mojno — виртуальные карты для оплаты за рубежом">
+    <meta name="twitter:description" content="Виртуальные карты Visa и Mastercard для оплаты ИИ-сервисов, подписок и покупок за рубежом.">
+    <meta name="twitter:image" content="{{ asset('assets/images/herobg.png') }}">
+
+    {{-- JSON-LD (Organization + WebSite) — структурированные данные для поисковиков, на вёрстку
+    страницы не влияют. --}}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Можно",
+        "alternateName": "Mojno",
+        "url": "https://mojno.cc/",
+        "logo": "{{ asset('assets/images/logo.png') }}",
+        "email": "info@mojno.cc",
+        "description": "Виртуальные карты для оплаты сервисов, подписок и покупок по всему миру."
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Можно",
+        "url": "https://mojno.cc/"
+    }
+    </script>
 
     {{-- Код счётчика и пикселей/прочих скриптов из админки (Настройки -> Аналитика и внешние
     сервисы), вставляется как есть (сырой HTML, включая <script>) — тот же код подтягивается
