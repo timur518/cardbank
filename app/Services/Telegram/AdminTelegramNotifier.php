@@ -6,6 +6,7 @@ use App\Enums\AdminTelegramEvent;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -40,6 +41,56 @@ class AdminTelegramNotifier
         }
 
         self::send($botToken, $chatId, $event->message($params));
+    }
+
+    /**
+     * Единая точка подключения алертов об ошибках бэкенда — вызывается один раз из
+     * reportable()-коллбэка в bootstrap/app.php, поэтому не требует ручной вставки в каждом
+     * try/catch приложения — срабатывает на любом вызове report($e), который дошёл до
+     * записи в laravel.log (Laravel по умолчанию уже отсеивает от логирования/report()
+     * "ожидаемые" исключения — ValidationException, ModelNotFoundException, 404/403 HttpException,
+     * TokenMismatchException и т.д., см. Handler::$internalDontReport — поэтому сюда доходят
+     * только реальные баги).
+     */
+    public static function notifyException(Throwable $e): void
+    {
+        [$botToken, $chatId] = self::credentials();
+
+        if ($botToken === null || $chatId === null) {
+            return;
+        }
+
+        try {
+            $file = str_replace(base_path().'/', '', $e->getFile());
+
+            $message = sprintf(
+                "\u{1f534} <b>Ошибка сервера</b>\n\n<b>%s</b>\n%s\n\n\u{1f4cd} <code>%s:%d</code>%s",
+                e(get_class($e)),
+                e(Str::limit($e->getMessage(), 500)),
+                e($file),
+                $e->getLine(),
+                self::requestContext(),
+            );
+
+            self::send($botToken, $chatId, $message);
+        } catch (Throwable) {
+            // Сборка самого алерта не должна порождать новое исключение внутри report().
+        }
+    }
+
+    /**
+     * Строка "HTTP METHOD /path" текущего запроса (если ошибка произошла внутри
+     * HTTP-цикла, а не в консольной команде или очереди — там app('request') не привязан).
+     */
+    protected static function requestContext(): string
+    {
+        if (! app()->bound('request')) {
+            return '';
+        }
+
+        $request = request();
+
+        return sprintf("\n\u{1f517} <code>%s %s</code>", $request->method(), e($request->path()));
     }
 
     /**
