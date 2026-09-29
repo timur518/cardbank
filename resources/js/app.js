@@ -559,6 +559,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Кнопки «Оформить карту {Black/Orange/White}» в блоках карточек: ведут на блок
+    // оформления (#apply) и сразу выбирают соответствующую карту в селекторе сайдбара.
+    document.querySelectorAll('[data-select-card]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const key = button.dataset.selectCard;
+            const input = document.querySelector(`input[name="card_product"][value="${key}"]`);
+
+            if (input && !input.checked) {
+                input.checked = true;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    });
+
     // Аутентифицированные запросы к бэкенду для формы оформления карты (регистрация + оплата) —
     // лендинг и его API на одном домене, поэтому сессионная кука Sanctum (guard web) работает без
     // отдельной настройки CORS/SANCTUM_STATEFUL_DOMAINS, как у SPA ЛК (см. resources/cabinet/src/api/client.ts) —
