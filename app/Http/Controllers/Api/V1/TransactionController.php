@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\CardTransactionStatus;
+use App\Enums\CardTransactionType;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\CardTransactionResource;
 use App\Models\Card;
@@ -42,6 +44,18 @@ class TransactionController extends Controller
     private function paginate(Builder|\Illuminate\Database\Eloquent\Relations\HasMany $query, Request $request): AnonymousResourceCollection
     {
         $query->with(['merchantRecord', 'card.cardProduct']);
+
+        // CardsPro иногда шлёт отдельный $0-authorization/verification по той же карте как
+        // самостоятельную операцию (свой txId, свой originTxnId) перед реальной покупкой —
+        // в кабинете клиента это выглядит как лишняя строка с нулевой суммой, никак не связанная
+        // с реальным списанием средств. Скрываем только pending-покупки с нулевой суммой —
+        // если такая холд-запись позже сливается с реальным расчётом через origin_tx_id, она
+        // станет ненулевой и автоматически появится в ленте.
+        $query->where(function (Builder $q) {
+            $q->where('type', '!=', CardTransactionType::Purchase->value)
+                ->orWhere('status', '!=', CardTransactionStatus::Pending->value)
+                ->orWhere('amount', '>', 0);
+        });
 
         // ?type=purchase или ?type[]=purchase&type[]=decline — например, для счётчика «Потрачено в
         // этом месяце» в ЛК нужны сразу и purchase, и decline (комиссия за отклонённую операцию).

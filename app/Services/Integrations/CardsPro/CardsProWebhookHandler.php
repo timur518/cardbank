@@ -18,6 +18,7 @@ use App\Models\CardTransaction;
 use App\Models\Notification;
 use App\Services\CardProviderOperationResolver;
 use App\Services\Mail\SafeMailer;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -51,10 +52,63 @@ class CardsProWebhookHandler
             CardsProCallbackType::CardTransaction => $this->handleTransaction($payload),
             CardsProCallbackType::CardIssue => $this->handleIssue($payload),
             CardsProCallbackType::OtpCode => $this->handleOtpCode($payload),
-            // EXTRA_FEE_CARD, EXTRA_FEE_CAP, KYC_CHANGE:
-            // осознанно не обрабатываются автоматически — см. docblock класса.
+            CardsProCallbackType::ExtraFeeCard => $this->handleExtraFeeCard($payload),
+            // EXTRA_FEE_CAP, KYC_CHANGE:
+            // осознанно не обрабатываются автоматически — см. docblock класса. EXTRA_FEE_CAP списывается с
+            // нашего мастер-счёта (CAP), а не с карты клиента — на его транзакцию она не влияет.
             default => null,
         };
+    }
+
+    /**
+     * EXTRA_FEE_CARD (`{ san, txId, amount, feeType, settlementDiff }`) — комиссия за операцию,
+     * списываемая с ТОЙ ЖЕ карты, что и сама покупка — приходит отдельным вебхуком ПОСЛЕ
+     * CARD_TRANSACTION (txId совпадает с исходной покупкой). Без обработки этого события итоговая
+     * сумма транзакции в ЛК клиента оставалась равна billAmount без комиссии (например,
+     * $0.98 вместо $1.23 при комиссии $0.25) — расхождение с тем, что показывает
+     * собственный кабинет CardsPro. Пересчитываем amount как cost_amount + fee (а не
+     * инкрементируем), чтобы повторная доставка того же вебхука не удваивала комиссию.
+     */
+    protected function handleExtraFeeCard(array $payload): void
+    {
+        $providerTxId = (string) ($payload['txId'] ?? '');
+        $fee = isset($payload['amount']) ? (float) $payload['amount'] : 0.0;
+
+        if ($providerTxId === '') {
+            return;
+        }
+
+        $transaction = CardTransaction::where('provider_tx_id', $providerTxId)->first();
+
+        if (! $transaction) {
+            Log::warning('CardsProWebhookHandler: EXTRA_FEE_CARD ссылается на неизвестную транзакцию — возможно, CARD_TRANSACTION ещё не дошёл.', [
+                'provider_tx_id' => $providerTxId,
+                'fee' => $fee,
+            ]);
+
+            return;
+        }
+
+        // Топ-ап комиссии уже считается на нашей стороне от provider_topup_fee_percent в
+        // CardsProOrderProcessor/handleTopup() — не даём EXTRA_FEE_CARD перезаписать её чужим значением.
+        if ($transaction->type === CardTransactionType::Topup) {
+            return;
+        }
+
+        $costAmount = $transaction->cost_amount !== null
+            ? (float) $transaction->cost_amount
+            : (float) $transaction->amount - (float) ($transaction->commission_amount ?? 0);
+
+        $transaction->update([
+            'commission_amount' => $fee,
+            'amount' => $costAmount + $fee,
+        ]);
+
+        // Комиссия уже списана с карты к моменту прихода этого вебхука — подтягиваем баланс сразу, не
+        // ждём ближайший цикл providers:sync-card-balances.
+        if ($card = $transaction->card) {
+            $this->refreshCardBalance($card);
+        }
     }
 
     /**
