@@ -21,6 +21,14 @@ use Throwable;
 class AdminTelegramNotifier
 {
     /**
+     * Прокси Telegram Bot API (тот же, что и TELEGRAM_API_PROXY_URL у консультанта
+     * mojno-help, см. public/mojno-help/.env.example) — у сервера приложения нет
+     * прямого доступа к api.telegram.org. Контракт: POST JSON {token, method,
+     * ...поля запроса}, ответ Telegram возвращается прокси без изменений.
+     */
+    protected const PROXY_URL = 'https://my-nimb.ru/proxy/telegram.php';
+
+    /**
      * @param  array<string, mixed>  $params
      */
     public static function notify(AdminTelegramEvent $event, array $params = []): void
@@ -41,7 +49,9 @@ class AdminTelegramNotifier
     public static function send(string $botToken, string $chatId, string $text): bool
     {
         try {
-            $response = Http::timeout(10)->post("https://api.telegram.org/bot{$botToken}/sendMessage", [
+            $response = Http::timeout(10)->post(self::PROXY_URL, [
+                'token' => $botToken,
+                'method' => 'sendMessage',
                 'chat_id' => $chatId,
                 'text' => $text,
                 'parse_mode' => 'HTML',
