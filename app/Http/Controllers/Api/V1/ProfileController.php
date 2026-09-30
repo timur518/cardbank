@@ -86,8 +86,9 @@ class ProfileController extends Controller
     public function setPin(SetPinRequest $request): JsonResponse
     {
         $user = $request->user();
+        $wasPinSet = $user->hasPin();
 
-        if ($user->hasPin() && ! Hash::check($request->validated('current_pin'), $user->pin_hash)) {
+        if ($wasPinSet && ! Hash::check($request->validated('current_pin'), $user->pin_hash)) {
             throw ValidationException::withMessages([
                 'current_pin' => 'Текущий ПИН-код указан неверно.',
             ]);
@@ -97,6 +98,8 @@ class ProfileController extends Controller
             'pin_hash' => Hash::make($request->validated('pin')),
             'pin_set_at' => now(),
         ]);
+
+        Notification::notify($user, $wasPinSet ? NotificationEvent::PinChanged : NotificationEvent::PinSet, [], '/profile');
 
         return (new UserResource($user))->response();
     }

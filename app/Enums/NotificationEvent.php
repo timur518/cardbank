@@ -20,6 +20,7 @@ use App\Models\Notification;
  * - TopupFailed: 'last4', 'amount'
  * - PasswordChanged: 'datetime' (отформатированная строка)
  * - PasswordResetRequested: 'email'
+ * - PinSet, PinChanged: без параметров
  * - OtpCodeReceived: 'code'
  * - KycDeclined: 'reason' (?string)
  * - Welcome, CardOrderAccepted, CardIssueFailed, KycApproved: без параметров
@@ -38,6 +39,8 @@ enum NotificationEvent
     case TopupFailed;
     case PasswordChanged;
     case PasswordResetRequested;
+    case PinSet;
+    case PinChanged;
     case OtpCodeReceived;
     case KycApproved;
     case KycDeclined;
@@ -56,7 +59,9 @@ enum NotificationEvent
             self::TopupSuccess,
             self::TopupFailed => NotificationType::Payment,
             self::PasswordChanged,
-            self::PasswordResetRequested => NotificationType::Security,
+            self::PasswordResetRequested,
+            self::PinSet,
+            self::PinChanged => NotificationType::Security,
             self::OtpCodeReceived => NotificationType::OtpCode,
             self::KycApproved,
             self::KycDeclined => NotificationType::Kyc,
@@ -81,6 +86,8 @@ enum NotificationEvent
             self::TopupFailed => 'Пополнение не прошло',
             self::PasswordChanged => 'Пароль изменён',
             self::PasswordResetRequested => 'Внимание! Сброс пароля',
+            self::PinSet => 'Установлен ПИН-код',
+            self::PinChanged => 'ПИН-код изменён',
             self::OtpCodeReceived => 'Код подтверждения',
             self::KycApproved => 'Верификация личности пройдена',
             self::KycDeclined => 'Верификация не пройдена',
@@ -105,6 +112,8 @@ enum NotificationEvent
             self::TopupFailed => "Не удалось пополнить карту •••• {$params['last4']} на {$params['amount']}. Попробуйте ещё раз или используйте другой способ оплаты.",
             self::PasswordChanged => "Пароль от вашего личного кабинета был изменён {$params['datetime']}. Если это были не вы, срочно обратитесь в поддержку.",
             self::PasswordResetRequested => 'Запрошен сброс пароля. Новый пароль был отправлен к вам на E-mail. Рекомендуем сменить его на свой после входа в личный кабинет.',
+            self::PinSet => 'Вы установили ПИН-код для быстрого входа в ЛК без ввода пароля.',
+            self::PinChanged => 'Вы изменили ПИН-код для быстрого входа в ЛК без ввода пароля.',
             self::OtpCodeReceived => "Код подтверждения: {$params['code']}. Никому не сообщайте этот код!",
             self::KycApproved => 'Проверка личности успешно завершена. Теперь вам доступны все возможности личного кабинета.',
             self::KycDeclined => $this->kycDeclinedBody($params),
