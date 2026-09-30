@@ -51,6 +51,11 @@ function TransactionRow({ tx, onSelect }: { tx: CardTransaction; onSelect: () =>
     const merchant = isDeclined ? undefined : tx.merchant_info;
     const merchantName = merchant?.name ?? tx.merchant;
     const title = merchantName ?? typeLabel;
+    // Под названием мерчанта показываем номер карты, по которой прошла операция, перед типом
+    // операции (например «*4521 • Покупка») — нужно на сводной ленте «Операции», где вперемешку
+    // показаны транзакции разных карт клиента, но добавлено единообразно и в остальных местах,
+    // где переиспользуется этот компонент (главная, вкладка карты).
+    const typeLabelWithCard = tx.card.last4 ? `*${tx.card.last4} • ${typeLabel}` : typeLabel;
 
     return (
         <button type="button" className="tx-row" onClick={onSelect}>
@@ -58,7 +63,7 @@ function TransactionRow({ tx, onSelect }: { tx: CardTransaction; onSelect: () =>
             <span className="tx-info">
                 <span className="tx-title">{title}</span>
                 <span className="tx-subtitle">
-                    {merchantName ? typeLabel : formatTime(tx.occurred_at)}
+                    {merchantName ? typeLabelWithCard : formatTime(tx.occurred_at)}
                 </span>
             </span>
             <span className="tx-amount-wrap">
