@@ -34,6 +34,20 @@ Route::get('/', function (CurrencyRateService $rates) {
     ]);
 });
 
+// Страница тарифов и условий карт — полностью автоматическая, без ручного контента в Blade:
+// выводит полные условия по каждому активному CardProduct из админки (те же поля,
+// что уже публичны в API ЛК — см. CardProductResource/CardDetailResource).
+Route::get('/tariffs', function () {
+    $cardProducts = CardProduct::query()
+        ->where('active', true)
+        ->orderBy('sort')
+        ->get();
+
+    return view('tariffs', [
+        'cardProducts' => $cardProducts,
+    ]);
+})->name('tariffs');
+
 // Страницы юридических документов — текст каждой берётся из админки (LegalDocument),
 // показывается последняя действующая версия соответствующего типа документа.
 // Слаг URL => [тип документа, заголовок страницы, имя роута].

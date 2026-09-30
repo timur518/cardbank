@@ -13,6 +13,7 @@
                     <li><a href="/#lifestyle">Возможности</a></li>
                     <li><a href="/#products">Карты</a></li>
                     <li><a href="/#how">Как это работает</a></li>
+                    <li><a href="{{ route('tariffs') }}">Тарифы</a></li>
                 </ul>
             </div>
             <div>
