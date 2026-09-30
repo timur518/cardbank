@@ -162,7 +162,10 @@ export function CardDetailPage() {
 
             {!cardLoading && card && (
                 <div className="flex flex-col gap-6 fade-in-up">
-                    <div className="grid gap-6 lg:grid-cols-2">
+                    {/* Порог переключения в 2 колонки — md (768px), а не lg (1024px): это тот же порог,
+                        что и у переключения mobile/desktop-шапки (MobileTabBar/шапка в index.css) —
+                        чтобы на окне PWA (770px) блок выглядел как на десктопе, а не как на мобилке. */}
+                    <div className="grid gap-6 md:grid-cols-2">
                         <div className="flex flex-col gap-4">
                             <CardFace
                                 flipped={flipped}
