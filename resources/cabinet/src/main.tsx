@@ -20,7 +20,7 @@ captureTrackingParams();
 // Код счётчика/пикселей из админки — асинхронно, не блокирует рендер SPA.
 void injectAnalyticsCodes();
 
-// PWA: service worker (installability) + фиксация размера окна 1024x800 для установленного
+// PWA: service worker (installability) + фиксация размера окна 770x850 для установленного
 // на десктопе приложения (см. utils/pwa.ts).
 registerServiceWorker();
 applyDesktopStandaloneWindowSize();

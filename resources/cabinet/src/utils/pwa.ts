@@ -76,7 +76,7 @@ export function registerServiceWorker(): void {
 
 /**
  * На десктопе (Windows/Mac/Linux) установленное PWA-окно по умолчанию открывается в
- * произвольном размере (обычно % от экрана) — фиксируем 1024x800 сразу после запуска.
+ * произвольном размере (обычно % от экрана) — фиксируем 770x850 сразу после запуска.
  * window.resizeTo() работает только для окон, которые браузер считает "приложением"
  * (display-mode: standalone/window-controls-overlay), в обычной вкладке браузера вызов
  * молча игнорируется — отдельная проверка на мобильные устройства не нужна.
@@ -92,5 +92,5 @@ export function applyDesktopStandaloneWindowSize(): void {
         return;
     }
 
-    window.resizeTo(1024, 800);
+    window.resizeTo(770, 850);
 }
