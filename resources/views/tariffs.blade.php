@@ -36,9 +36,6 @@
             <div class="mt-10">
             @forelse ($cardProducts as $product)
                 @php
-                    $hasBillingInfo = $product->billing_country || $product->billing_city
-                        || $product->billing_region || $product->billing_address || $product->billing_post_code;
-
                     $usd = fn (mixed $value) => $value !== null ? '$' . number_format((float) $value, 2) : '—';
                 @endphp
                 <article class="tariff-card">
@@ -85,16 +82,6 @@
                         <div><dt>Оплата не в долларах (FX)</dt><dd>{{ $product->non_usd_payment_fee ?: '—' }}</dd></div>
                     </dl>
 
-                    @if ($hasBillingInfo)
-                        <h3 class="tariff-section-title">Платёжный адрес карты</h3>
-                        <dl class="tariff-grid">
-                            <div><dt>Страна</dt><dd>{{ $product->billing_country ?: '—' }}</dd></div>
-                            <div><dt>Город</dt><dd>{{ $product->billing_city ?: '—' }}</dd></div>
-                            <div><dt>Регион</dt><dd>{{ $product->billing_region ?: '—' }}</dd></div>
-                            <div><dt>Улица</dt><dd>{{ $product->billing_address ?: '—' }}</dd></div>
-                            <div><dt>Индекс</dt><dd>{{ $product->billing_post_code ?: '—' }}</dd></div>
-                        </dl>
-                    @endif
 
                     @if ($product->restricted_merchants)
                         <h3 class="tariff-section-title">Ограничения по мерчантам</h3>
