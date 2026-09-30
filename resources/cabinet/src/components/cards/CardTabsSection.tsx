@@ -107,9 +107,6 @@ export function CardTabsSection({ card, activeTab, onTabChange }: CardTabsSectio
                                 {justUpdated && ' · обновлено сейчас'}
                             </p>
                             <div className="flex items-center gap-2">
-                                <button type="button" className="btn" disabled title="Формирование PDF-выписки скоро появится">
-                                    Выписка PDF
-                                </button>
                                 <button type="button" className="btn" onClick={load} disabled={isLoading}>
                                     Обновить
                                 </button>
