@@ -60,4 +60,20 @@ class ProfileController extends Controller
 
         return response()->json(['message' => 'Пароль изменён']);
     }
+
+    /**
+     * Отмечает, что клиент установил ЛК как PWA (на рабочий стол/экран «Домой») — вызывается
+     * с фронта при событии appinstalled и при каждом запуске в режиме standalone (см. PwaInstallPrompt.tsx) —
+     * идемпотентно, повторные вызовы ничего не ломают.
+     */
+    public function markPwaInstalled(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user->pwa_installed) {
+            $user->update(['pwa_installed' => true]);
+        }
+
+        return (new UserResource($user->loadMissing('latestKycVerification')))->response();
+    }
 }

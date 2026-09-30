@@ -29,6 +29,7 @@ class UserResource extends JsonResource
                 ? $this->latestKycVerification?->decline_reason
                 : null,
             'two_factor_enabled' => (bool) $this->two_factor_enabled,
+            'pwa_installed' => (bool) $this->pwa_installed,
             'referral_code' => $this->referral_code,
             'created_at' => optional($this->created_at)->toIso8601String(),
         ];

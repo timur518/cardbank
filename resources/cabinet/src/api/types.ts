@@ -14,6 +14,7 @@ export interface Profile {
     // Заполнено только когда kyc_status === 'declined' — показывается в блоке верификации на странице профиля.
     kyc_decline_reason: string | null;
     two_factor_enabled: boolean;
+    pwa_installed: boolean;
     referral_code: string | null;
     created_at: string;
 }

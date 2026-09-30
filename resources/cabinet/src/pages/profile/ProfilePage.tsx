@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { updatePassword } from '../../api/auth';
 import { extractErrorMessage } from '../../api/client';
 import { FormField } from '../../components/common/FormField';
+import { StatusPill } from '../../components/common/StatusPill';
 import { KycStatusSection } from '../../components/kyc/KycStatusSection';
 import { useAuth } from '../../context/AuthContext';
 import { formatDateMask, formatPhoneMask, isoDateToDisplay, joinFio, splitFio, transliterateFio } from '../../utils/masks';
@@ -78,14 +79,20 @@ function ProfileDataSection() {
 
     return (
         <section className="auth-panel p-6">
-            <div className="mb-5 flex items-center gap-3">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f3f0ee] text-ink">
-                    <UserIcon className="h-5 w-5" />
-                </span>
-                <div>
-                    <h2 className="text-base font-extrabold tracking-tight text-ink">Мои данные</h2>
-                    <p className="text-xs text-muted">ФИО, телефон и дата рождения</p>
+            <div className="mb-5 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f3f0ee] text-ink">
+                        <UserIcon className="h-5 w-5" />
+                    </span>
+                    <div>
+                        <h2 className="text-base font-extrabold tracking-tight text-ink">Мои данные</h2>
+                        <p className="text-xs text-muted">ФИО, телефон и дата рождения</p>
+                    </div>
                 </div>
+                {/* Ставится отметкой users.pwa_installed — см. PwaInstallPrompt.tsx (appinstalled +
+                    проверка standalone-режима при каждом запуске). Без отметки ничего не показываем —
+                    как и kyc_decline_reason, это не состояние ошибки, которое нужно подсвечивать пустым состоянием. */}
+                {profile?.pwa_installed && <StatusPill label="Приложение установлено" tone="success" />}
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">

@@ -42,6 +42,7 @@ class User extends Authenticatable implements FilamentUser
         'is_blocked',
         'block_reason',
         'two_factor_enabled',
+        'pwa_installed',
         'last_login_at',
         'personal_data_consent_at',
     ];
@@ -70,6 +71,7 @@ class User extends Authenticatable implements FilamentUser
             'kyc_status' => KycStatus::class,
             'is_blocked' => 'boolean',
             'two_factor_enabled' => 'boolean',
+            'pwa_installed' => 'boolean',
             'last_login_at' => 'datetime',
             'personal_data_consent_at' => 'datetime',
         ];

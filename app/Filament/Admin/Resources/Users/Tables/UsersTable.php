@@ -58,6 +58,9 @@ class UsersTable
                 TextColumn::make('kyc_status')
                     ->label('KYC')
                     ->badge(),
+                IconColumn::make('pwa_installed')
+                    ->label('PWA')
+                    ->boolean(),
                 IconColumn::make('has_active_risk_flag')
                     ->label('Риски')
                     ->state(fn (User $record) => $record->hasActiveRiskFlag())

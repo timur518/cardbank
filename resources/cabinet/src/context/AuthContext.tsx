@@ -12,6 +12,7 @@ interface AuthContextValue {
     logout: () => Promise<void>;
     updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
     refreshProfile: () => Promise<void>;
+    markPwaInstalled: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -67,9 +68,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(data);
     }, []);
 
+    // Вызывается из PwaInstallPrompt.tsx при обнаружении установки приложения — обновляет
+    // profile.pwa_installed в контексте, чтобы страница профиля сразу показала отметку без перезагрузки.
+    const markPwaInstalled = useCallback(async () => {
+        const data = await authApi.markPwaInstalled();
+        setProfile(data);
+    }, []);
+
     const value = useMemo<AuthContextValue>(
-        () => ({ status, profile, login, register, logout, updateProfile, refreshProfile }),
-        [status, profile, login, register, logout, updateProfile, refreshProfile],
+        () => ({ status, profile, login, register, logout, updateProfile, refreshProfile, markPwaInstalled }),
+        [status, profile, login, register, logout, updateProfile, refreshProfile, markPwaInstalled],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -40,3 +40,9 @@ export async function updatePassword(payload: UpdatePasswordPayload): Promise<st
     const { data } = await apiClient.post<{ message: string }>('/profile/password', payload);
     return data.message;
 }
+
+// Отмечает в профиле, что клиент установил ЛК как PWA — вызывается из PwaInstallPrompt.tsx.
+export async function markPwaInstalled(): Promise<Profile> {
+    const { data } = await apiClient.post<{ data: Profile }>('/profile/pwa-installed');
+    return data.data;
+}

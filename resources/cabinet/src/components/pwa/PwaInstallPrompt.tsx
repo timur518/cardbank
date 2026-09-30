@@ -1,5 +1,6 @@
 import { ArrowDownTrayIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { clearCapturedInstallPrompt, isRunningStandalone, onInstallPromptCaptured, type BeforeInstallPromptEvent } from '../../utils/pwa';
 
 // Сколько дней не показывать попап повторно после того, как пользователь его закрыл
@@ -40,9 +41,32 @@ function markDismissed(): void {
  * Firefox и прочие браузеры без поддержки установки — попап не показывается вообще.
  */
 export function PwaInstallPrompt() {
+    const { profile, markPwaInstalled } = useAuth();
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [platform, setPlatform] = useState<Platform | null>(null);
     const [visible, setVisible] = useState(false);
+
+    // Отметка в ЛК/админке, что приложение установлено (users.pwa_installed) — независимо от того,
+    // показывается ли сам попап выше. Два источника сигнала:
+    // 1. appinstalled — фирится сразу после установки через prompt() (Chrome/Edge/Opera); на iOS/macOS
+    //    Safari не поддерживается вообще — там установка только ручная, никакого JS-события не пришёт.
+    // 2. При каждом запуске ЛК в режиме standalone (isRunningStandalone()) — это единственный способ
+    //    узнать об установке на iOS/macOS Safari (и надёжный fallback для Chrome, если appinstalled
+    //    почему-то не дошёл) — запрос идемпотентен на бэкенде, поэтому просто проверяем локальный
+    //    флаг в profile, чтобы не дёргать его повторно на каждой загрузке.
+    useEffect(() => {
+        if (profile && !profile.pwa_installed && isRunningStandalone()) {
+            void markPwaInstalled();
+        }
+
+        function handleAppInstalled() {
+            void markPwaInstalled();
+        }
+
+        window.addEventListener('appinstalled', handleAppInstalled);
+        return () => window.removeEventListener('appinstalled', handleAppInstalled);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [profile?.pwa_installed]);
 
     useEffect(() => {
         if (isRunningStandalone() || wasRecentlyDismissed()) {
@@ -95,7 +119,11 @@ export function PwaInstallPrompt() {
         markDismissed();
         setDeferredPrompt(null);
         setVisible(false);
-        void outcome;
+
+        // Не ждём appinstalled (может прийти с задержкой) — сразу отмечаем в профиле, если пользователь согласился.
+        if (outcome === 'accepted') {
+            void markPwaInstalled();
+        }
     }
 
     if (!visible || !platform) {

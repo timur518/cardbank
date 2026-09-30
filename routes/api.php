@@ -49,6 +49,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+        Route::post('/profile/pwa-installed', [ProfileController::class, 'markPwaInstalled'])->name('profile.pwa-installed');
 
         // Верификация личности через Didit — блок на странице профиля (перед «Мои данные»).
         Route::post('/kyc/start', [KycController::class, 'start'])->name('kyc.start');
