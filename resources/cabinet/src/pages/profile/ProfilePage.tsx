@@ -238,7 +238,7 @@ function SecuritySection() {
                 <div>
                     <p className="text-sm font-bold text-ink">ПИН-код</p>
                     <p className="text-xs text-muted">
-                        {profile?.has_pin ? 'Быстрый вход в приложение вместо пароля' : 'Ещё не установлен'}
+                        {profile?.has_pin ? 'ПИН установлен' : 'Ещё не установлен'}
                     </p>
                 </div>
                 <button type="button" className="btn btn-primary" onClick={() => setPinModalOpen(true)}>

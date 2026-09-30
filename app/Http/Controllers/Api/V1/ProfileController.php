@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\SetPinRequest;
 use App\Http\Requests\Api\V1\UpdatePasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
+use App\Http\Requests\Api\V1\VerifyPinRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Mail\PasswordChangedMail;
 use App\Models\Notification;
@@ -98,5 +99,21 @@ class ProfileController extends Controller
         ]);
 
         return (new UserResource($user))->response();
+    }
+
+    /**
+     * Проверяет текущий ПИН-код без его смены — первый шаг попапа смены ПИН-кода (PinSetupModal.tsx).
+     */
+    public function verifyPin(VerifyPinRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user->hasPin() || ! Hash::check($request->validated('pin'), $user->pin_hash)) {
+            throw ValidationException::withMessages([
+                'pin' => 'Неверный ПИН-код.',
+            ]);
+        }
+
+        return response()->json(['valid' => true]);
     }
 }

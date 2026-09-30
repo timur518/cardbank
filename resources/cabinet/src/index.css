@@ -1522,8 +1522,10 @@ html::-webkit-scrollbar {
 
 /*
  * Установка/смена ПИН-кода (PinSetupModal/PinBoxes/PinPad) — попап на базе того же
- * .modal-overlay/.modal-sheet, что и «Пополнить карту». Квадратики ввода, экранная
- * цифровая клавиатура (только тач-устройства) и статус сохранения/успеха.
+ * .modal-overlay/.modal-sheet, что и «Пополнить карту». Прочерки ввода (анимированно
+ * превращаются в точку при заполнении), экранная цифровая клавиатура (только
+ * тач-устройства) и статус сохранения/успеха — вращающийся градиентный лоадер,
+ * анимированно перетекающий в залитой градиентный кружок с замком.
  */
 .pin-input-surface {
     outline: none;
@@ -1531,39 +1533,35 @@ html::-webkit-scrollbar {
 .pin-boxes {
     display: flex;
     justify-content: center;
-    gap: 12px;
-}
-.pin-box {
-    width: 56px;
-    height: 56px;
-    border-radius: 16px;
-    border: 1.5px solid var(--color-border);
-    background: #fff;
-    display: flex;
     align-items: center;
-    justify-content: center;
-    transition: border-color .15s ease, background .15s ease;
+    gap: 10px;
+    height: 24px;
 }
-.pin-box-filled {
-    border-color: var(--color-ink);
-    background: #f7f5f2;
+.pin-dash {
+    display: block;
+    width: 22px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--color-border);
+    transition: width .18s ease, height .18s ease, border-radius .18s ease, background .18s ease, transform .18s ease;
 }
-.pin-box-dot {
-    width: 12px;
-    height: 12px;
+.pin-dash-filled {
+    width: 11px;
+    height: 11px;
     border-radius: 999px;
     background: var(--color-ink);
+    transform: scale(1.05);
 }
-.pin-boxes-error .pin-box {
-    border-color: var(--color-orange-dark);
+.pin-boxes-error .pin-dash {
+    background: var(--color-orange-dark);
 }
 
 .pin-pad {
     display: none;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    width: 100%;
-    max-width: 280px;
+    grid-template-columns: repeat(3, 64px);
+    grid-auto-rows: 64px;
+    justify-content: center;
+    gap: 14px;
 }
 @media (pointer: coarse) {
     .pin-pad {
@@ -1571,22 +1569,25 @@ html::-webkit-scrollbar {
     }
 }
 .pin-pad-key {
-    aspect-ratio: 1;
-    border-radius: 16px;
-    border: 1.5px solid var(--color-border);
-    background: #fff;
-    font-size: 1.25rem;
-    font-weight: 700;
+    border: none;
+    background: transparent;
+    font-size: 1.75rem;
+    font-weight: 800;
     color: var(--color-ink);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    border-radius: 16px;
     transition: background .12s ease, transform .12s ease;
 }
 .pin-pad-key:active {
     transform: scale(.94);
-    background: #f3f0ee;
+    background: #ebe8e4;
+}
+.pin-pad-key:disabled {
+    opacity: .4;
+    pointer-events: none;
 }
 .pin-pad-backspace {
     color: var(--color-muted);
@@ -1601,32 +1602,51 @@ html::-webkit-scrollbar {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background .6s ease;
+    transition: background .6s ease, box-shadow .6s ease;
+}
+.pin-status-ring {
+    position: absolute;
+    inset: 4px;
+    border-radius: 999px;
+    background: conic-gradient(from 0deg, #FF3A22, #FFE000, #FF3A22);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+    animation: pin-ring-spin .85s linear infinite;
+    transition: opacity .3s ease, transform .3s ease;
 }
 .pin-status-circle.is-success {
     background: linear-gradient(to top right, #FF3A22, #FFE000);
+    box-shadow: 0 10px 26px -8px rgba(255, 58, 34, .5);
+    animation: pin-success-pop .5s cubic-bezier(.34, 1.56, .64, 1);
 }
-.pin-status-icon {
-    position: absolute;
-    color: var(--color-ink);
-    transition: opacity .3s ease, transform .3s ease;
-}
-.pin-status-circle.is-success .pin-status-spinner {
+.pin-status-circle.is-success .pin-status-ring {
     opacity: 0;
-    transform: scale(.6);
+    transform: scale(1.5);
+    animation: none;
 }
 .pin-status-lock {
+    position: relative;
+    color: var(--color-ink);
     opacity: 0;
-    transform: scale(.4);
-    color: #fff;
+    transform: scale(.3) rotate(-25deg);
+    transition: opacity .1s ease, transform .1s ease, color .1s ease;
 }
 .pin-status-circle.is-success .pin-status-lock {
+    color: #fff;
     opacity: 1;
-    transform: scale(1);
-    transition: opacity .4s ease .15s, transform .4s cubic-bezier(.34, 1.56, .64, 1) .15s;
+    transform: scale(1) rotate(0deg);
+    transition: opacity .45s ease .2s, transform .5s cubic-bezier(.34, 1.56, .64, 1) .2s, color .3s ease .2s;
 }
 .pin-status-text {
     font-size: 1.0625rem;
     font-weight: 800;
     color: var(--color-ink);
+}
+@keyframes pin-ring-spin {
+    to { transform: rotate(360deg); }
+}
+@keyframes pin-success-pop {
+    0% { transform: scale(.85); }
+    60% { transform: scale(1.06); }
+    100% { transform: scale(1); }
 }

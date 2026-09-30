@@ -52,6 +52,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         Route::post('/profile/pwa-installed', [ProfileController::class, 'markPwaInstalled'])->name('profile.pwa-installed');
         // Ограничиваем попытки подбора current_pin — код всего из 4 цифр (10 000 комбинаций).
         Route::post('/profile/pin', [ProfileController::class, 'setPin'])->middleware('throttle:10,1')->name('profile.pin');
+        Route::post('/profile/pin/verify', [ProfileController::class, 'verifyPin'])->middleware('throttle:10,1')->name('profile.pin.verify');
 
         // Верификация личности через Didit — блок на странице профиля (перед «Мои данные»).
         Route::post('/kyc/start', [KycController::class, 'start'])->name('kyc.start');

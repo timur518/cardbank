@@ -52,3 +52,9 @@ export async function setPin(payload: SetPinPayload): Promise<Profile> {
     const { data } = await apiClient.post<{ data: Profile }>('/profile/pin', payload);
     return data.data;
 }
+
+// Проверка текущего ПИН-кода на первом шаге попапа смены (PinSetupModal.tsx, mode="change") —
+// бросает ValidationError, если ПИН неверный, иначе просто resolve.
+export async function verifyPin(pin: string): Promise<void> {
+    await apiClient.post('/profile/pin/verify', { pin });
+}
