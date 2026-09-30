@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>Личный кабинет</title>
+
+    <!-- PWA: манифест + иконки дают браузеру возможность предложить установку на рабочий
+         стол/экран «Домой» (Android/Chrome/Edge — через beforeinstallprompt, см. utils/pwa.ts и
+         PwaInstallPrompt.tsx); iOS/macOS Safari этот API не поддерживает, там используется
+         apple-touch-icon ниже при ручной установке через «Поделиться». -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#3A3C40" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Можно" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <link rel="preconnect" href="https://fonts.bunny.net" />
     <link href="https://fonts.bunny.net/css?family=sofia-sans:400,500,600,700,800&display=swap" rel="stylesheet" />
 </head>
