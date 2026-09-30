@@ -1418,9 +1418,10 @@ html::-webkit-scrollbar {
     }
 }
 
-/* Попап предложения установить PWA (PwaInstallPrompt.tsx). На мобилке — полоса шириной
-экрана выше chat-fab/нижнего меню, чтобы не перекрываться с ними; на десктопе (ниже,
-@media 640px+) — компактная карточка в левом нижнем углу, chat-fab остаётся справа свободным. */
+/* Попап предложения установить PWA (PwaInstallPrompt.tsx). На мобилке — узкая полоса выше
+ chat-fab/нижнего меню: логотип, текст, кнопка (без подписи, только иконка) и закрытие всегда в одну
+ строку без переноса; на десктопе (ниже, @media 640px+) — карточка 430px в левом нижнем углу, с
+ подписью на кнопке, chat-fab остаётся справа свободным. */
 .pwa-install-toast {
     position: fixed;
     left: 12px;
@@ -1428,9 +1429,10 @@ html::-webkit-scrollbar {
     bottom: calc(150px + env(safe-area-inset-bottom));
     z-index: 43;
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 16px;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 12px 14px;
     background: var(--color-surface);
     border-radius: 20px;
     box-shadow: 0 16px 40px rgba(15, 15, 15, .14);
@@ -1441,37 +1443,46 @@ html::-webkit-scrollbar {
     to { opacity: 1; transform: translateY(0); }
 }
 .pwa-install-icon {
-    width: 44px;
-    height: 44px;
+    width: 32px;
+    height: 32px;
     flex-shrink: 0;
-    border-radius: 12px;
+    border-radius: 10px;
 }
 .pwa-install-copy { flex: 1; min-width: 0; }
 .pwa-install-title {
-    margin: 0 0 2px 0;
-    font-size: .92rem;
+    margin: 0;
+    font-size: .7rem;
     font-weight: 800;
     color: var(--color-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .pwa-install-text {
     margin: 0;
-    font-size: .82rem;
-    line-height: 1.4;
+    font-size: .65rem;
+    line-height: 1.25;
     color: var(--color-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .pwa-install-actions {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
     flex-shrink: 0;
 }
+/* Подпись кнопки установки — скрыта по умолчанию (мобилка), остаётся только иконка — иначе
+   вся строка (логотип + текст + кнопка + закрытие) не помещается на экране телефона. */
+.pwa-install-btn-label { display: none; }
 .pwa-install-close {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     flex-shrink: 0;
     border: none;
     border-radius: 999px;
@@ -1481,15 +1492,31 @@ html::-webkit-scrollbar {
     transition: background .15s ease, color .15s ease;
 }
 .pwa-install-close:hover { background: #f7f5f2; color: var(--color-ink); }
-@media (max-width: 480px) {
-    .pwa-install-toast { flex-wrap: wrap; }
-    .pwa-install-actions { flex-direction: row-reverse; width: 100%; justify-content: space-between; }
-}
 @media (min-width: 640px) {
     .pwa-install-toast {
         left: 24px;
         right: auto;
         bottom: 24px;
-        width: 360px;
+        width: 430px;
+        align-items: center;
+        padding: 16px;
     }
+    .pwa-install-icon { width: 44px; height: 44px; border-radius: 12px; }
+    .pwa-install-title {
+        font-size: .8125rem;
+        margin: 0;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .pwa-install-text {
+        font-size: .75rem;
+        line-height: 1.2;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .pwa-install-actions { flex-direction: row; align-items: center; gap: 8px; }
+    .pwa-install-btn-label { display: inline; }
+    .pwa-install-close { width: 28px; height: 28px; }
 }

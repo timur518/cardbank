@@ -117,7 +117,9 @@ export function PwaInstallPrompt() {
                 {platform === 'prompt' && (
                     <button type="button" className="btn btn-primary" onClick={handleInstall}>
                         <ArrowDownTrayIcon className="h-4 w-4" />
-                        Установить
+                        {/* На мобилке подпись скрыта (см. .pwa-install-btn-label) — остаётся только иконка,
+                            чтобы логотип, текст, кнопка и закрытие вмещались в одну строку. */}
+                        <span className="pwa-install-btn-label">Установить</span>
                     </button>
                 )}
                 <button type="button" className="pwa-install-close" onClick={dismiss} aria-label="Закрыть">
