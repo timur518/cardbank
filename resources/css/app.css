@@ -187,9 +187,9 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 .legal-doc-content blockquote{margin:0 0 20px 0;padding-left:18px;border-left:3px solid var(--border);color:#77736e}
 
 /* Страница тарифов и условий карт (resources/views/tariffs.blade.php) — блок одной карты и сетка параметров. */
-.tariff-card{padding:44px 0;border-bottom:1px solid var(--border)}
-.tariff-card:first-of-type{padding-top:48px}
-.tariff-card:last-child{border-bottom:none}
+.tariff-card{padding:40px;margin-bottom:24px;background:var(--surface);border-radius:24px;box-shadow:0 16px 40px rgba(15,15,15,.06)}
+.tariff-card:last-child{margin-bottom:0}
+@media (max-width:640px){.tariff-card{padding:28px 20px}}
 .tariff-card-header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:12px}
 .tariff-price{font-size:.85rem;font-weight:700;color:var(--orange-dark);white-space:nowrap}
 .tariff-section-title{margin:32px 0 14px 0;font-size:1.05rem;font-weight:800;color:var(--ink)}

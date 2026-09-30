@@ -26,13 +26,14 @@
     внутренние/закупочные поля здесь намеренно не показываются.
 --}}
 <main class="bg-[#f3f0ee]">
-    <section class="px-6 pb-24 pt-[160px] lg:px-10">
+    <section class="px-6 pb-24 pt-[100px] lg:px-10">
         <div class="mx-auto max-w-[900px]">
             <h1 class="text-3xl font-extrabold tracking-tight text-[#3A3C40] lg:text-4xl">Тарифы и условия карт</h1>
             <p class="mt-3 text-base leading-relaxed text-[#3A3C40]/60">
                 Полные условия выпуска, использования, лимиты и ограничения по каждой активной карте.
             </p>
 
+            <div class="mt-10">
             @forelse ($cardProducts as $product)
                 @php
                     $hasBillingInfo = $product->billing_country || $product->billing_city
@@ -59,7 +60,6 @@
                         <div><dt>Платёжная система</dt><dd>{{ $product->network?->getLabel() ?? '—' }}</dd></div>
                         <div><dt>Страна выпуска карты</dt><dd>{{ $product->card_country?->getLabel() ?? '—' }}</dd></div>
                         <div><dt>Валюта карты</dt><dd>{{ $product->currency }}</dd></div>
-                        <div><dt>Верификация личности (KYC)</dt><dd>{{ $product->provider_kyc_required ? 'Требуется' : 'Не требуется' }}</dd></div>
                         <div><dt>3DS-коды подтверждения</dt><dd>{{ $product->three_ds_supported ? 'Поддерживаются' : 'Не поддерживаются' }}</dd></div>
                         <div><dt>Apple Pay</dt><dd>{{ $product->apple_pay_enabled ? 'Доступен' : 'Недоступен' }}</dd></div>
                         <div><dt>Google Pay</dt><dd>{{ $product->google_pay_enabled ? 'Доступен' : 'Недоступен' }}</dd></div>
@@ -111,6 +111,7 @@
                     Активных карточных продуктов пока нет. Загляните позже.
                 </p>
             @endforelse
+            </div>
         </div>
     </section>
 </main>
