@@ -110,7 +110,7 @@ class ProfileController extends Controller
 
         if (! $user->hasPin() || ! Hash::check($request->validated('pin'), $user->pin_hash)) {
             throw ValidationException::withMessages([
-                'pin' => 'Неверный ПИН-код.',
+                'pin' => 'Неверный ПИН-код',
             ]);
         }
 

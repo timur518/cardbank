@@ -30,8 +30,8 @@ const MISMATCH_RESET_DELAY_MS = 2000;
  *
  * Ввод цифр работает двумя способами одновременно: с физической клавиатуры (onKeyDown на
  * фокусируемом div — работает только на десктопе, так как без <input> виртуальная клавиатура
- * ОС на тач-устройствах не появляется) и через экранную PinPad (видна только на тач-устройствах,
- * см. @media (pointer: coarse) в index.css).
+ * ОС на тач-устройствах не появляется) и через экранную PinPad, которая всегда видна —
+ * одинаково и на десктопе, и на мобильных.
  */
 export function PinSetupModal({ mode, onClose }: PinSetupModalProps) {
     const { setPin } = useAuth();
@@ -65,7 +65,7 @@ export function PinSetupModal({ mode, onClose }: PinSetupModalProps) {
         verifyPin(currentPin)
             .then(() => setStep('enter'))
             .catch((verifyError) => {
-                setError(extractErrorMessage(verifyError, 'Неверный ПИН-код.'));
+                setError(extractErrorMessage(verifyError, 'Неверный ПИН-код'));
                 setCurrentPin('');
             })
             .finally(() => {
@@ -194,7 +194,7 @@ export function PinSetupModal({ mode, onClose }: PinSetupModalProps) {
         if (step === 'current') {
             return 'Введите текущий ПИН-код';
         }
-        return mode === 'change' ? 'Изменение ПИН-кода' : 'Установка ПИН-кода';
+        return mode === 'change' ? 'Введите новый ПИН' : 'Установка ПИН-кода';
     }
 
     return (
@@ -208,7 +208,11 @@ export function PinSetupModal({ mode, onClose }: PinSetupModalProps) {
                             вместо ввода пароля при каждом входе
                         </p>
                     )}
-                    {step === 'confirm' && <p className="text-sm text-muted">Повторите ПИН-код:</p>}
+                    {step === 'confirm' && (
+                        <p className="text-sm text-muted">
+                            {mode === 'change' ? 'Повторите новый ПИН-код:' : 'Повторите ПИН-код:'}
+                        </p>
+                    )}
 
                     <div ref={surfaceRef} tabIndex={-1} className="pin-input-surface" onKeyDown={handleKeyDown}>
                         <PinBoxes value={activeValue()} hasError={!!error} />
