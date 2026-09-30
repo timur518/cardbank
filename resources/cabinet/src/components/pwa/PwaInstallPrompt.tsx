@@ -1,6 +1,6 @@
 import { ArrowDownTrayIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useEffect, useState } from 'react';
-import { isRunningStandalone, type BeforeInstallPromptEvent } from '../../utils/pwa';
+import { clearCapturedInstallPrompt, isRunningStandalone, onInstallPromptCaptured, type BeforeInstallPromptEvent } from '../../utils/pwa';
 
 // Сколько дней не показывать попап повторно после того, как пользователь его закрыл
 // (не путать с установкой — после успешной установки приложение просто уходит в standalone-режим
@@ -51,15 +51,14 @@ export function PwaInstallPrompt() {
 
         let showTimer: ReturnType<typeof setTimeout> | undefined;
 
-        function handleBeforeInstallPrompt(event: Event) {
-            // Отменяем стандартный мини-инфобар браузера — показываем собственный попап вместо него.
-            event.preventDefault();
-            setDeferredPrompt(event as BeforeInstallPromptEvent);
+        // Событие уже могло быть перехвачено раньше (см. main.tsx/initInstallPromptCapture) — через
+        // модульный синглтон, а не прямой addEventListener здесь, чтобы не пропустить его из-за
+        // задержки монтирования DashboardLayout (проверка сессии, прелоадер).
+        const unsubscribe = onInstallPromptCaptured((event) => {
+            setDeferredPrompt(event);
             setPlatform('prompt');
             showTimer = setTimeout(() => setVisible(true), SHOW_DELAY_MS);
-        }
-
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        });
 
         // iOS/macOS Safari: beforeinstallprompt никогда не придёт — определяем по UA сразу.
         const ua = window.navigator.userAgent;
@@ -71,7 +70,7 @@ export function PwaInstallPrompt() {
         }
 
         return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+            unsubscribe();
             if (showTimer) {
                 clearTimeout(showTimer);
             }
@@ -90,8 +89,9 @@ export function PwaInstallPrompt() {
 
         await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        // И при согласии, и при отказе больше не показываем — отказ трактуем как "не сейчас",
-        // а не "спрашивать на каждой загрузке".
+        // Событие одноразовое — очищаем модульный кэш сразу после prompt(). И при согласии, и при
+        // отказе больше не показываем — отказ трактуем как "не сейчас", а не "спрашивать на каждой загрузке".
+        clearCapturedInstallPrompt();
         markDismissed();
         setDeferredPrompt(null);
         setVisible(false);

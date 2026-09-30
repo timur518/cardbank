@@ -3,8 +3,14 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App';
 import { captureTrackingParams } from './utils/tracking';
 import { injectAnalyticsCodes } from './utils/analytics';
-import { applyDesktopStandaloneWindowSize, registerServiceWorker } from './utils/pwa';
+import { applyDesktopStandaloneWindowSize, initInstallPromptCapture, registerServiceWorker } from './utils/pwa';
 import './index.css';
+
+// Перехват beforeinstallprompt — самое первое, до рендера React-дерева: это одноразовое
+// событие, и браузер может выстрелить его раньше, чем PwaInstallPrompt успеет смонтироваться
+// внутри DashboardLayout (после проверки сессии/прелоадера) — без этого событие теряется
+// безвозвратно и попап не показывается до следующей полной перезагрузки страницы.
+initInstallPromptCapture();
 
 // UTM-метки и реферальный код из URL сохраняются в cookie до рендера приложения —
 // чтобы RegisterPage мог сразу прочитать их из cookie, если переход на /register был сразу

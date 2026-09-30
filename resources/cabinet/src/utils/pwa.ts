@@ -8,6 +8,46 @@ export interface BeforeInstallPromptEvent extends Event {
     prompt(): Promise<void>;
 }
 
+/**
+ * beforeinstallprompt одноразовое и браузер может выстрелить его почти сразу после загрузки страницы —
+ * раньше он перехватывался внутри useEffect компонента PwaInstallPrompt, вложенного глубоко в
+ * дерево (рендерится только после проверки сессии и монтирования всего DashboardLayout) — из-за этой
+ * задержки событие могло 1 раз уйти, так как оно одноразовое и безвозвратно теряется без подписки.
+ * Чтобы никогда его не пропустить, подписываемся на него здесь, на уровне модуля (вызывается из
+ * main.tsx синхронно при старте приложения, до любой асинхронной работы Аута/роутера), а
+ * PwaInstallPrompt при своём монтировании просто читает уже сохранённое значение, если оно уже пришло.
+ */
+let capturedInstallPrompt: BeforeInstallPromptEvent | null = null;
+let installPromptListener: ((event: BeforeInstallPromptEvent) => void) | null = null;
+
+/** Вызывается ровно один раз из main.tsx как можно раньше — до рендера React-дерева. */
+export function initInstallPromptCapture(): void {
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        capturedInstallPrompt = event as BeforeInstallPromptEvent;
+        installPromptListener?.(capturedInstallPrompt);
+    });
+}
+
+/**
+ * Подписывает компонент на появление события; если оно уже было поймано до монтирования
+ * (обычный случай) — вызывает колбэк сразу же с уже сохранённым значением.
+ */
+export function onInstallPromptCaptured(callback: (event: BeforeInstallPromptEvent) => void): () => void {
+    installPromptListener = callback;
+    if (capturedInstallPrompt) {
+        callback(capturedInstallPrompt);
+    }
+    return () => {
+        installPromptListener = null;
+    };
+}
+
+/** Сбрасывает сохранённое событие после того как оно использовано (prompt() одноразов). */
+export function clearCapturedInstallPrompt(): void {
+    capturedInstallPrompt = null;
+}
+
 /** Приложение уже установлено и открыто как отдельное окно (а не вкладка браузера). */
 export function isRunningStandalone(): boolean {
     return (
