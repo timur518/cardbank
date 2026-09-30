@@ -1451,7 +1451,7 @@ html::-webkit-scrollbar {
 .pwa-install-copy { flex: 1; min-width: 0; }
 .pwa-install-title {
     margin: 0;
-    font-size: .7rem;
+    font-size: .8125rem;
     font-weight: 800;
     color: var(--color-ink);
     white-space: nowrap;
@@ -1463,7 +1463,6 @@ html::-webkit-scrollbar {
     font-size: .65rem;
     line-height: 1.25;
     color: var(--color-muted);
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -1497,7 +1496,7 @@ html::-webkit-scrollbar {
         left: 24px;
         right: auto;
         bottom: 24px;
-        width: 430px;
+        width: 500px;
         align-items: center;
         padding: 16px;
     }
