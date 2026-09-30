@@ -33,6 +33,13 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
     Route::post('/auth/register-landing', [AuthController::class, 'registerLanding'])->name('auth.register-landing');
     Route::post('/auth/password/forgot', [AuthController::class, 'forgotPassword'])->name('auth.password.forgot');
 
+    // Разблокировка ЛК по ПИН-коду на доверенном устройстве, когда обычная сессия уже истекла —
+    // публичные эндпоинты (вне auth:sanctum), личность подтверждается httpOnly-кукой
+    // mojno_pin_device (PinDeviceToken), а не самим запросом — см. PinUnlockPage.tsx.
+    Route::get('/auth/device-status', [AuthController::class, 'deviceStatus'])->name('auth.device-status');
+    Route::post('/auth/unlock-pin', [AuthController::class, 'unlockPin'])->middleware('throttle:10,1')->name('auth.unlock-pin');
+    Route::post('/auth/forget-device', [AuthController::class, 'forgetDevice'])->name('auth.forget-device');
+
     // Раздел 2. Настройки (публично, нужны и до регистрации).
     Route::get('/settings/brand', [SettingsController::class, 'brand'])->name('settings.brand');
     Route::get('/settings/referral', [SettingsController::class, 'referral'])->name('settings.referral');

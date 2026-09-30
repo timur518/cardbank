@@ -48,6 +48,13 @@ export interface SetPinPayload {
     pin_confirmation: string;
 }
 
+// GET /auth/device-status — есть ли на этом устройстве действующий доверенный токен для
+// разблокировки по ПИН-коду (PinUnlockPage.tsx) — проверяется до рендера обычной формы логина.
+export interface DeviceStatus {
+    trusted: boolean;
+    masked_email?: string;
+}
+
 // Регистрация пользователя
 export interface RegisterPayload {
     first_name: string;

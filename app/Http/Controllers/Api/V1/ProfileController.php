@@ -11,9 +11,11 @@ use App\Http\Requests\Api\V1\VerifyPinRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Mail\PasswordChangedMail;
 use App\Models\Notification;
+use App\Models\PinDeviceToken;
 use App\Services\Mail\SafeMailer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -100,6 +102,10 @@ class ProfileController extends Controller
         ]);
 
         Notification::notify($user, $wasPinSet ? NotificationEvent::PinChanged : NotificationEvent::PinSet, [], '/profile');
+
+        // Устройство, на котором только что установлен/изменён ПИН, становится доверенным —
+        // после истечения обычной сессии именно оно сможет разблокировать ЛК по ПИНу (AuthController::unlockPin()).
+        Cookie::queue(PinDeviceToken::makeCookie(PinDeviceToken::issueFor($user)));
 
         return (new UserResource($user))->response();
     }

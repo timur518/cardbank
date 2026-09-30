@@ -23,6 +23,28 @@ export function ensureCsrfCookie(): Promise<unknown> {
     return axios.get(`${API_ROOT}/sanctum/csrf-cookie`, { withCredentials: true });
 }
 
+// Вызывается при любом 401 от защищённого эндпоинта, кроме самих /auth/* (они сами
+// обрабатывают свои ожидаемые 401 в формах логина/разблокировки) — покрывает случай, когда
+// обычная Sanctum-сессия истекает, пока вкладка ЛК остаётся открытой (не только при
+// холодной загрузке, которую обрабатывает бутстрап в AuthContext) — см. AuthContext.tsx.
+type UnauthorizedHandler = () => void;
+let onUnauthorized: UnauthorizedHandler | null = null;
+
+export function setUnauthorizedHandler(handler: UnauthorizedHandler | null): void {
+    onUnauthorized = handler;
+}
+
+apiClient.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const url = axios.isAxiosError(error) ? error.config?.url : undefined;
+        if (axios.isAxiosError(error) && error.response?.status === 401 && !url?.startsWith('/auth/')) {
+            onUnauthorized?.();
+        }
+        return Promise.reject(error);
+    },
+);
+
 export interface ApiValidationError {
     message: string;
     errors?: Record<string, string[]>;

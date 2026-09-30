@@ -10,16 +10,19 @@ use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LandingRegisterRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
+use App\Http\Requests\Api\V1\UnlockPinRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Mail\PasswordResetMail;
 use App\Mail\WelcomeMail;
 use App\Models\Notification;
+use App\Models\PinDeviceToken;
 use App\Models\User;
 use App\Services\Mail\SafeMailer;
 use App\Services\Telegram\AdminTelegramNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -175,14 +178,104 @@ class AuthController extends Controller
     }
 
     /**
-     * Завершает текущую сессию (guard web) и инвалидирует CSRF-токен сессии.
+     * Завершает текущую сессию (guard web) и инвалидирует CSRF-токен сессии. Также отзывает
+     * доверие этому устройству (mojno_pin_device) — после явного выхода быстрый вход по
+     * ПИН-коду без пароля больше недоступен на нём — требуется заново войти паролем и заново
+     * поставить ПИН.
      */
     public function logout(Request $request): JsonResponse
     {
+        $this->revokeDeviceTrust($request);
+
         Auth::guard('web')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
         return response()->json(null, 204);
+    }
+
+    /**
+     * Публичный эндпоинт — вызывается до наличия сессии, чтобы фронт решил, показывать ли после
+     * истечения обычной сессии экран ввода ПИН-кода (PinUnlockPage.tsx) вместо обычной формы
+     * логина — никаких данных личного кабинета не отдаёт, только признак доверия и маскированный email.
+     */
+    public function deviceStatus(Request $request): JsonResponse
+    {
+        $token = PinDeviceToken::resolve($request->cookie(PinDeviceToken::COOKIE_NAME));
+        $user = $token?->user;
+
+        if (! $token || ! $user || $user->is_blocked || ! $user->hasPin()) {
+            return response()->json(['trusted' => false]);
+        }
+
+        return response()->json([
+            'trusted' => true,
+            'masked_email' => self::maskEmail($user->email),
+        ]);
+    }
+
+    /**
+     * Разблокировка на доверенном устройстве — взамен обычной формы входа, когда deviceStatus()
+     * вернул trusted=true. При успехе создаёт обычную полноценную Sanctum-сессию (как login())
+     * и ротирует куку mojno_pin_device (sliding-продление). При неверном ПИНе — ошибка
+     * 422; после PinDeviceToken::MAX_FAILED_ATTEMPTS подряд доверие отзывается (401,
+     * фронт должен перевести на обычный /login).
+     */
+    public function unlockPin(UnlockPinRequest $request): JsonResponse
+    {
+        $token = PinDeviceToken::resolve($request->cookie(PinDeviceToken::COOKIE_NAME));
+        $user = $token?->user;
+
+        if (! $token || ! $user || ! $user->hasPin()) {
+            Cookie::queue(PinDeviceToken::forgetCookie());
+            abort(401, 'Сессия устройства истекла. Войдите с паролем.');
+        }
+
+        if ($user->is_blocked) {
+            abort(403, 'Аккаунт заблокирован.');
+        }
+
+        if (! Hash::check($request->validated('pin'), $user->pin_hash)) {
+            if ($token->registerFailedAttempt()) {
+                Cookie::queue(PinDeviceToken::forgetCookie());
+                abort(401, 'Слишком много неверных попыток. Войдите с паролем.');
+            }
+
+            throw ValidationException::withMessages(['pin' => 'Неверный ПИН-код']);
+        }
+
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+        $user->update(['last_login_at' => now()]);
+
+        Cookie::queue(PinDeviceToken::makeCookie($token->rotate()));
+
+        return (new UserResource($user->loadMissing('latestKycVerification')))->response();
+    }
+
+    /**
+     * «Это не я» / «Войти по паролю» на экране ввода ПИН-кода (PinUnlockPage.tsx) — публичный
+     * эндпоинт (сессии ещё нет), позволяющий выйти из экрана блокировки на обычный /login,
+     * если ПИН забыт или нужен вход под другим аккаунтом на этом же устройстве.
+     */
+    public function forgetDevice(Request $request): JsonResponse
+    {
+        $this->revokeDeviceTrust($request);
+
+        return response()->json(null, 204);
+    }
+
+    private function revokeDeviceTrust(Request $request): void
+    {
+        PinDeviceToken::resolve($request->cookie(PinDeviceToken::COOKIE_NAME))?->delete();
+        Cookie::queue(PinDeviceToken::forgetCookie());
+    }
+
+    private static function maskEmail(string $email): string
+    {
+        [$name, $domain] = array_pad(explode('@', $email, 2), 2, '');
+        $visible = mb_substr($name, 0, 1);
+
+        return $visible.str_repeat('*', max(mb_strlen($name) - 1, 1)).'@'.$domain;
     }
 }

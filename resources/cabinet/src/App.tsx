@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { ProtectedRoute, GuestRoute } from './components/routing/ProtectedRoute';
+import { ProtectedRoute, GuestRoute, LockedRoute } from './components/routing/ProtectedRoute';
 import { AuthShell } from './components/auth/AuthShell';
 import { Preloader } from './components/common/Preloader';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { PinUnlockPage } from './pages/auth/PinUnlockPage';
 import { DashboardPage } from './pages/dashboard/DashboardPage';
 import { CardDetailPage } from './pages/cards/CardDetailPage';
 import { CardsPage } from './pages/cards/CardsPage';
@@ -70,6 +71,12 @@ function AppContent() {
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     </Route>
+                </Route>
+
+                {/* /unlock — сессии ещё нет (истекла/отсутствует), но устройство доверенное —
+                    ввод ПИН-кода вместо обычной формы логина, данные ЛК ещё никак не запрашиваются. */}
+                <Route element={<LockedRoute />}>
+                    <Route path="/unlock" element={<PinUnlockPage />} />
                 </Route>
 
                 <Route element={<ProtectedRoute />}>
