@@ -30,6 +30,7 @@ class UserResource extends JsonResource
                 : null,
             'two_factor_enabled' => (bool) $this->two_factor_enabled,
             'pwa_installed' => (bool) $this->pwa_installed,
+            'has_pin' => $this->hasPin(),
             'referral_code' => $this->referral_code,
             'created_at' => optional($this->created_at)->toIso8601String(),
         ];

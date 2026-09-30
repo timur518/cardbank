@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
 import { ChatWidget } from '../chat/ChatWidget';
 import { BrandLogo } from '../common/BrandLogo';
+import { PinSetupPrompt } from '../pin/PinSetupPrompt';
 import { PwaInstallPrompt } from '../pwa/PwaInstallPrompt';
 import { NotificationsPanel } from '../notifications/NotificationsPanel';
 import { MobileTabBar } from './MobileTabBar';
@@ -125,6 +126,7 @@ export function DashboardLayout() {
 
             <MobileTabBar />
             <PwaInstallPrompt />
+            <PinSetupPrompt />
             <ChatWidget />
         </div>
     );

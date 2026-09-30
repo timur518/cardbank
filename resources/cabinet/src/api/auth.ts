@@ -1,5 +1,5 @@
 import { apiClient, ensureCsrfCookie } from './client';
-import type { LoginPayload, Profile, RegisterPayload, UpdatePasswordPayload, UpdateProfilePayload } from './types';
+import type { LoginPayload, Profile, RegisterPayload, SetPinPayload, UpdatePasswordPayload, UpdateProfilePayload } from './types';
 
 // Аутентификация и управление текущей сессией личного кабинета
 export async function login(payload: LoginPayload): Promise<Profile> {
@@ -44,5 +44,11 @@ export async function updatePassword(payload: UpdatePasswordPayload): Promise<st
 // Отмечает в профиле, что клиент установил ЛК как PWA — вызывается из PwaInstallPrompt.tsx.
 export async function markPwaInstalled(): Promise<Profile> {
     const { data } = await apiClient.post<{ data: Profile }>('/profile/pwa-installed');
+    return data.data;
+}
+
+// Установка/смена ПИН-кода — PinSetupModal.tsx (нудж из PinSetupPrompt.tsx и кнопка в профиле).
+export async function setPin(payload: SetPinPayload): Promise<Profile> {
+    const { data } = await apiClient.post<{ data: Profile }>('/profile/pin', payload);
     return data.data;
 }

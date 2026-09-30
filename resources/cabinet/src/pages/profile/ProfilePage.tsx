@@ -5,6 +5,7 @@ import { extractErrorMessage } from '../../api/client';
 import { FormField } from '../../components/common/FormField';
 import { StatusPill } from '../../components/common/StatusPill';
 import { KycStatusSection } from '../../components/kyc/KycStatusSection';
+import { PinSetupModal } from '../../components/pin/PinSetupModal';
 import { useAuth } from '../../context/AuthContext';
 import { formatDateMask, formatPhoneMask, isoDateToDisplay, joinFio, splitFio, transliterateFio } from '../../utils/masks';
 
@@ -152,10 +153,12 @@ const initialPasswordValues: PasswordFormValues = {
 };
 
 function SecuritySection() {
+    const { profile } = useAuth();
     const [values, setValues] = useState<PasswordFormValues>(initialPasswordValues);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [pinModalOpen, setPinModalOpen] = useState(false);
 
     function setField<K extends keyof PasswordFormValues>(key: K, value: PasswordFormValues[K]) {
         setValues((prev) => ({ ...prev, [key]: value }));
@@ -230,6 +233,22 @@ function SecuritySection() {
                     {isSubmitting ? 'Меняем пароль…' : 'Изменить пароль'}
                 </button>
             </form>
+
+            <div className="mt-6 flex items-center justify-between gap-3 border-t border-[var(--color-border)] pt-5">
+                <div>
+                    <p className="text-sm font-bold text-ink">ПИН-код</p>
+                    <p className="text-xs text-muted">
+                        {profile?.has_pin ? 'Быстрый вход в приложение вместо пароля' : 'Ещё не установлен'}
+                    </p>
+                </div>
+                <button type="button" className="btn btn-primary" onClick={() => setPinModalOpen(true)}>
+                    {profile?.has_pin ? 'Изменить ПИН-код' : 'Установить ПИН-код'}
+                </button>
+            </div>
+
+            {pinModalOpen && (
+                <PinSetupModal mode={profile?.has_pin ? 'change' : 'create'} onClose={() => setPinModalOpen(false)} />
+            )}
         </section>
     );
 }

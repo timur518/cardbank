@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import * as authApi from '../api/auth';
-import type { LoginPayload, Profile, RegisterPayload, UpdateProfilePayload } from '../api/types';
+import type { LoginPayload, Profile, RegisterPayload, SetPinPayload, UpdateProfilePayload } from '../api/types';
 
 type AuthStatus = 'checking' | 'guest' | 'authenticated';
 
@@ -13,6 +13,7 @@ interface AuthContextValue {
     updateProfile: (payload: UpdateProfilePayload) => Promise<void>;
     refreshProfile: () => Promise<void>;
     markPwaInstalled: () => Promise<void>;
+    setPin: (payload: SetPinPayload) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -75,9 +76,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile(data);
     }, []);
 
+    // Вызывается из PinSetupModal.tsx при успешной установке/смене ПИН-кода — обновляет profile.has_pin,
+    // чтобы напоминание установить ПИН (PinSetupPrompt.tsx) больше не показывалось без перезагрузки.
+    const setPin = useCallback(async (payload: SetPinPayload) => {
+        const data = await authApi.setPin(payload);
+        setProfile(data);
+    }, []);
+
     const value = useMemo<AuthContextValue>(
-        () => ({ status, profile, login, register, logout, updateProfile, refreshProfile, markPwaInstalled }),
-        [status, profile, login, register, logout, updateProfile, refreshProfile, markPwaInstalled],
+        () => ({ status, profile, login, register, logout, updateProfile, refreshProfile, markPwaInstalled, setPin }),
+        [status, profile, login, register, logout, updateProfile, refreshProfile, markPwaInstalled, setPin],
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -87,10 +87,18 @@ export function applyDesktopStandaloneWindowSize(): void {
     }
 
     // Хук пропускаем на мобильных — там окно и так на весь экран, resizeTo не применяется.
-    const isTouchOnly = window.matchMedia('(pointer: coarse)').matches;
-    if (isTouchOnly) {
+    if (isTouchDevice()) {
         return;
     }
 
     window.resizeTo(770, 850);
+}
+
+/**
+ * Устройство без физической клавиатуры/мыши (телефон/планшет) — используется, например,
+ * чтобы на вводе ПИН-кода (PinSetupModal.tsx) показывать экранную цифровую клавиатуру вместо
+ * штатной (чтобы не вызывать открытие OS-клавиатуры тапом по квадратикам-ячейкам ввода).
+ */
+export function isTouchDevice(): boolean {
+    return window.matchMedia('(pointer: coarse)').matches;
 }

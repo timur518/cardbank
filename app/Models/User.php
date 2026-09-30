@@ -43,6 +43,8 @@ class User extends Authenticatable implements FilamentUser
         'block_reason',
         'two_factor_enabled',
         'pwa_installed',
+        'pin_hash',
+        'pin_set_at',
         'last_login_at',
         'personal_data_consent_at',
     ];
@@ -55,6 +57,7 @@ class User extends Authenticatable implements FilamentUser
     protected $hidden = [
         'password',
         'remember_token',
+        'pin_hash',
     ];
 
     /**
@@ -72,6 +75,7 @@ class User extends Authenticatable implements FilamentUser
             'is_blocked' => 'boolean',
             'two_factor_enabled' => 'boolean',
             'pwa_installed' => 'boolean',
+            'pin_set_at' => 'datetime',
             'last_login_at' => 'datetime',
             'personal_data_consent_at' => 'datetime',
         ];
@@ -153,5 +157,13 @@ class User extends Authenticatable implements FilamentUser
     public function hasActiveRiskFlag(): bool
     {
         return $this->riskFlags()->whereNull('removed_at')->exists();
+    }
+
+    /**
+     * Установлен ли у клиента 4-значный ПИН-код для быстрого входа в ЛК (PinSetupModal.tsx).
+     */
+    public function hasPin(): bool
+    {
+        return ! is_null($this->pin_hash);
     }
 }

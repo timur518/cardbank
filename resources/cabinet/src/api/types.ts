@@ -15,6 +15,7 @@ export interface Profile {
     kyc_decline_reason: string | null;
     two_factor_enabled: boolean;
     pwa_installed: boolean;
+    has_pin: boolean;
     referral_code: string | null;
     created_at: string;
 }
@@ -38,6 +39,13 @@ export interface UpdatePasswordPayload {
     current_password: string;
     password: string;
     password_confirmation: string;
+}
+
+// Установка/смена ПИН-кода (PinSetupModal.tsx). current_pin отсутствует при первичной установке.
+export interface SetPinPayload {
+    current_pin?: string;
+    pin: string;
+    pin_confirmation: string;
 }
 
 // Регистрация пользователя

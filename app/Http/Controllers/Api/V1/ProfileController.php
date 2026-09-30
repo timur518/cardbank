@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\NotificationEvent;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\SetPinRequest;
 use App\Http\Requests\Api\V1\UpdatePasswordRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\UserResource;
@@ -75,5 +76,27 @@ class ProfileController extends Controller
         }
 
         return (new UserResource($user->loadMissing('latestKycVerification')))->response();
+    }
+
+    /**
+     * Устанавливает/меняет 4-значный ПИН-код для быстрого входа в ЛК (PinSetupModal.tsx) — если ПИН
+     * уже был установлен ранее, требуется подтверждение текущим (current_pin).
+     */
+    public function setPin(SetPinRequest $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasPin() && ! Hash::check($request->validated('current_pin'), $user->pin_hash)) {
+            throw ValidationException::withMessages([
+                'current_pin' => 'Текущий ПИН-код указан неверно.',
+            ]);
+        }
+
+        $user->update([
+            'pin_hash' => Hash::make($request->validated('pin')),
+            'pin_set_at' => now(),
+        ]);
+
+        return (new UserResource($user))->response();
     }
 }
