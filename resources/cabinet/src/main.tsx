@@ -25,6 +25,10 @@ void injectAnalyticsCodes();
 registerServiceWorker();
 applyDesktopStandaloneWindowSize();
 
+// Полностью глушим системное контекстное меню по правому клику во всём ЛК (как в нативном
+// приложении) — событие просто не всплывает ни к чему, никакого собственного меню не показываем.
+document.addEventListener('contextmenu', (event) => event.preventDefault());
+
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <App />

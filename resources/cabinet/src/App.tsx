@@ -40,6 +40,12 @@ function AppContent() {
     const [showPreloader, setShowPreloader] = useState(true);
     const [isHiding, setIsHiding] = useState(false);
 
+    // Статическая заставка холодного запуска PWA (index.html, #app-boot-splash) больше не нужна —
+    // на её месте уже стоит визуально идентичный React-прелоадер выше (showPreloader стартует true).
+    useEffect(() => {
+        document.getElementById('app-boot-splash')?.remove();
+    }, []);
+
     useEffect(() => {
         if (status === 'checking') {
             return;

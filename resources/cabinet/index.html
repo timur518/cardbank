@@ -2,7 +2,11 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- maximum-scale=1 + user-scalable=no — единственный надёжный способ отключить автозум Safari/Chrome
+         при фокусе на поле ввода, не трогая font-size/размеры самих полей — браузер зумит
+         только если страница вообще может масштабироваться. Ожидаемое для app-подобного ПВА
+         поведение — pinch-zoom внутри личного кабинета и так не нужен. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>Личный кабинет</title>
 
@@ -19,9 +23,43 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="preconnect" href="https://fonts.bunny.net" />
     <link href="https://fonts.bunny.net/css?family=sofia-sans:400,500,600,700,800&display=swap" rel="stylesheet" />
+
+    <!-- Статическая заставка холодного запуска PWA — видна сразу при парсинге HTML,
+         ещё до загрузки/выполнения JS-бандла и основного index.css (именно из-за этой
+         задержки при холодном старте установленного PWA был виден пустой чёрный/белый экран
+         ОС/WebView). Стили продублированы инлайном ниже с уникальными именами классов (без пересечения с
+         .app-preloader из index.css), чтобы не зависеть от порядка загрузки внешних файлов. Визуально
+         повторяет components/common/Preloader.tsx, поэтому подмена на него незаметна. Удаляется сразу
+         после первого рендера <AppContent> (App.tsx), когда React-прелоадер уже встал на его место. -->
+    <style>
+        #app-boot-splash{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:#f3f1ef;}
+        #app-boot-splash .boot-spinner{position:relative;width:120px;height:120px;}
+        #app-boot-splash .boot-logo{position:absolute;inset:0;margin:auto;width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 8px 24px rgba(15,15,15,.14);}
+        #app-boot-splash .boot-ring{position:absolute;inset:0;width:100%;height:100%;}
+        #app-boot-splash .boot-ring circle{fill:none;stroke-width:3px;}
+        #app-boot-splash .boot-ring-a circle{stroke:#f37338;}
+        #app-boot-splash .boot-ring-b circle{stroke:#3A3C40;opacity:.3;}
+        #app-boot-splash .boot-ring-a{animation:app-boot-spin 1.3s linear infinite;}
+        #app-boot-splash .boot-ring-b{animation:app-boot-spin-reverse 1.9s linear infinite;}
+        @keyframes app-boot-spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+        @keyframes app-boot-spin-reverse{from{transform:rotate(360deg);}to{transform:rotate(0deg);}}
+    </style>
 </head>
 <body>
     <div id="root"></div>
+
+    <div id="app-boot-splash">
+        <div class="boot-spinner">
+            <svg class="boot-ring boot-ring-a" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="54" pathLength="100" stroke-dasharray="26 74" stroke-linecap="round" />
+            </svg>
+            <svg class="boot-ring boot-ring-b" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="44" pathLength="100" stroke-dasharray="20 80" stroke-linecap="round" />
+            </svg>
+            <img src="https://mojno.cc/assets/images/logo_min.svg" alt="" class="boot-logo" />
+        </div>
+    </div>
+
     <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
