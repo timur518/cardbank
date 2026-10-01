@@ -3,7 +3,6 @@ import { useState, type FormEvent } from 'react';
 import { updatePassword } from '../../api/auth';
 import { extractErrorMessage } from '../../api/client';
 import { FormField } from '../../components/common/FormField';
-import { StatusPill } from '../../components/common/StatusPill';
 import { KycStatusSection } from '../../components/kyc/KycStatusSection';
 import { PinSetupModal } from '../../components/pin/PinSetupModal';
 import { useAuth } from '../../context/AuthContext';
@@ -90,10 +89,6 @@ function ProfileDataSection() {
                         <p className="text-xs text-muted">ФИО, телефон и дата рождения</p>
                     </div>
                 </div>
-                {/* Ставится отметкой users.pwa_installed — см. PwaInstallPrompt.tsx (appinstalled +
-                    проверка standalone-режима при каждом запуске). Без отметки ничего не показываем —
-                    как и kyc_decline_reason, это не состояние ошибки, которое нужно подсвечивать пустым состоянием. */}
-                {profile?.pwa_installed && <StatusPill label="Приложение установлено" tone="success" />}
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
