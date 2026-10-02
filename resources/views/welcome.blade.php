@@ -12,8 +12,8 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://mojno.cc/">
 
-    <link rel="icon" href="assets/images/favicon.svg" sizes="32x32" type="image/png">
-    <link rel="icon" href="assets/images/favicon.svg" sizes="16x16" type="image/png">
+    <link rel="icon" href="assets/images/favicon.svg" sizes="32x32" type="image/svg+xml">
+    <link rel="icon" href="assets/images/favicon.svg" sizes="16x16" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=sofia-sans:400,500,600,700,800&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
