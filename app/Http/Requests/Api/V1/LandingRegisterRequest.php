@@ -44,7 +44,7 @@ class LandingRegisterRequest extends FormRequest
             'middle_name' => ['nullable', 'string', 'max:255'],
             'phone' => ['required', 'string', 'unique:users,phone'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'date_of_birth' => ['required', 'date_format:Y-m-d', 'before:today'],
+            'date_of_birth' => ['required', 'date_format:Y-m-d', 'before:today', 'before_or_equal:' . now()->subYears(18)->format('Y-m-d')],
             'personal_data_consent' => ['required', 'accepted'],
             'referral_code' => ['nullable', 'string', 'max:255'],
             'utm_source' => ['nullable', 'string', 'max:255'],
@@ -70,6 +70,7 @@ class LandingRegisterRequest extends FormRequest
             'date_of_birth.required' => 'Введите дату рождения.',
             'date_of_birth.date_format' => 'Некорректная дата рождения. Формат: дд.мм.гггг.',
             'date_of_birth.before' => 'Дата рождения должна быть раньше сегодняшнего дня.',
+            'date_of_birth.before_or_equal' => 'Регистрация доступна только лицам старше 18 лет.',
             'personal_data_consent.required' => 'Нужно дать согласие на обработку персональных данных.',
             'personal_data_consent.accepted' => 'Нужно дать согласие на обработку персональных данных.',
         ];
