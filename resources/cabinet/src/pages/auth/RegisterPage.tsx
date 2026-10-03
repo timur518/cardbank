@@ -36,8 +36,8 @@ export function RegisterPage() {
     const { register } = useAuth();
     const navigate = useNavigate();
 
-    // Реферальный код предзаполняется из cookie pid (captureTrackingParams в main.tsx), если пользователь
-    // перешёл по ссылке-приглашению (?pid=...); поле остаётся редактируемым.
+    // Реферальный код берётся молча из cookie pid (captureTrackingParams в main.tsx), если пользователь
+    // перешёл по ссылке-приглашению (?pid=...). Поля в форме нет — как и на лендинге.
     const [values, setValues] = useState<RegisterFormValues>(() => ({
         ...initialValues,
         referral_code: getTrackingCookie('pid') ?? '',
@@ -166,13 +166,6 @@ export function RegisterPage() {
                         required
                     />
                 </div>
-
-                <FormField
-                    label="Реферальный код (необязательно)"
-                    name="referral_code"
-                    value={values.referral_code}
-                    onChange={(e) => setField('referral_code', e.target.value)}
-                />
 
                 <label className="flex cursor-pointer items-start gap-3 text-sm text-muted">
                     <input

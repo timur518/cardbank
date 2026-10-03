@@ -310,8 +310,8 @@ class _TmpReferralSystemTest extends TestCase
 
         $this->get('/admin/partners')
             ->assertOk()
-            ->assertSee('1 / 2')
-            ->assertSee('0 / 1');
+            ->assertSee('2 / 1')
+            ->assertSee('1 / 0');
     }
 
     public function test_partners_table_sort_query_orders_by_total_then_active_referrals(): void

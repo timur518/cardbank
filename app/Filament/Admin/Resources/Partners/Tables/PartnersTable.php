@@ -41,7 +41,7 @@ class PartnersTable
                     ->searchable(['name', 'email']),
                 TextColumn::make('referred_users_count')
                     ->label('Приглашено / Активных')
-                    ->state(fn (Partner $record) => "{$record->active_referred_users_count} / {$record->referred_users_count}")
+                    ->state(fn (Partner $record) => "{$record->referred_users_count} / {$record->active_referred_users_count}")
                     ->alignCenter()
                     ->sortable(query: function (Builder $query, string $direction) {
                         $query->orderBy('referred_users_count', $direction)
