@@ -37,12 +37,17 @@ export function formatRub(amount: number): string {
 }
 
 /** Первый день текущего месяца в формате YYYY-MM-DD — для фильтра date_from при запросе
- * трат за месяц (страница карты и список карт). */
+ * трат за месяц (страница карты и список карт). Важно: берём год/месяц из ЛОКАЛЬНОГО времени
+ * напрямую (getFullYear/getMonth), а не через `.toISOString()` — тот конвертирует момент в UTC
+ * и в первые часы после полуночи 1-го числа (в часовых поясах впереди UTC, напр. Москва) сдвигает
+ * дату на последний день ПРЕДЫДУЩЕГО месяца, из-за чего в «траты за этот месяц» ошибочно
+ * попадали операции конца прошлого месяца. */
 export function startOfMonth(): string {
     const date = new Date();
-    date.setDate(1);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
 
-    return date.toISOString().slice(0, 10);
+    return `${year}-${month}-01`;
 }
 
 /**
