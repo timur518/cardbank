@@ -6,7 +6,6 @@ import { extractErrorMessage } from '../../api/client';
 import { issueOrder } from '../../api/orders';
 import type { CardProduct, PaymentMethod } from '../../api/types';
 import { CardChoiceGridSkeleton } from '../../components/common/Skeleton';
-import { InfoTooltip } from '../../components/common/InfoTooltip';
 import { CardProductChoice } from '../../components/orders/CardProductChoice';
 import { PaymentMethodOption } from '../../components/orders/PaymentMethodOption';
 import { useTopupQuote } from '../../hooks/useTopupQuote';
@@ -180,10 +179,11 @@ export function NewCardOrderPage() {
                         Выбрать другую карту
                     </button>
 
-                    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                    <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-5 lg:grid-cols-3 lg:items-start">
                         {/* Блок 1: выбранная карта, сумма пополнения со встроенным USD, заготовленные
-                            суммы кнопками, способ оплаты. */}
-                        <div className="apply-panel">
+                            суммы кнопками, способ оплаты. На десктопе занимает 2/3 ширины, на мобилке —
+                            полная ширина над блоком итогов. */}
+                        <div className="apply-panel lg:col-span-2">
                             <div className="apply-form-wrap">
                                 <div>
                                     <h2 className="apply-section-title">Выбранная карта</h2>
@@ -256,10 +256,7 @@ export function NewCardOrderPage() {
                                 <div className="apply-divider" />
 
                                 <div>
-                                    <div className="flex items-center gap-2">
-                                        <h2 className="apply-section-title !mb-0">Способы оплаты</h2>
-                                        <InfoTooltip text="Стоимость выпуска не зачисляется на баланс. Для покупок будет доступна введённая сумма пополнения." />
-                                    </div>
+                                    <h2 className="apply-section-title">Способы оплаты</h2>
                                     <div className="apply-pay-list mt-4">
                                         {methods.map((method) => (
                                             <PaymentMethodOption
@@ -274,8 +271,8 @@ export function NewCardOrderPage() {
                             </div>
                         </div>
 
-                        {/* Блок 2: состав платежа и кнопка оплаты. */}
-                        <div className="apply-panel">
+                        {/* Блок 2: состав платежа и кнопка оплаты. На десктопе занимает 1/3 ширины. */}
+                        <div className="apply-panel lg:col-span-1">
                             <div className="apply-form-wrap">
                                 <h2 className="apply-section-title">Состав платежа</h2>
 
@@ -304,7 +301,7 @@ export function NewCardOrderPage() {
 
                                 {submitError && <p className="form-error-banner mt-5">{submitError}</p>}
 
-                                <button type="submit" className="btn btn-primary apply-submit" disabled={isSubmitting}>
+                                <button type="submit" className="btn btn-orange apply-submit" disabled={isSubmitting}>
                                     {isSubmitting ? 'Оформляем…' : 'Оплатить и выпустить карту'}
                                 </button>
                                 <p className="apply-hint mt-3 text-center">После оплаты начнётся автоматический выпуск карты</p>
