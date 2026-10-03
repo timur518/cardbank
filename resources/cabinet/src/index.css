@@ -816,13 +816,13 @@ html::-webkit-scrollbar {
 .apply-hint { font-size: .75rem; color: var(--color-muted); }
 .apply-submit { margin-top: 26px; width: 100%; justify-content: center; }
 
-.apply-pay-list { display: flex; flex-direction: column; gap: 10px; }
+.apply-pay-list { display: flex; flex-direction: column; gap: 8px; }
 .apply-pay-option {
     display: flex;
-    gap: 14px;
+    gap: 10px;
     align-items: center;
-    padding: 14px 16px;
-    border-radius: 16px;
+    padding: 8px 10px;
+    border-radius: 12px;
     border: 1.5px solid var(--color-border);
     cursor: pointer;
     transition: .2s;
@@ -838,16 +838,17 @@ html::-webkit-scrollbar {
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
     background: #f3f0ee;
     color: var(--color-ink);
     transition: .2s;
 }
+.apply-pay-icon svg { width: 15px; height: 15px; }
 .apply-pay-option.is-active .apply-pay-icon { background: var(--color-orange); color: #fff; }
-.apply-pay-name { display: block; font-weight: 700; font-size: .92rem; }
-.apply-pay-desc { display: block; margin-top: 2px; font-size: .78rem; color: var(--color-muted); }
+.apply-pay-name { display: block; font-weight: 700; font-size: .82rem; }
+.apply-pay-desc { display: block; margin-top: 2px; font-size: .7rem; color: var(--color-muted); }
 
 /* Группа поля суммы пополнения — рамка визуально одна на input и суффикс «USD» справа
    (сам input без собственной рамки, см. правило ниже). */
