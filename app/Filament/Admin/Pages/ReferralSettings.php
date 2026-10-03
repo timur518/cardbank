@@ -55,8 +55,9 @@ class ReferralSettings extends Page implements HasForms
     {
         return $schema
             ->components([
-                Section::make('Общие правила программы')
-                    ->columns(2)
+                // Ставки вознаграждения партнёра отдельно от правил вывода — по 3 поля в строке, без осиротевшихся полей.
+                Section::make('Ставки вознаграждения')
+                    ->columns(3)
                     ->schema([
                         TextInput::make('referral_issue_rate')
                             ->label('Доля партнёра от суммы выпуска карты, %')
@@ -65,9 +66,14 @@ class ReferralSettings extends Page implements HasForms
                             ->label('Доля партнёра от суммы пополнений, %')
                             ->numeric(),
                         TextInput::make('referral_registration_bonus_usd')
-                            ->label('Фиксированное вознаграждение за регистрацию приглашённого, $')
+                            ->label('Фиксированное вознаграждение за регистрацию, $')
                             ->numeric()
                             ->prefix('$'),
+                    ]),
+
+                Section::make('Правила вывода')
+                    ->columns(3)
+                    ->schema([
                         TextInput::make('referral_hold_days')
                             ->label('Сколько дней начисление ожидает перед выводом')
                             ->numeric(),

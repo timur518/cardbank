@@ -23,7 +23,8 @@ class PayoutRequestForm
                             ->relationship('user', 'email')
                             ->searchable()
                             ->preload()
-                            ->required(),
+                            ->required()
+                            ->columnSpanFull(),
                         TextInput::make('amount_usd')
                             ->label('Списывается с баланса, $')
                             ->numeric()
@@ -38,21 +39,32 @@ class PayoutRequestForm
                             ->label('Куда вывести')
                             ->options(PayoutDestination::class)
                             ->required()
-                            ->live(),
+                            ->live()
+                            ->columnSpanFull(),
+                    ]),
+
+                // Отдельный блок реквизитов показывается/скрывается целиком, без осиротевшихся
+                // полей в общей сетке выше, внутри — ровно 1 чистая строка из 3 колонок.
+                Section::make('Реквизиты карты')
+                    ->columns(3)
+                    ->visible(fn ($get) => $get('destination') === PayoutDestination::BankCard->value)
+                    ->schema([
                         TextInput::make('bank_name')
                             ->label('Название банка')
-                            ->maxLength(255)
-                            ->visible(fn ($get) => $get('destination') === PayoutDestination::BankCard->value),
+                            ->maxLength(255),
                         TextInput::make('bank_card_number')
                             ->label('Номер карты для вывода')
-                            ->maxLength(255)
-                            ->visible(fn ($get) => $get('destination') === PayoutDestination::BankCard->value),
+                            ->maxLength(255),
                         TextInput::make('bank_card_holder')
                             ->label('Имя держателя карты')
-                            ->maxLength(255)
-                            ->visible(fn ($get) => $get('destination') === PayoutDestination::BankCard->value),
+                            ->maxLength(255),
+                    ]),
+
+                Section::make('Комментарий')
+                    ->schema([
                         Textarea::make('admin_note')
                             ->label('Комментарий администратора')
+                            ->hiddenLabel()
                             ->columnSpanFull(),
                     ]),
             ]);

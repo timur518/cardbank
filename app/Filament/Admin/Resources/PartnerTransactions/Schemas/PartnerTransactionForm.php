@@ -15,6 +15,8 @@ class PartnerTransactionForm
     {
         return $schema
             ->components([
+                // Каждое поле с условной видимостью (type, income_id) стоит на своёй полноширинной
+                // строке, чтобы скрытие/появление поля income_id никогда не ломало сетку из двух колонок.
                 Section::make('Начисление')
                     ->columns(2)
                     ->schema([
@@ -34,14 +36,16 @@ class PartnerTransactionForm
                             ->label('За что')
                             ->options(PartnerTransactionType::class)
                             ->required()
-                            ->live(),
+                            ->live()
+                            ->columnSpanFull(),
                         Select::make('income_id')
                             ->label('Операция в поступлениях')
                             ->relationship('income', 'id')
                             ->getOptionLabelFromRecordUsing(fn (Income $record) => "#{$record->id} — {$record->user?->email} — {$record->type->getLabel()} — \${$record->amount_usd}")
                             ->searchable()
                             ->preload()
-                            ->visible(fn ($get) => $get('type') !== PartnerTransactionType::Registration->value),
+                            ->visible(fn ($get) => $get('type') !== PartnerTransactionType::Registration->value)
+                            ->columnSpanFull(),
                         TextInput::make('rate')
                             ->label('Ставка')
                             ->numeric()

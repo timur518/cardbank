@@ -349,12 +349,91 @@ class _TmpReferralSystemTest extends TestCase
         $this->get('/admin/partner-transactions/create')->assertOk();
     }
 
+    public function test_admin_partner_transaction_view_and_edit_render_for_both_income_and_registration_types(): void
+    {
+        $this->actingAsSuperAdmin();
+
+        $referrer = User::factory()->create();
+        $buyer = User::factory()->create(['referral_code' => $referrer->invite_code]);
+
+        $income = Income::create([
+            'user_id' => $buyer->id,
+            'type' => IncomeType::CardIssue,
+            'amount' => 100,
+            'currency' => 'USD',
+            'amount_usd' => 100,
+            'payment_status' => IncomePaymentStatus::Paid,
+        ]);
+
+        $issueTx = PartnerTransaction::create([
+            'partner_user_id' => $referrer->id,
+            'buyer_user_id' => $buyer->id,
+            'type' => PartnerTransactionType::CardIssue,
+            'income_id' => $income->id,
+            'rate' => 10,
+            'commission_amount' => 10,
+        ]);
+
+        $registrationTx = PartnerTransaction::create([
+            'partner_user_id' => $referrer->id,
+            'buyer_user_id' => $buyer->id,
+            'type' => PartnerTransactionType::Registration,
+            'income_id' => null,
+            'rate' => 1,
+            'commission_amount' => 1,
+        ]);
+
+        $this->get("/admin/partner-transactions/{$issueTx->id}")->assertOk()->assertSee((string) $income->id);
+        $this->get("/admin/partner-transactions/{$issueTx->id}/edit")->assertOk();
+
+        $this->get("/admin/partner-transactions/{$registrationTx->id}")->assertOk();
+        $this->get("/admin/partner-transactions/{$registrationTx->id}/edit")->assertOk();
+    }
+
     public function test_admin_payout_requests_page_is_accessible(): void
     {
         $this->actingAsSuperAdmin();
 
         $this->get('/admin/payout-requests')->assertOk();
         $this->get('/admin/payout-requests/create')->assertOk();
+    }
+
+    public function test_admin_payout_request_view_and_edit_render_for_bank_card_and_wallet_destinations(): void
+    {
+        $this->actingAsSuperAdmin();
+
+        $partner = User::factory()->create();
+
+        $bankCardPayout = PayoutRequest::create([
+            'user_id' => $partner->id,
+            'amount_usd' => 10,
+            'amount_rub' => 1000,
+            'destination' => \App\Enums\PayoutDestination::BankCard,
+            'bank_name' => 'Тинькофф Банк',
+            'bank_card_number' => '2200000000000000',
+            'bank_card_holder' => 'IVAN IVANOV',
+            'status' => PayoutRequestStatus::Pending,
+        ]);
+
+        $walletPayout = PayoutRequest::create([
+            'user_id' => $partner->id,
+            'amount_usd' => 5,
+            'amount_rub' => 500,
+            'destination' => \App\Enums\PayoutDestination::Wallet,
+            'status' => PayoutRequestStatus::Pending,
+        ]);
+
+        // С выводом на карту — блок "Реквизиты карты" должен быть виден.
+        $this->get("/admin/payout-requests/{$bankCardPayout->id}")
+            ->assertOk()
+            ->assertSee('Тинькофф Банк');
+        $this->get("/admin/payout-requests/{$bankCardPayout->id}/edit")->assertOk();
+
+        // С выводом на внутренний счёт — блок реквизитов скрыт, страница рендерится без ошибок.
+        $this->get("/admin/payout-requests/{$walletPayout->id}")
+            ->assertOk()
+            ->assertDontSee('Тинькофф Банк');
+        $this->get("/admin/payout-requests/{$walletPayout->id}/edit")->assertOk();
     }
 
     public function test_admin_referral_settings_page_has_new_field(): void
