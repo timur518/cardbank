@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchCardProducts, fetchPaymentMethods } from '../../api/catalog';
@@ -302,7 +302,14 @@ export function NewCardOrderPage() {
                                 {submitError && <p className="form-error-banner mt-5">{submitError}</p>}
 
                                 <button type="submit" className="btn btn-orange apply-submit" disabled={isSubmitting}>
-                                    {isSubmitting ? 'Оформляем…' : 'Оплатить и выпустить карту'}
+                                    {isSubmitting ? (
+                                        'Оформляем…'
+                                    ) : (
+                                        <>
+                                            Оплатить и выпустить карту
+                                            <ChevronRightIcon className="h-4 w-4" />
+                                        </>
+                                    )}
                                 </button>
                                 <p className="apply-hint mt-3 text-center">После оплаты начнётся автоматический выпуск карты</p>
                             </div>

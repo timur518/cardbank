@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { fetchPaymentMethods } from '../../api/catalog';
 import { extractErrorMessage } from '../../api/client';
@@ -128,11 +129,14 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
                         {error && <p className="form-error-banner mt-5">{error}</p>}
 
                     <button type="submit" className="btn btn-primary apply-submit" disabled={isSubmitting}>
-                        {isSubmitting
-                            ? 'Оформляем…'
-                            : totalRub !== null
-                              ? `Оплатить • ${formatRub(totalRub)}`
-                              : 'Оплатить'}
+                        {isSubmitting ? (
+                            'Оформляем…'
+                        ) : (
+                            <>
+                                {totalRub !== null ? `Оплатить • ${formatRub(totalRub)}` : 'Оплатить'}
+                                <ChevronRightIcon className="h-4 w-4" />
+                            </>
+                        )}
                     </button>
                 </form>
             )}
