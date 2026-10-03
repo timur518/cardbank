@@ -39,6 +39,29 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
     const parsedAmount = useMemo(() => parseAmount(amount), [amount]);
     const { totalRub } = useTopupQuote({ cardId: card.id, amount: parsedAmount, currency: 'USD' });
 
+    const minAmount = Number(card.card_product.topup_min_amount ?? 10);
+    const maxAmount = card.card_product.topup_max_amount ? Number(card.card_product.topup_max_amount) : null;
+
+    // Заготовленные суммы пополнения кнопками — та же логика, что и в NewCardOrderPage.tsx,
+    // но от topup_min/max_amount карточного продукта (не issue_min/max_amount — здесь карта уже выпущена).
+    const amountPresets = useMemo(() => {
+        const candidates = [
+            { value: minAmount, label: `${minAmount}$ минимум` },
+            { value: 50, label: '50$' },
+            { value: 100, label: '100$' },
+            { value: 300, label: '300$' },
+        ];
+        const seen = new Set<number>();
+
+        return candidates.filter(({ value }) => {
+            if (value < minAmount || (maxAmount !== null && value > maxAmount) || seen.has(value)) {
+                return false;
+            }
+            seen.add(value);
+            return true;
+        });
+    }, [minAmount, maxAmount]);
+
     useEffect(() => {
         fetchPaymentMethods()
             .then((loaded) => {
@@ -124,6 +147,19 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
                                     От ${card.card_product.topup_min_amount} до ${card.card_product.topup_max_amount}
                                 </p>
                             )}
+
+                            <div className="apply-amount-presets">
+                                {amountPresets.map((preset) => (
+                                    <button
+                                        key={preset.value}
+                                        type="button"
+                                        className={`apply-preset-btn ${parsedAmount === preset.value ? 'is-active' : ''}`}
+                                        onClick={() => setAmount(String(preset.value))}
+                                    >
+                                        {preset.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
 
                         {error && <p className="form-error-banner mt-5">{error}</p>}
