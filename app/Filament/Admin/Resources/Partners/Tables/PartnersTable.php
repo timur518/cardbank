@@ -8,6 +8,7 @@ use App\Models\Partner;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Партнёры не заводятся вручную — здесь перечислены все пользователи, у которых есть
@@ -36,20 +37,16 @@ class PartnersTable
             ->columns([
                 TextColumn::make('name')
                     ->label('Партнёр')
-                    ->description(fn (Partner $record) => $record->email)
-                    ->searchable(['name', 'email']),
-                TextColumn::make('invite_code')
-                    ->label('Код приглашения')
-                    ->copyable()
-                    ->searchable(),
+                    ->description(fn (Partner $record) => "{$record->email} · Код: {$record->invite_code}")
+                    ->searchable(['name', 'email', 'invite_code']),
                 TextColumn::make('referred_users_count')
-                    ->label('Приглашено')
-                    ->sortable()
-                    ->alignCenter(),
-                TextColumn::make('active_referred_users_count')
-                    ->label('Активных')
-                    ->sortable()
-                    ->alignCenter(),
+                    ->label('Приглашено / Активных')
+                    ->state(fn (Partner $record) => "{$record->active_referred_users_count} / {$record->referred_users_count}")
+                    ->alignCenter()
+                    ->sortable(query: function (Builder $query, string $direction) {
+                        $query->orderBy('referred_users_count', $direction)
+                            ->orderBy('active_referred_users_count', $direction);
+                    }),
                 TextColumn::make('earned_usd_sum')
                     ->label('Сумма вознаграждений')
                     ->state(fn (Partner $record) => (float) $record->earned_usd_sum)

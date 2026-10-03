@@ -267,6 +267,80 @@ class _TmpReferralSystemTest extends TestCase
         $this->get("/admin/partners/{$referrer->id}")->assertOk();
     }
 
+    public function test_admin_partners_table_merges_partner_and_invite_code_columns(): void
+    {
+        $this->actingAsSuperAdmin();
+
+        $referrer = User::factory()->create(['name' => 'Иван Партнёров']);
+        User::factory()->create(['referral_code' => $referrer->invite_code]);
+
+        $this->get('/admin/partners')
+            ->assertOk()
+            ->assertSee('Иван Партнёров')
+            ->assertSee($referrer->email)
+            ->assertSee("Код: {$referrer->invite_code}");
+    }
+
+    public function test_admin_partners_table_merges_invited_and_active_counts(): void
+    {
+        $this->actingAsSuperAdmin();
+
+        $weakPartner = User::factory()->create();
+        User::factory()->create(['referral_code' => $weakPartner->invite_code]);
+
+        $strongPartner = User::factory()->create();
+        $buyer1 = User::factory()->create(['referral_code' => $strongPartner->invite_code]);
+        $buyer2 = User::factory()->create(['referral_code' => $strongPartner->invite_code]);
+        Income::create([
+            'user_id' => $buyer1->id,
+            'type' => IncomeType::CardIssue,
+            'amount' => 10,
+            'currency' => 'USD',
+            'amount_usd' => 10,
+            'payment_status' => IncomePaymentStatus::Paid,
+        ]);
+        Income::create([
+            'user_id' => $buyer2->id,
+            'type' => IncomeType::CardIssue,
+            'amount' => 10,
+            'currency' => 'USD',
+            'amount_usd' => 10,
+            'payment_status' => IncomePaymentStatus::Pending,
+        ]);
+
+        $this->get('/admin/partners')
+            ->assertOk()
+            ->assertSee('1 / 2')
+            ->assertSee('0 / 1');
+    }
+
+    public function test_partners_table_sort_query_orders_by_total_then_active_referrals(): void
+    {
+        $weakPartner = User::factory()->create();
+        User::factory()->create(['referral_code' => $weakPartner->invite_code]);
+
+        $strongPartner = User::factory()->create();
+        User::factory()->create(['referral_code' => $strongPartner->invite_code]);
+        User::factory()->create(['referral_code' => $strongPartner->invite_code]);
+
+        // То же самое withCount + orderBy, что и в TextColumn::sortable() в PartnersTable.
+        $ascending = Partner::query()
+            ->withCount('referredUsers')
+            ->orderBy('referred_users_count', 'asc')
+            ->pluck('id')
+            ->all();
+
+        $this->assertSame([$weakPartner->id, $strongPartner->id], $ascending);
+
+        $descending = Partner::query()
+            ->withCount('referredUsers')
+            ->orderBy('referred_users_count', 'desc')
+            ->pluck('id')
+            ->all();
+
+        $this->assertSame([$strongPartner->id, $weakPartner->id], $descending);
+    }
+
     public function test_admin_partner_transactions_pages_are_accessible(): void
     {
         $this->actingAsSuperAdmin();
