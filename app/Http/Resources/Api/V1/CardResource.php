@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Enums\CardStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -42,6 +43,16 @@ class CardResource extends JsonResource
                 'address' => $this->billing_address,
                 'post_code' => $this->billing_post_code,
             ],
+            // Сумма к оплате и ожидаемый баланс карты после выпуска — только для карт в статусе
+            // «Ожидает оплаты» (кнопка «Оплатить и выпустить» на странице «Мои карты» и на странице
+            // самой карты). pendingIssueIncome подгружается контроллером заранее (см. CardController).
+            'pending_payment' => $this->status === CardStatus::Waiting && $this->pendingIssueIncome
+                ? [
+                    'amount_rub' => number_format((float) $this->pendingIssueIncome->amount, 2, '.', ''),
+                    'topup_usd' => number_format((float) $this->pendingIssueIncome->topup_usd, 2, '.', ''),
+                    'payment_url' => $this->pendingIssueIncome->payment_url,
+                ]
+                : null,
         ];
     }
 }

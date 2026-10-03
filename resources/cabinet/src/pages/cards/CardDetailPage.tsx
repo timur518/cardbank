@@ -8,6 +8,7 @@ import type { CardDetail, CardRequisites, CardTransaction } from '../../api/type
 import { BalancePanel } from '../../components/cards/BalancePanel';
 import { CardFace } from '../../components/cards/CardFace';
 import { CardTabsSection, type CardTabKey } from '../../components/cards/CardTabsSection';
+import { PendingPaymentPanel } from '../../components/cards/PendingPaymentPanel';
 import { RequisitesPanel } from '../../components/cards/RequisitesPanel';
 import { CardDetailSkeleton } from '../../components/common/Skeleton';
 import { TopupModal } from '../../components/cards/TopupModal';
@@ -188,7 +189,11 @@ export function CardDetailPage() {
                             />
                         </div>
 
-                        {!requisitesUnavailable && (
+                        {card.status === 'waiting' && card.pending_payment && (
+                            <PendingPaymentPanel pendingPayment={card.pending_payment} />
+                        )}
+
+                        {card.status !== 'waiting' && !requisitesUnavailable && (
                             <div className="flex flex-col gap-2">
                                 <RequisitesPanel
                                     card={card}

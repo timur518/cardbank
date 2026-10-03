@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import type { Card } from '../../api/types';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, formatRub } from '../../utils/format';
 import { CARD_STATUS_LABELS, CARD_STATUS_TONES } from '../../utils/labels';
 import { StatusPill } from '../common/StatusPill';
 import { CardVisual } from './CardVisual';
@@ -13,6 +13,7 @@ interface CardGridCardProps {
 // Карточка одной карты в сетке страницы «Мои карты»
 export function CardGridCard({ card, monthSpend }: CardGridCardProps) {
     const isActive = card.status === 'active';
+    const isWaiting = card.status === 'waiting';
 
     return (
         <Link
@@ -37,6 +38,20 @@ export function CardGridCard({ card, monthSpend }: CardGridCardProps) {
                             {monthSpend === null ? '…' : formatMoney(monthSpend, card.currency)}
                         </span>
                     </div>
+                )}
+
+                {isWaiting && card.pending_payment && (
+                    <button
+                        type="button"
+                        className="btn btn-orange w-full mt-1"
+                        onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            window.location.href = card.pending_payment!.payment_url;
+                        }}
+                    >
+                        Оплатить {formatRub(Number(card.pending_payment.amount_rub))} и выпустить
+                    </button>
                 )}
             </div>
         </Link>

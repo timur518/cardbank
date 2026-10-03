@@ -106,6 +106,14 @@ export interface Card {
     expiry: string | null;
     issued_at: string | null;
     billing_address: BillingAddress;
+    pending_payment: PendingPayment | null;
+}
+
+// Неоплаченный заказ на выпуск карты (только у карт со статусом 'waiting') — сумма к оплате и ссылка на повторную оплату.
+export interface PendingPayment {
+    amount_rub: string;
+    topup_usd: string;
+    payment_url: string;
 }
 
 // Платёжный адрес карты

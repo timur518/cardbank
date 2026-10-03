@@ -25,7 +25,7 @@ class CardController extends Controller
     public function index(Request $request): AnonymousResourceCollection
     {
         $cards = $request->user()->cards()
-            ->with('cardProduct')
+            ->with(['cardProduct', 'pendingIssueIncome'])
             ->whereNotIn('status', [CardStatus::Cancelled, CardStatus::Failed])
             ->latest()
             ->get();
@@ -41,7 +41,7 @@ class CardController extends Controller
     {
         abort_if($card->user_id !== $request->user()->id, 403);
 
-        return (new CardDetailResource($card->load('cardProduct')))->response();
+        return (new CardDetailResource($card->load(['cardProduct', 'pendingIssueIncome'])))->response();
     }
 
     /**

@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Enums\CardStatus;
+use App\Enums\IncomePaymentStatus;
+use App\Enums\IncomeType;
 use App\Services\Integrations\ProviderIntegrationResolver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class Card extends Model
@@ -120,6 +123,20 @@ class Card extends Model
     public function incomes(): HasMany
     {
         return $this->hasMany(Income::class);
+    }
+
+    /**
+     * Неоплаченный заказ на выпуск этой карты (пока карта в статусе Waiting) — нужен в ЛК,
+     * чтобы показать клиенту сумму к оплате и ссылку на платёж повторно, не создавая новый заказ.
+     * Как только оплата проходит (или просрочивается — см. CancelExpiredPaymentOrders), запись
+     * перестаёт быть Pending и переходит в Paid/Cancelled, а карта — в Pending/Cancelled.
+     */
+    public function pendingIssueIncome(): HasOne
+    {
+        return $this->hasOne(Income::class)
+            ->where('type', IncomeType::CardIssue)
+            ->where('payment_status', IncomePaymentStatus::Pending)
+            ->latestOfMany();
     }
 
     public function expenses(): HasMany
