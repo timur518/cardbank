@@ -40,6 +40,7 @@ class ReferralSettings extends Page implements HasForms
     public const KEYS = [
         'referral_issue_rate',
         'referral_topup_rate',
+        'referral_registration_bonus_usd',
         'referral_hold_days',
         'referral_min_wallet_rub',
         'referral_min_bank_rub',
@@ -63,6 +64,10 @@ class ReferralSettings extends Page implements HasForms
                         TextInput::make('referral_topup_rate')
                             ->label('Доля партнёра от суммы пополнений, %')
                             ->numeric(),
+                        TextInput::make('referral_registration_bonus_usd')
+                            ->label('Фиксированное вознаграждение за регистрацию приглашённого, $')
+                            ->numeric()
+                            ->prefix('$'),
                         TextInput::make('referral_hold_days')
                             ->label('Сколько дней начисление ожидает перед выводом')
                             ->numeric(),

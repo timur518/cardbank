@@ -15,7 +15,8 @@ class PayoutRequest extends Model
     public const UPDATED_AT = null;
 
     protected $fillable = [
-        'partner_id',
+        'user_id',
+        'amount_usd',
         'amount_rub',
         'destination',
         'bank_card_number',
@@ -31,13 +32,14 @@ class PayoutRequest extends Model
         return [
             'destination' => PayoutDestination::class,
             'status' => PayoutRequestStatus::class,
+            'amount_usd' => 'decimal:2',
             'amount_rub' => 'decimal:2',
             'resolved_at' => 'datetime',
         ];
     }
 
-    public function partner(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Partner::class);
+        return $this->belongsTo(User::class);
     }
 }

@@ -16,24 +16,37 @@ class PartnerInfolist
                 Section::make('Партнёр')
                     ->columns(3)
                     ->schema([
-                        TextEntry::make('id')->label('ID'),
-                        TextEntry::make('user.email')->label('Пользователь'),
-                        TextEntry::make('code')->label('Код приглашения'),
-                        TextEntry::make('invite_link')->label('Ссылка приглашения')->placeholder('—')->copyable(),
-                        TextEntry::make('status')->label('Статус')->badge(),
-                        TextEntry::make('created_at')->label('Дата создания')->dateTime('d.m.Y H:i'),
+                        TextEntry::make('name')->label('Имя'),
+                        TextEntry::make('email')->label('Email'),
+                        TextEntry::make('invite_code')->label('Код приглашения')->copyable(),
+                        TextEntry::make('created_at')->label('Дата регистрации')->dateTime('d.m.Y H:i'),
                     ]),
 
                 Section::make('Статистика')
                     ->columns(4)
                     ->schema([
-                        TextEntry::make('referrals_count')->label('Приглашено всего'),
-                        TextEntry::make('paying_count')->label('Из них платит'),
-                        TextEntry::make('lifetime_usd')->label('Заработано всего')->money(fn (Partner $record) => 'USD'),
-                        TextEntry::make('available_usd')->label('Доступно к выводу')->money(fn (Partner $record) => 'USD'),
-                        TextEntry::make('hold_usd')->label('В ожидании')->money(fn (Partner $record) => 'USD'),
-                        TextEntry::make('requested_usd')->label('Запрошено к выводу')->money(fn (Partner $record) => 'USD'),
-                        TextEntry::make('paid_usd')->label('Выплачено всего')->money(fn (Partner $record) => 'USD'),
+                        TextEntry::make('referred_users_count')
+                            ->label('Приглашено')
+                            ->state(fn (Partner $record) => $record->referredUsers()->count()),
+                        TextEntry::make('active_referred_users_count')
+                            ->label('Активных')
+                            ->state(fn (Partner $record) => $record->activeReferredUsersCount()),
+                        TextEntry::make('earned_usd_sum')
+                            ->label('Сумма вознаграждений')
+                            ->state(fn (Partner $record) => $record->totalEarnedUsd())
+                            ->money('USD'),
+                        TextEntry::make('available_usd')
+                            ->label('Доступно к выводу')
+                            ->state(fn (Partner $record) => $record->availableBalanceUsd())
+                            ->money('USD'),
+                        TextEntry::make('pending_payout_usd')
+                            ->label('Ожидает к выплате')
+                            ->state(fn (Partner $record) => $record->pendingPayoutUsd())
+                            ->money('USD'),
+                        TextEntry::make('paid_payout_usd')
+                            ->label('Выплачено всего')
+                            ->state(fn (Partner $record) => $record->paidPayoutUsd())
+                            ->money('USD'),
                     ]),
             ]);
     }

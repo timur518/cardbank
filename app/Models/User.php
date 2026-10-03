@@ -133,6 +133,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Card::class);
     }
 
+    /**
+     * Пользователи, зарегистрировавшиеся с кодом приглашения этого пользователя
+     * ($this->invite_code в их referral_code) — см. также App\Models\Partner и
+     * App\Services\Referral\ReferralService.
+     */
+    public function referredUsers(): HasMany
+    {
+        return $this->hasMany(self::class, 'referral_code', 'invite_code');
+    }
+
     public function incomes(): HasMany
     {
         return $this->hasMany(Income::class);

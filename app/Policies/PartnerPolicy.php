@@ -22,24 +22,28 @@ class PartnerPolicy
         return $authUser->can('View:Partner');
     }
 
+    /**
+     * Партнёры больше не заводятся/редактируются/удаляются вручную — это вычисляемая
+     * проекция пользователей (см. App\Models\Partner), управлять ими нужно через UserResource.
+     */
     public function create(AuthUser $authUser): bool
     {
-        return $authUser->can('Create:Partner');
+        return false;
     }
 
     public function update(AuthUser $authUser, Partner $partner): bool
     {
-        return $authUser->can('Update:Partner');
+        return false;
     }
 
     public function delete(AuthUser $authUser, Partner $partner): bool
     {
-        return $authUser->can('Delete:Partner');
+        return false;
     }
 
     public function deleteAny(AuthUser $authUser): bool
     {
-        return $authUser->can('DeleteAny:Partner');
+        return false;
     }
 
     public function restore(AuthUser $authUser, Partner $partner): bool

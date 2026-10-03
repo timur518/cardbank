@@ -12,6 +12,7 @@ use App\Models\CardStatusHistory;
 use App\Models\Income;
 use App\Models\Notification;
 use App\Services\Integrations\CardsPro\CardsProOrderProcessor;
+use App\Services\Referral\ReferralService;
 use App\Services\Telegram\AdminTelegramNotifier;
 
 /**
@@ -56,6 +57,9 @@ class PaymentWebhookHandler
     protected function handlePaid(Income $income): void
     {
         $income->update(['payment_status' => IncomePaymentStatus::Paid]);
+
+        // Начисление партнёру, пригласившему платёжника этого Income (referral_code), если таковой есть.
+        ReferralService::accrueForIncome($income);
 
         $card = $income->card;
 

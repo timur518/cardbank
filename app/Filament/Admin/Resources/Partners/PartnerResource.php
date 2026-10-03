@@ -2,11 +2,9 @@
 
 namespace App\Filament\Admin\Resources\Partners;
 
-use App\Filament\Admin\Resources\Partners\Pages\CreatePartner;
-use App\Filament\Admin\Resources\Partners\Pages\EditPartner;
 use App\Filament\Admin\Resources\Partners\Pages\ListPartners;
 use App\Filament\Admin\Resources\Partners\Pages\ViewPartner;
-use App\Filament\Admin\Resources\Partners\Schemas\PartnerForm;
+use App\Filament\Admin\Resources\Partners\RelationManagers\PartnerTransactionsRelationManager;
 use App\Filament\Admin\Resources\Partners\Schemas\PartnerInfolist;
 use App\Filament\Admin\Resources\Partners\Tables\PartnersTable;
 use App\Models\Partner;
@@ -16,6 +14,11 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
+/**
+ * Только просмотр: партнёры — это пользователи с приглашёнными (см. App\Models\Partner),
+ * заводить/редактировать их вручную здесь нельзя, поэтому ресурс не регистрирует
+ * create/edit-страницы.
+ */
 class PartnerResource extends Resource
 {
     protected static ?string $model = Partner::class;
@@ -32,11 +35,6 @@ class PartnerResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function form(Schema $schema): Schema
-    {
-        return PartnerForm::configure($schema);
-    }
-
     public static function infolist(Schema $schema): Schema
     {
         return PartnerInfolist::configure($schema);
@@ -47,13 +45,18 @@ class PartnerResource extends Resource
         return PartnersTable::configure($table);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            PartnerTransactionsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListPartners::route('/'),
-            'create' => CreatePartner::route('/create'),
             'view' => ViewPartner::route('/{record}'),
-            'edit' => EditPartner::route('/{record}/edit'),
         ];
     }
 }

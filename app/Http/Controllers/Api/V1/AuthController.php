@@ -18,6 +18,7 @@ use App\Models\Notification;
 use App\Models\PinDeviceToken;
 use App\Models\User;
 use App\Services\Mail\SafeMailer;
+use App\Services\Referral\ReferralService;
 use App\Services\Telegram\AdminTelegramNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -90,6 +91,9 @@ class AuthController extends Controller
         // Роль customer явно блокирует доступ в /admin — см. User::canAccessPanel().
         $user->assignRole('customer');
 
+        // Бонус пригласившему за регистрацию по ?pid=, см. ReferralSettings::referral_registration_bonus_usd.
+        ReferralService::accrueForRegistration($user);
+
         // Отправка приветственного уведомления
         Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
         SafeMailer::send($user->email, new WelcomeMail($user));
@@ -137,6 +141,8 @@ class AuthController extends Controller
         ]);
 
         $user->assignRole('customer');
+
+        ReferralService::accrueForRegistration($user);
 
         Notification::notify($user, NotificationEvent::Welcome, [], '/cards/new');
         SafeMailer::send($user->email, new WelcomeMail($user, $generatedPassword));

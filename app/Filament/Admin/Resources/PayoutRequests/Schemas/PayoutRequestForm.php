@@ -18,14 +18,19 @@ class PayoutRequestForm
                 Section::make('Заявка на выплату')
                     ->columns(2)
                     ->schema([
-                        Select::make('partner_id')
+                        Select::make('user_id')
                             ->label('Партнёр')
-                            ->relationship('partner', 'code')
+                            ->relationship('user', 'email')
                             ->searchable()
                             ->preload()
                             ->required(),
+                        TextInput::make('amount_usd')
+                            ->label('Списывается с баланса, $')
+                            ->numeric()
+                            ->prefix('$')
+                            ->required(),
                         TextInput::make('amount_rub')
-                            ->label('Сумма выплаты, ₽')
+                            ->label('Сумма перевода, ₽')
                             ->numeric()
                             ->prefix('₽')
                             ->required(),

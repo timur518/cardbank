@@ -2,70 +2,77 @@
 
 namespace App\Filament\Admin\Resources\Partners\Tables;
 
-use App\Enums\PartnerStatus;
+use App\Enums\IncomePaymentStatus;
+use App\Enums\PayoutRequestStatus;
 use App\Models\Partner;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\CreateAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
+/**
+ * Партнёры не заводятся вручную — здесь перечислены все пользователи, у которых есть
+ * хотя бы один приглашённый (см. App\Models\Partner и глобальный scope hasReferrals).
+ * Статистика считается «на лету» через withCount/withSum в getEloquentQuery(), без
+ * хранения отдельных счётчиков.
+ */
 class PartnersTable
 {
     public static function configure(Table $table): Table
     {
         return $table
-            ->defaultSort('created_at', 'desc')
+            ->modifyQueryUsing(fn ($query) => $query
+                ->withCount('referredUsers')
+                ->withCount(['referredUsers as active_referred_users_count' => fn ($q) => $q
+                    ->whereHas('incomes', fn ($q2) => $q2->where('payment_status', IncomePaymentStatus::Paid))])
+                ->withSum('partnerTransactions as earned_usd_sum', 'commission_amount')
+                ->withSum(['payoutRequests as pending_payout_usd_sum' => fn ($q) => $q
+                    ->whereIn('status', [PayoutRequestStatus::Pending, PayoutRequestStatus::Approved])], 'amount_usd')
+                ->withSum(['payoutRequests as paid_payout_usd_sum' => fn ($q) => $q
+                    ->where('status', PayoutRequestStatus::Paid)], 'amount_usd'))
+            ->defaultSort('earned_usd_sum', 'desc')
             ->emptyStateHeading('Партнёров пока нет')
-            ->emptyStateDescription('Здесь появятся партнёры, приглашающие новых клиентов по реферальной программе.')
+            ->emptyStateDescription('Здесь автоматически появится любой пользователь, у которого есть хотя бы один приглашённый по его коду (?pid=) пользователь.')
             ->emptyStateIcon('heroicon-o-user-group')
-            ->emptyStateActions([
-                CreateAction::make()->label('Добавить партнёра'),
-            ])
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-                TextColumn::make('user.email')
+                TextColumn::make('name')
                     ->label('Партнёр')
-                    ->searchable(),
-                TextColumn::make('code')
+                    ->description(fn (Partner $record) => $record->email)
+                    ->searchable(['name', 'email']),
+                TextColumn::make('invite_code')
                     ->label('Код приглашения')
+                    ->copyable()
                     ->searchable(),
-                TextColumn::make('referrals_count')
+                TextColumn::make('referred_users_count')
                     ->label('Приглашено')
-                    ->sortable(),
-                TextColumn::make('paying_count')
-                    ->label('Из них платит')
-                    ->sortable(),
-                TextColumn::make('lifetime_usd')
-                    ->label('Заработано всего')
-                    ->money(fn (Partner $record) => 'USD')
+                    ->sortable()
+                    ->alignCenter(),
+                TextColumn::make('active_referred_users_count')
+                    ->label('Активных')
+                    ->sortable()
+                    ->alignCenter(),
+                TextColumn::make('earned_usd_sum')
+                    ->label('Сумма вознаграждений')
+                    ->state(fn (Partner $record) => (float) $record->earned_usd_sum)
+                    ->money('USD')
                     ->sortable(),
                 TextColumn::make('available_usd')
                     ->label('Доступно к выводу')
-                    ->money(fn (Partner $record) => 'USD')
+                    ->state(fn (Partner $record) => (float) $record->earned_usd_sum
+                        - (float) $record->pending_payout_usd_sum - (float) $record->paid_payout_usd_sum)
+                    ->money('USD'),
+                TextColumn::make('pending_payout_usd_sum')
+                    ->label('Ожидает к выплате')
+                    ->state(fn (Partner $record) => (float) $record->pending_payout_usd_sum)
+                    ->money('USD')
                     ->sortable(),
-                TextColumn::make('status')
-                    ->label('Статус')
-                    ->badge(),
-            ])
-            ->filters([
-                SelectFilter::make('status')
-                    ->label('Статус')
-                    ->options(PartnerStatus::class),
+                TextColumn::make('paid_payout_usd_sum')
+                    ->label('Выплачено всего')
+                    ->state(fn (Partner $record) => (float) $record->paid_payout_usd_sum)
+                    ->money('USD')
+                    ->sortable(),
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
     }
 }

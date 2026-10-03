@@ -27,9 +27,13 @@ class PayoutRequestsTable
             ->emptyStateIcon('heroicon-o-banknotes')
             ->columns([
                 TextColumn::make('id')->label('ID')->sortable(),
-                TextColumn::make('partner.user.email')->label('Партнёр'),
+                TextColumn::make('user.email')->label('Партнёр'),
+                TextColumn::make('amount_usd')
+                    ->label('С баланса')
+                    ->money('USD')
+                    ->sortable(),
                 TextColumn::make('amount_rub')
-                    ->label('Сумма')
+                    ->label('К переводу')
                     ->money('RUB')
                     ->sortable(),
                 TextColumn::make('destination')
