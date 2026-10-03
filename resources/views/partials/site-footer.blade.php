@@ -27,8 +27,8 @@
                 <p class="footer-title">Помощь</p>
                 <ul class="footer-links">
                     <li><a href="/#faq">Вопросы</a></li>
-                    <li><a href="/#support">Поддержка</a></li>
-                    <li><a href="#">Вход</a></li>
+                    <li><a href="https://t.me/mojno_support" target="_blank" rel="noopener">Поддержка</a></li>
+                    <li><a href="https://mne.mojno.cc/">Вход</a></li>
                 </ul>
             </div>
             <div>
