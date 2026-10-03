@@ -749,6 +749,59 @@ html::-webkit-scrollbar {
 .apply-card-desc { margin-top: 4px; font-size: .78rem; line-height: 1.45; color: var(--color-muted); }
 .apply-card-price { margin-top: 7px; display: block; font-size: .82rem; font-weight: 700; }
 
+/* Заголовок раздела внутри формы выпуска карты («Выбранная карта», «Сколько зачислить…»,
+   «Способы оплаты») и в блоке «Состав платежа». */
+.apply-section-title { font-size: 1rem; font-weight: 800; letter-spacing: -.01em; color: var(--color-ink); margin-bottom: 4px; }
+.apply-section-subtitle { margin: 0 0 4px; font-size: .8rem; color: var(--color-muted); }
+.apply-divider { height: 1px; background: var(--color-border); margin: 26px 0; }
+
+/* Строка с выбранной картой внутри формы выпуска — картинка + название/описание/страна. */
+.apply-selected-card { display: flex; gap: 14px; align-items: flex-start; margin-top: 14px; }
+.apply-selected-card-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: .95rem;
+    letter-spacing: -.01em;
+}
+.apply-selected-card-desc { margin-top: 6px; font-size: .8rem; line-height: 1.5; color: var(--color-muted); }
+.apply-selected-card-meta {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--color-ink);
+}
+
+/* Готовые суммы пополнения кнопками под полем ввода суммы. */
+.apply-amount-presets { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.apply-preset-btn {
+    padding: 9px 15px;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-border);
+    background: #fff;
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    cursor: pointer;
+    transition: .2s;
+}
+.apply-preset-btn:hover { border-color: #c9c5bf; }
+.apply-preset-btn.is-active { border-color: var(--color-orange); background: #fff7f3; color: var(--color-orange); }
+
+/* Блок «Состав платежа» — строки с названием/суммой и итоговая строка. */
+.apply-summary-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-top: 18px; }
+.apply-summary-row:first-of-type { margin-top: 16px; }
+.apply-summary-label { font-size: .88rem; font-weight: 700; color: var(--color-ink); }
+.apply-summary-sub { margin-top: 2px; font-size: .75rem; color: var(--color-muted); }
+.apply-summary-amount { font-size: .9rem; font-weight: 800; color: var(--color-ink); white-space: nowrap; }
+.apply-summary-total-row { display: flex; align-items: center; justify-content: space-between; font-size: 1.05rem; font-weight: 800; color: #101010; }
+.apply-summary-balance { margin-top: 6px; font-size: .82rem; color: var(--color-muted); }
+
 .apply-field { display: flex; flex-direction: column; gap: 8px; margin-top: 22px; }
 .apply-field:first-child { margin-top: 0; }
 .apply-field label { font-size: .8rem; font-weight: 700; color: var(--color-muted); }
@@ -799,9 +852,38 @@ html::-webkit-scrollbar {
 .apply-pay-name { display: block; font-weight: 700; font-size: .92rem; }
 .apply-pay-desc { display: block; margin-top: 2px; font-size: .78rem; color: var(--color-muted); }
 
-.apply-amount-input-group { display: flex; align-items: center; gap: 8px; }
+/* Группа поля суммы пополнения — рамка визуально одна на input и суффикс «USD» справа
+   (сам input без собственной рамки, см. правило ниже). */
+.apply-amount-input-group {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--color-border);
+    border-radius: 14px;
+    background: #fff;
+    transition: border-color .2s;
+}
+.apply-amount-input-group:focus-within { border-color: var(--color-orange); }
 .apply-amount-total { margin: 14px 0 0; display: flex; align-items: center; font-weight: 800; color: #101010; font-size: .95rem; }
-.apply-field .apply-amount-input-group input { border-radius: 14px; width: 100%; flex: 1 1 auto; min-width: 0; }
+.apply-field .apply-amount-input-group input {
+    border: none;
+    border-radius: 14px;
+    width: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
+    background: transparent;
+}
+.apply-field .apply-amount-input-group input:focus { border-color: transparent; }
+.apply-amount-suffix {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-right: 16px;
+    font-size: .82rem;
+    font-weight: 800;
+    color: var(--color-muted);
+    white-space: nowrap;
+}
+.apply-amount-suffix::before { content: ''; width: 1px; height: 22px; background: var(--color-border); }
 
 /* Кнопка-подсказка с всплывающим тултипом по наведению — справа от поля суммы пополнения при выпуске карты. */
 .info-tooltip { position: relative; display: inline-flex; flex-shrink: 0; }
