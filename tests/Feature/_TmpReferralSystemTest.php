@@ -267,7 +267,7 @@ class _TmpReferralSystemTest extends TestCase
         $this->get("/admin/partners/{$referrer->id}")->assertOk();
     }
 
-    public function test_admin_partners_table_merges_partner_and_invite_code_columns(): void
+    public function test_admin_partners_table_does_not_show_invite_code(): void
     {
         $this->actingAsSuperAdmin();
 
@@ -278,7 +278,7 @@ class _TmpReferralSystemTest extends TestCase
             ->assertOk()
             ->assertSee('Иван Партнёров')
             ->assertSee($referrer->email)
-            ->assertSee("Код: {$referrer->invite_code}");
+            ->assertDontSee("Код: {$referrer->invite_code}");
     }
 
     public function test_admin_partners_table_merges_invited_and_active_counts(): void
@@ -347,6 +347,31 @@ class _TmpReferralSystemTest extends TestCase
 
         $this->get('/admin/partner-transactions')->assertOk();
         $this->get('/admin/partner-transactions/create')->assertOk();
+    }
+
+    public function test_admin_partner_transactions_table_has_renamed_and_removed_columns(): void
+    {
+        $this->actingAsSuperAdmin();
+
+        $referrer = User::factory()->create();
+        $buyer = User::factory()->create(['referral_code' => $referrer->invite_code]);
+
+        PartnerTransaction::create([
+            'partner_user_id' => $referrer->id,
+            'buyer_user_id' => $buyer->id,
+            'type' => PartnerTransactionType::Registration,
+            'income_id' => null,
+            'rate' => 1,
+            'commission_amount' => 1,
+        ]);
+
+        $response = $this->get('/admin/partner-transactions')->assertOk();
+
+        $response->assertSee('ID операции', false);
+        $response->assertDontSee('ID операции в поступлениях');
+        $response->assertSee('Дата', false);
+        $response->assertDontSee('Когда создано');
+        $response->assertDontSee('Когда отредактировано');
     }
 
     public function test_admin_partner_transaction_view_and_edit_render_for_both_income_and_registration_types(): void

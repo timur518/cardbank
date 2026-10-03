@@ -37,7 +37,7 @@ class PartnerTransactionsTable
                     ->label('За что')
                     ->badge(),
                 TextColumn::make('income_id')
-                    ->label('ID операции в поступлениях')
+                    ->label('ID операции')
                     ->placeholder('—'),
                 TextColumn::make('rate')
                     ->label('Ставка')
@@ -47,11 +47,7 @@ class PartnerTransactionsTable
                     ->money('USD')
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->label('Когда создано')
-                    ->dateTime('d.m.Y H:i')
-                    ->sortable(),
-                TextColumn::make('updated_at')
-                    ->label('Когда отредактировано')
+                    ->label('Дата')
                     ->dateTime('d.m.Y H:i')
                     ->sortable(),
             ])

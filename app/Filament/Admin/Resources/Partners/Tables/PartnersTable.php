@@ -37,8 +37,8 @@ class PartnersTable
             ->columns([
                 TextColumn::make('name')
                     ->label('Партнёр')
-                    ->description(fn (Partner $record) => "{$record->email} · Код: {$record->invite_code}")
-                    ->searchable(['name', 'email', 'invite_code']),
+                    ->description(fn (Partner $record) => $record->email)
+                    ->searchable(['name', 'email']),
                 TextColumn::make('referred_users_count')
                     ->label('Приглашено / Активных')
                     ->state(fn (Partner $record) => "{$record->active_referred_users_count} / {$record->referred_users_count}")

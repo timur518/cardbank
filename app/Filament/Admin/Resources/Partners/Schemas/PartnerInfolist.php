@@ -13,9 +13,10 @@ class PartnerInfolist
     {
         return $schema
             ->components([
-                // 4 поля в 1 ряд из 4 колонок — без пустых ячеек и переносов на следующую строку.
+                // 4 поля в 1 ряд из 4 колонок, блок на всю ширину страницы.
                 Section::make('Партнёр')
                     ->columns(4)
+                    ->columnSpanFull()
                     ->schema([
                         TextEntry::make('name')->label('Имя'),
                         TextEntry::make('email')->label('Email'),
@@ -23,9 +24,10 @@ class PartnerInfolist
                         TextEntry::make('created_at')->label('Дата регистрации')->dateTime('d.m.Y H:i'),
                     ]),
 
-                // Отдельно от денег: статистика по приглашённым — ровно 1 чистая строка из 2 колонок.
+                // Отдельно от денег: статистика по приглашённым — ровно 1 чистая строка из 2 колонок, блок на всю ширину страницы.
                 Section::make('Приглашённые')
                     ->columns(2)
+                    ->columnSpanFull()
                     ->schema([
                         TextEntry::make('referred_users_count')
                             ->label('Приглашено')
@@ -36,9 +38,10 @@ class PartnerInfolist
                     ]),
 
                 // Денежные показатели отдельно от счётчиков — 1 чистая строка из 4 колонок, в том же
-                // порядке, что и в таблице списка партнёров.
+                // порядке, что и в таблице списка партнёров, блок на всю ширину страницы.
                 Section::make('Баланс')
                     ->columns(4)
+                    ->columnSpanFull()
                     ->schema([
                         TextEntry::make('earned_usd_sum')
                             ->label('Сумма вознаграждений')
