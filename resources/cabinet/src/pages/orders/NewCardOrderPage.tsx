@@ -6,6 +6,7 @@ import { extractErrorMessage } from '../../api/client';
 import { issueOrder } from '../../api/orders';
 import type { CardProduct, PaymentMethod } from '../../api/types';
 import { CardChoiceGridSkeleton } from '../../components/common/Skeleton';
+import { InfoTooltip } from '../../components/common/InfoTooltip';
 import { CardProductChoice } from '../../components/orders/CardProductChoice';
 import { PaymentMethodOption } from '../../components/orders/PaymentMethodOption';
 import { useTopupQuote } from '../../hooks/useTopupQuote';
@@ -156,41 +157,48 @@ export function NewCardOrderPage() {
                             Выбрать другую карту
                         </button>
 
-                        <div className="apply-card-list mt-5 mb-4">
-                            <div className="apply-card-option is-active" style={{ cursor: 'default' }}>
-                                <span className={`apply-card-thumb ${selectedProduct.skin ? '' : 'apply-card-thumb-white'}`}>
-                                    {selectedProduct.skin && (
-                                        <img src={selectedProduct.skin} alt={`Карта ${selectedProduct.name}`} loading="lazy" />
-                                    )}
-                                </span>
-                                <span className="apply-card-info">
-                                    <span className="apply-card-name">
-                                        Карта {selectedProduct.name}
-                                        <span className="apply-card-badge">{selectedProduct.currency}</span>
-                                    </span>
-                                    <span className="apply-card-price">{formatRub(Number(selectedProduct.price_rub))} за выпуск</span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <form onSubmit={handleSubmit}>
-                            <div className="apply-field">
-                                <label>Сумма для пополнения карты</label>
-                                <div className="apply-amount-input-group">
-                                    <input
-                                        type="text"
-                                        inputMode="numeric"
-                                        placeholder="50"
-                                        value={amount}
-                                        onChange={(event) => setAmount(event.target.value)}
-                                    />
+                        <form onSubmit={handleSubmit} className="mt-5">
+                            {/* Выбранная карта и сумма пополнения в одной строке из 2 колонок на десктопе
+                                (порог md — как и у других 2-колоночных блоков в ЛК, см. CardDetailPage.tsx). */}
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div className="apply-card-list">
+                                    <div className="apply-card-option is-active" style={{ cursor: 'default' }}>
+                                        <span className={`apply-card-thumb ${selectedProduct.skin ? '' : 'apply-card-thumb-white'}`}>
+                                            {selectedProduct.skin && (
+                                                <img src={selectedProduct.skin} alt={`Карта ${selectedProduct.name}`} loading="lazy" />
+                                            )}
+                                        </span>
+                                        <span className="apply-card-info">
+                                            <span className="apply-card-name">
+                                                Карта {selectedProduct.name}
+                                                <span className="apply-card-badge">{selectedProduct.currency}</span>
+                                            </span>
+                                            <span className="apply-card-price">{formatRub(Number(selectedProduct.price_rub))} за выпуск</span>
+                                        </span>
+                                    </div>
                                 </div>
-                                {selectedProduct && (
-                                    <p className="apply-hint">
-                                        Пополнение: от ${selectedProduct.issue_min_amount ?? '10'} до $
-                                        {selectedProduct.issue_max_amount ?? '—'}
-                                    </p>
-                                )}
+
+                                <div className="apply-field !mt-0">
+                                    <label>Сумма для пополнения карты</label>
+                                    <div className="apply-amount-input-group">
+                                        <input
+                                            type="text"
+                                            inputMode="numeric"
+                                            placeholder="50"
+                                            value={amount}
+                                            onChange={(event) => setAmount(event.target.value)}
+                                        />
+                                        <InfoTooltip
+                                            text={`Введите сумму, на которую будет пополнена карта в момент её выпуска. Минимальная сумма для пополнения сейчас: ${selectedProduct.issue_min_amount ?? '10'}$.`}
+                                        />
+                                    </div>
+                                    {selectedProduct && (
+                                        <p className="apply-hint">
+                                            Пополнение: от ${selectedProduct.issue_min_amount ?? '10'} до $
+                                            {selectedProduct.issue_max_amount ?? '—'}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
                             <div className="apply-field">
