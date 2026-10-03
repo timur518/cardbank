@@ -38,6 +38,7 @@ class User extends Authenticatable implements FilamentUser
         'utm_campaign',
         'utm_content',
         'referral_code',
+        'invite_code',
         'kyc_status',
         'is_blocked',
         'block_reason',
@@ -85,7 +86,22 @@ class User extends Authenticatable implements FilamentUser
     {
         static::creating(function (User $user): void {
             $user->uuid ??= (string) Str::uuid();
+            $user->invite_code ??= static::generateUniqueInviteCode();
         });
+    }
+
+    /**
+     * Собственный код приглашения пользователя (6 символов, например «X71KJN») — им делятся
+     * как ?pid=КОД в ссылках-приглашениях. Уникальность гарантируется повторной генерацией
+     * при коллизии (см. также бэкфилл в миграции 2026_10_03_100001_add_invite_code_to_users_table).
+     */
+    public static function generateUniqueInviteCode(): string
+    {
+        do {
+            $code = Str::upper(Str::random(6));
+        } while (static::query()->where('invite_code', $code)->exists());
+
+        return $code;
     }
 
     public function kycVerifications(): HasMany

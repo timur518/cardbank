@@ -1,12 +1,21 @@
 import './bootstrap';
 
-// UTM-метки и реферальный код (?ref= в ссылках-приглашениях, см. PartnershipPage.tsx) сохраняются в
-// cookie на 60 дней при заходе на лендинг с ними в URL — чтобы дожить до регистрации,
-// даже если она произойдёт позже или на другой странице/вкладке без этих параметров в URL.
-// Cookie ставится с Domain=mojno.cc (без самого верхнего уровня на localhost/IP), поэтому видна
-// и личному кабинету на mne.mojno.cc (там же имена cookie и та же логика в tracking.ts).
+// UTM-метки и реферальный код приглашающего (?pid= в ссылках-приглашениях вида
+// https://mojno.cc/?pid=X71KJN, где X71KJN — собственный код приглашения другого пользователя, см.
+// User::invite_code) сохраняются в cookie при заходе на лендинг с ними в URL — чтобы дожить до
+// регистрации (записывается в User::referral_code), даже если она произойдёт позже или
+// на другой странице/вкладке без этого параметра в URL. При повторном визите с ?pid= cookie
+// перезаписывается. Cookie ставится с Domain=mojno.cc (без самого верхнего уровня на localhost/IP),
+// поэтому видна и личному кабинету на mne.mojno.cc (там же имена cookie и та же логика в tracking.ts).
 const TRACKING_COOKIE_TTL_DAYS = 60;
-const TRACKING_PARAMS = { utm_source: ['utm_source'], utm_medium: ['utm_medium'], utm_campaign: ['utm_campaign'], utm_content: ['utm_content'], ref: ['ref', 'referral_code'] };
+const PID_TRACKING_COOKIE_TTL_DAYS = 90;
+const TRACKING_PARAMS = {
+    utm_source: { queryKeys: ['utm_source'], ttlDays: TRACKING_COOKIE_TTL_DAYS },
+    utm_medium: { queryKeys: ['utm_medium'], ttlDays: TRACKING_COOKIE_TTL_DAYS },
+    utm_campaign: { queryKeys: ['utm_campaign'], ttlDays: TRACKING_COOKIE_TTL_DAYS },
+    utm_content: { queryKeys: ['utm_content'], ttlDays: TRACKING_COOKIE_TTL_DAYS },
+    pid: { queryKeys: ['pid'], ttlDays: PID_TRACKING_COOKIE_TTL_DAYS },
+};
 
 function trackingCookieDomain() {
     const host = window.location.hostname;
@@ -20,9 +29,9 @@ function trackingCookieDomain() {
     return parts.length > 2 ? parts.slice(-2).join('.') : host;
 }
 
-function setTrackingCookie(name, value) {
+function setTrackingCookie(name, value, ttlDays) {
     const domain = trackingCookieDomain();
-    const expires = new Date(Date.now() + TRACKING_COOKIE_TTL_DAYS * 24 * 60 * 60 * 1000).toUTCString();
+    const expires = new Date(Date.now() + ttlDays * 24 * 60 * 60 * 1000).toUTCString();
     let cookie = `mojno_${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
 
     if (domain) {
@@ -45,11 +54,11 @@ function getTrackingCookie(name) {
 function captureTrackingParams() {
     const params = new URLSearchParams(window.location.search);
 
-    Object.entries(TRACKING_PARAMS).forEach(([cookieKey, queryKeys]) => {
+    Object.entries(TRACKING_PARAMS).forEach(([cookieKey, { queryKeys, ttlDays }]) => {
         const value = queryKeys.map((key) => params.get(key)).find((v) => v);
 
         if (value) {
-            setTrackingCookie(cookieKey, value);
+            setTrackingCookie(cookieKey, value, ttlDays);
         }
     });
 }
@@ -675,7 +684,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: form.querySelector('#apply-email')?.value ?? '',
                     date_of_birth: form.querySelector('#apply-dob')?.value ?? '',
                     personal_data_consent: form.querySelector('input[name="consent"]')?.checked ?? false,
-                    referral_code: getTrackingCookie('ref') ?? undefined,
+                    referral_code: getTrackingCookie('pid') ?? undefined,
                     utm_source: getTrackingCookie('utm_source') ?? undefined,
                     utm_medium: getTrackingCookie('utm_medium') ?? undefined,
                     utm_campaign: getTrackingCookie('utm_campaign') ?? undefined,

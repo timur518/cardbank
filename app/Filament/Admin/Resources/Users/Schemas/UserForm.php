@@ -81,6 +81,10 @@ class UserForm
                         TextInput::make('referral_code')
                             ->label('Код партнёра')
                             ->maxLength(255),
+                        TextInput::make('invite_code')
+                            ->label('Собственный код приглашения')
+                            ->disabled()
+                            ->dehydrated(false),
                     ]),
             ]);
     }

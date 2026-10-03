@@ -65,6 +65,7 @@ class UserInfolist
                         TextEntry::make('utm_campaign')->label('Кампания')->placeholder('—'),
                         TextEntry::make('utm_content')->label('Метка')->placeholder('—'),
                         TextEntry::make('referral_code')->label('Код партнёра')->placeholder('—'),
+                        TextEntry::make('invite_code')->label('Собственный код приглашения')->placeholder('—'),
                     ]),
             ]);
     }

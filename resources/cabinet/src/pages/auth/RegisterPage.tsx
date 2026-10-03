@@ -36,11 +36,11 @@ export function RegisterPage() {
     const { register } = useAuth();
     const navigate = useNavigate();
 
-    // Реферальный код предзаполняется из cookie (captureTrackingParams в main.tsx), если пользователь
-    // перешёл по ссылке-приглашению (?ref=...); поле остаётся редактируемым.
+    // Реферальный код предзаполняется из cookie pid (captureTrackingParams в main.tsx), если пользователь
+    // перешёл по ссылке-приглашению (?pid=...); поле остаётся редактируемым.
     const [values, setValues] = useState<RegisterFormValues>(() => ({
         ...initialValues,
-        referral_code: getTrackingCookie('ref') ?? '',
+        referral_code: getTrackingCookie('pid') ?? '',
     }));
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
