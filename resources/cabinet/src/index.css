@@ -814,6 +814,12 @@ html::-webkit-scrollbar {
 }
 .apply-field input:focus { outline: none; border-color: var(--color-orange); }
 .apply-hint { font-size: .75rem; color: var(--color-muted); }
+/* Только для подписи «После оплаты начнётся автоматический выпуск карты» под кнопкой
+ * сабмита формы выпуска карты (NewCardOrderPage.tsx) — на десктопе уменьшаем до 10px,
+ * чтобы текст помещался в одну строку; остальные .apply-hint не затрагиваются. */
+@media (min-width: 768px) {
+    .apply-auto-issue-hint { font-size: 10px; }
+}
 .apply-submit { margin-top: 26px; width: 100%; justify-content: center; }
 
 .apply-pay-list { display: flex; flex-direction: column; gap: 8px; }

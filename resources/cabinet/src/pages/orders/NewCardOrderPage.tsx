@@ -311,7 +311,7 @@ export function NewCardOrderPage() {
                                         </>
                                     )}
                                 </button>
-                                <p className="apply-hint mt-3 text-center">После оплаты начнётся автоматический выпуск карты</p>
+                                <p className="apply-hint apply-auto-issue-hint mt-3 text-center">После оплаты начнётся автоматический выпуск карты</p>
                             </div>
                         </div>
                     </form>
