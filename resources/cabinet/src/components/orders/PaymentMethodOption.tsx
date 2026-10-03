@@ -1,6 +1,5 @@
 import { BuildingLibraryIcon, CreditCardIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import type { PaymentMethod } from '../../api/types';
-import { formatRub } from '../../utils/format';
 
 interface PaymentMethodOptionProps {
     method: PaymentMethod;
@@ -26,8 +25,7 @@ function PaymentMethodIcon({ method }: { method: PaymentMethod }) {
     return <BuildingLibraryIcon className="h-5 w-5" />;
 }
 
-// Один способ оплаты на шаге выпуска/пополнения карты. Описание — диапазон сумм
-// и валюта из самого PaymentMethod (реальные данные, не захардкоженный текст).
+// Один способ оплаты на шаге выпуска/пополнения карты. Без подписи с диапазоном сумм под названием.
 export function PaymentMethodOption({ method, selected, onSelect }: PaymentMethodOptionProps) {
     return (
         <label className={`apply-pay-option ${selected ? 'is-active' : ''}`}>
@@ -37,9 +35,6 @@ export function PaymentMethodOption({ method, selected, onSelect }: PaymentMetho
             </span>
             <span className="apply-pay-info">
                 <span className="apply-pay-name">{method.name}</span>
-                <span className="apply-pay-desc">
-                    От {formatRub(Number(method.min_amount))} до {formatRub(Number(method.max_amount))}
-                </span>
             </span>
         </label>
     );
