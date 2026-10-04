@@ -46,6 +46,10 @@ class CardsProOrderProcessor
             'productCode' => $product->provider_product_code,
             'amount' => $topupUsd,
             'currency' => $product->currency,
+            // Некоторым продуктам CardsPro обязательно требуется email держателя при выпуске (400 bad_request
+            // "'email' has to be provided for this product" без него) — передаём всегда, чтобы не
+            // зависеть от того, требует ли конкретный продукт его явно.
+            'email' => $card->user->email,
         ]);
 
         $this->recordOperation($card, $provider, CardProviderOperationType::Issue, $raw, ['topup_usd' => $topupUsd]);
