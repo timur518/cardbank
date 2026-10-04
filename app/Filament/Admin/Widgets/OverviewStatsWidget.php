@@ -4,9 +4,12 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Enums\CardStatus;
 use App\Enums\CardTransactionType;
+use App\Enums\IncomePaymentStatus;
+use App\Enums\IncomeType;
 use App\Filament\Admin\Widgets\Concerns\FormatsMoney;
 use App\Models\Card;
 use App\Models\CardTransaction;
+use App\Models\Income;
 use App\Models\User;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
@@ -22,7 +25,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
 
     protected function getColumns(): int|array|null
     {
-        return 3;
+        return 4;
     }
 
     protected function getStats(): array
@@ -32,6 +35,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
             $this->activeCardsStat(),
             // $this->issuedCardsStat(),
             $this->paymentsStat(),
+            $this->lastReceiptStat(),
         ];
     }
 
@@ -86,5 +90,32 @@ class OverviewStatsWidget extends StatsOverviewWidget
             ->description('Сумма всех операций по картам')
             ->icon(Heroicon::OutlinedBanknotes)
             ->color('primary');
+    }
+
+    /**
+     * Сколько времени прошло с момента последнего оплаченного поступления (выпуск или
+     * пополнение карты) — `created_at` записи Income совпадает с моментом создания заказа, другого
+     * таймстампа у модели нет (Income::UPDATED_AT отключён). Сумма в описании — в рублях, как
+     * её реально заплатил клиент через СБП (currency у этих Income всегда RUB).
+     */
+    protected function lastReceiptStat(): Stat
+    {
+        $income = Income::query()
+            ->whereIn('type', [IncomeType::CardIssue, IncomeType::CardTopup])
+            ->where('payment_status', IncomePaymentStatus::Paid)
+            ->latest('created_at')
+            ->first();
+
+        if (! $income) {
+            return Stat::make('Последнее поступление', '—')
+                ->description('Поступлений ещё не было')
+                ->icon(Heroicon::OutlinedClock)
+                ->color('gray');
+        }
+
+        return Stat::make('Последнее поступление', $income->created_at->locale('ru')->diffForHumans())
+            ->description('На сумму ' . $this->formatMoney($income->amount, $income->currency))
+            ->icon(Heroicon::OutlinedClock)
+            ->color('success');
     }
 }

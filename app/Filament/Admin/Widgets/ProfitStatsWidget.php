@@ -83,8 +83,22 @@ class ProfitStatsWidget extends StatsOverviewWidget
 
         $profit = $income - $expense;
 
+        // То же самое, но в рублях: доход берётся из Income.amount (всегда RUB для
+        // этих типов — клиент платит через СБП), расход — из Expense.amount (тоже всегда RUB, см. ExpenseForm).
+        $incomeRub = (float) Income::query()
+            ->whereIn('type', [IncomeType::CardIssue, IncomeType::CardTopup])
+            ->where('payment_status', IncomePaymentStatus::Paid)
+            ->where('currency', 'RUB')
+            ->sum('amount');
+
+        $expenseRub = (float) Expense::query()
+            ->whereIn('category', [ExpenseCategory::CardIssue, ExpenseCategory::CardTopup])
+            ->sum('amount');
+
+        $profitRub = $incomeRub - $expenseRub;
+
         return Stat::make('Валовая прибыль', $this->formatMoney($profit, 'USD'))
-            ->description('Выпуск и пополнения')
+            ->description('Выпуск и пополнения · ' . $this->formatMoney($profitRub, 'RUB'))
             ->icon(Heroicon::OutlinedCurrencyDollar)
             ->color($profit >= 0 ? 'success' : 'danger');
     }
@@ -97,9 +111,12 @@ class ProfitStatsWidget extends StatsOverviewWidget
     protected function expensesStat(): Stat
     {
         $total = (float) Expense::sum('amount_usd');
+        // Expense.amount — всегда в рублях (см. ExpenseForm, поле с префиксом «₽»), amount_usd — его
+        // долларовый эквивалент на момент операции.
+        $totalRub = (float) Expense::sum('amount');
 
         return Stat::make('Расходы', $this->formatMoney($total, 'USD'))
-            ->description('За всё время')
+            ->description('За всё время · ' . $this->formatMoney($totalRub, 'RUB'))
             ->icon(Heroicon::OutlinedReceiptPercent)
             ->color('danger');
     }

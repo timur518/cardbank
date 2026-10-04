@@ -2,7 +2,6 @@
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Enums\ExpenseCategory;
 use App\Enums\IncomePaymentStatus;
 use App\Enums\IncomeType;
 use App\Models\Expense;
@@ -12,11 +11,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
- * «Доходы, расходы и прибыль» — сколько заработали (отдельно по выпуску карт и по
- * пополнениям), сколько заплатили провайдерам карт, сколько ушло на общие расходы
- * бизнеса, и итоговая прибыль. Всё считается только в долларах (поле «amount_usd»
- * у поступлений и расходов), так как клиенты платят в рублях через СБП, а провайдеру
- * карт мы платим в долларах. Записи без заполненного amount_usd в график не попадают.
+ * «Поступления, расходы и прибыль» — три линии в рублях: сколько заплатили клиенты за
+ * выпуск и пополнения карт (Income.amount, всегда RUB — клиент платит через СБП), сколько
+ * потратили (Expense.amount, тоже всегда RUB — см. ExpenseForm) и итоговая прибыль (разница).
  */
 class IncomeExpenseProfitChartWidget extends ChartWidget
 {
@@ -35,7 +32,7 @@ class IncomeExpenseProfitChartWidget extends ChartWidget
 
     public function getHeading(): string
     {
-        return 'Доходы, расходы и прибыль';
+        return 'Поступления, расходы и прибыль';
     }
 
     protected function getFilters(): ?array
@@ -51,44 +48,36 @@ class IncomeExpenseProfitChartWidget extends ChartWidget
     {
         $periods = $this->periods();
 
-        $issueIncome = $this->sumIncomeByPeriod($periods, IncomeType::CardIssue);
-        $topupIncome = $this->sumIncomeByPeriod($periods, IncomeType::CardTopup);
-        $providerCosts = $this->sumExpenseByPeriod($periods, [ExpenseCategory::CardIssue, ExpenseCategory::CardTopup]);
-        $generalExpenses = $this->sumExpenseByPeriod($periods, null, [ExpenseCategory::CardIssue, ExpenseCategory::CardTopup]);
+        $receipts = $this->sumIncomeByPeriod($periods, [IncomeType::CardIssue, IncomeType::CardTopup]);
+        $expenses = $this->sumExpenseByPeriod($periods);
 
-        $profit = $periods->map(fn ($period, $key) => $issueIncome[$key] + $topupIncome[$key] - $providerCosts[$key] - $generalExpenses[$key]);
+        $profit = $periods->map(fn ($period, $key) => $receipts[$key] - $expenses[$key]);
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Доход от выпуска карт',
-                    'data' => $issueIncome->values()->all(),
+                    'label' => 'Поступления',
+                    'data' => $receipts->values()->all(),
                     'borderColor' => '#22c55e',
-                    'backgroundColor' => '#22c55e',
+                    'backgroundColor' => 'rgba(34, 197, 94, 0.15)',
+                    'fill' => true,
+                    'tension' => 0.4,
                 ],
                 [
-                    'label' => 'Доход от пополнений',
-                    'data' => $topupIncome->values()->all(),
-                    'borderColor' => '#3b82f6',
-                    'backgroundColor' => '#3b82f6',
-                ],
-                [
-                    'label' => 'Выплаты провайдерам',
-                    'data' => $providerCosts->values()->all(),
-                    'borderColor' => '#f97316',
-                    'backgroundColor' => '#f97316',
-                ],
-                [
-                    'label' => 'Общие расходы бизнеса',
-                    'data' => $generalExpenses->values()->all(),
+                    'label' => 'Расходы',
+                    'data' => $expenses->values()->all(),
                     'borderColor' => '#ef4444',
-                    'backgroundColor' => '#ef4444',
+                    'backgroundColor' => 'rgba(239, 68, 68, 0.15)',
+                    'fill' => true,
+                    'tension' => 0.4,
                 ],
                 [
                     'label' => 'Прибыль',
                     'data' => $profit->values()->all(),
                     'borderColor' => '#a855f7',
-                    'backgroundColor' => '#a855f7',
+                    'backgroundColor' => 'rgba(168, 85, 247, 0.15)',
+                    'fill' => true,
+                    'tension' => 0.4,
                 ],
             ],
             'labels' => $periods->keys()->all(),
@@ -126,47 +115,38 @@ class IncomeExpenseProfitChartWidget extends ChartWidget
 
     /**
      * @param  Collection<string, array{0: Carbon, 1: Carbon}>  $periods
+     * @param  array<IncomeType>  $types
      * @return Collection<string, float>
      */
-    protected function sumIncomeByPeriod(Collection $periods, IncomeType $type): Collection
+    protected function sumIncomeByPeriod(Collection $periods, array $types): Collection
     {
         [$rangeStart, $rangeEnd] = [$periods->first()[0], $periods->last()[1]];
 
         $rows = Income::query()
-            ->where('type', $type)
+            ->whereIn('type', $types)
             ->where('payment_status', IncomePaymentStatus::Paid)
             ->whereBetween('created_at', [$rangeStart, $rangeEnd])
-            ->get(['amount_usd', 'created_at']);
+            ->get(['amount', 'created_at']);
 
         return $periods->map(fn ($range) => (float) $rows
             ->filter(fn ($row) => $row->created_at->between($range[0], $range[1]))
-            ->sum('amount_usd'));
+            ->sum('amount'));
     }
 
     /**
      * @param  Collection<string, array{0: Carbon, 1: Carbon}>  $periods
-     * @param  array<ExpenseCategory>|null  $only
-     * @param  array<ExpenseCategory>|null  $except
      * @return Collection<string, float>
      */
-    protected function sumExpenseByPeriod(Collection $periods, ?array $only, ?array $except = null): Collection
+    protected function sumExpenseByPeriod(Collection $periods): Collection
     {
         [$rangeStart, $rangeEnd] = [$periods->first()[0], $periods->last()[1]];
 
-        $query = Expense::query()->whereBetween('date', [$rangeStart, $rangeEnd]);
-
-        if ($only !== null) {
-            $query->whereIn('category', $only);
-        }
-
-        if ($except !== null) {
-            $query->whereNotIn('category', $except);
-        }
-
-        $rows = $query->get(['amount_usd', 'date']);
+        $rows = Expense::query()
+            ->whereBetween('date', [$rangeStart, $rangeEnd])
+            ->get(['amount', 'date']);
 
         return $periods->map(fn ($range) => (float) $rows
             ->filter(fn ($row) => $row->date->between($range[0], $range[1]))
-            ->sum('amount_usd'));
+            ->sum('amount'));
     }
 }
