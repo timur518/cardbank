@@ -98,7 +98,7 @@ class ProfitStatsWidget extends StatsOverviewWidget
         $profitRub = $incomeRub - $expenseRub;
 
         return Stat::make('Валовая прибыль', $this->formatMoney($profit, 'USD'))
-            ->description('Выпуск и пополнения · ' . $this->formatMoney($profitRub, 'RUB'))
+            ->description($this->formatMoney($profitRub, 'RUB'))
             ->icon(Heroicon::OutlinedCurrencyDollar)
             ->color($profit >= 0 ? 'success' : 'danger');
     }
@@ -116,7 +116,7 @@ class ProfitStatsWidget extends StatsOverviewWidget
         $totalRub = (float) Expense::sum('amount');
 
         return Stat::make('Расходы', $this->formatMoney($total, 'USD'))
-            ->description('За всё время · ' . $this->formatMoney($totalRub, 'RUB'))
+            ->description($this->formatMoney($totalRub, 'RUB'))
             ->icon(Heroicon::OutlinedReceiptPercent)
             ->color('danger');
     }
