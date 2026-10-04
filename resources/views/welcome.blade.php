@@ -380,6 +380,7 @@
                                     data-product-id="{{ $cardProduct->id ?? '' }}"
                                     data-issue-min="{{ $cardProduct->issue_min_amount ?? '' }}"
                                     data-issue-max="{{ $cardProduct->issue_max_amount ?? '' }}"
+                                    data-product-name="{{ $card['name'] }}"
                                 >
                                 <span class="apply-card-thumb {{ $card['thumb'] ? '' : 'apply-card-thumb-white' }}">
                                     @if ($card['thumb'])
@@ -447,38 +448,75 @@
                     </div>
 
                     <form class="apply-step apply-topup" data-apply-step="topup" data-topup-form data-usd-rate="{{ $usdSellRate }}" novalidate>
-                        <div class="apply-field">
-                            <label>Способ оплаты</label>
-                            <div class="apply-pay-list" data-pay-selector>
-                                @foreach ($paymentMethods as $i => $method)
-                                    <label class="apply-pay-option {{ $i === 0 ? 'is-active' : '' }}">
-                                        <input type="radio" name="pay_method" value="{{ $method->id }}" class="sr-only" {{ $i === 0 ? 'checked' : '' }}>
-                                        <span class="apply-pay-icon" aria-hidden="true">{!! $paymentIcon($method) !!}</span>
-                                        <span class="apply-pay-info">
-                                            <span class="apply-pay-name">{{ $method->name }}</span>
-                                        </span>
-                                    </label>
-                                @endforeach
-                            </div>
-                        </div>
+                        <div class="apply-topup-grid">
+                            <div class="apply-topup-main">
+                                <div>
+                                    <h3 class="apply-section-title">Сколько зачислить на карту?</h3>
+                                    <p class="apply-section-subtitle">Эти деньги будут на балансе карты для ваших оплат</p>
 
-                        <div class="apply-field">
-                            <label for="apply-topup-amount">Сумма для пополнения карты</label>
-                            <div class="apply-amount-row">
-                                <div class="apply-amount-input-group apply-amount-input-group-usd">
-                                    <input type="text" id="apply-topup-amount" name="amount" inputmode="numeric" data-topup-amount-input placeholder="50" value="25" required>
-                                    <span class="apply-amount-suffix" aria-hidden="true">$</span>
+                                    <div class="apply-field !mt-4">
+                                        <div class="apply-amount-input-group apply-amount-input-group-usd">
+                                            <input type="text" id="apply-topup-amount" name="amount" inputmode="numeric" data-topup-amount-input placeholder="50" value="25" required>
+                                            <span class="apply-amount-suffix" aria-hidden="true">$</span>
+                                        </div>
+                                        <p class="apply-hint" data-topup-limits></p>
+                                    </div>
+
+                                    <div class="apply-amount-presets" data-amount-presets></div>
                                 </div>
-                                <p class="apply-amount-total" data-topup-total>К оплате: 0 ₽</p>
-                                <p class="apply-hint" data-topup-limits></p>
+
+                                <div class="apply-divider"></div>
+
+                                <div class="apply-field">
+                                    <label>Способы оплаты</label>
+                                    <div class="apply-pay-list" data-pay-selector>
+                                        @foreach ($paymentMethods as $i => $method)
+                                            <label class="apply-pay-option {{ $i === 0 ? 'is-active' : '' }}">
+                                                <input type="radio" name="pay_method" value="{{ $method->id }}" class="sr-only" {{ $i === 0 ? 'checked' : '' }}>
+                                                <span class="apply-pay-icon" aria-hidden="true">{!! $paymentIcon($method) !!}</span>
+                                                <span class="apply-pay-info">
+                                                    <span class="apply-pay-name">{{ $method->name }}</span>
+                                                </span>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="apply-topup-divider" aria-hidden="true"></div>
+
+                            <div class="apply-topup-summary">
+                                <h3 class="apply-section-title">Состав платежа</h3>
+
+                                <div class="apply-summary-row">
+                                    <div>
+                                        <p class="apply-summary-label" data-topup-issue-label>Выпуск карты</p>
+                                        <p class="apply-summary-sub">Один раз при оформлении</p>
+                                    </div>
+                                    <p class="apply-summary-amount" data-topup-issue-amount>0 ₽</p>
+                                </div>
+
+                                <div class="apply-summary-row">
+                                    <p class="apply-summary-label" data-topup-amount-label>Пополнение на 0$</p>
+                                    <p class="apply-summary-amount" data-topup-amount-rub>0 ₽</p>
+                                </div>
+
+                                <div class="apply-divider"></div>
+
+                                <div class="apply-summary-total-row">
+                                    <span>Итого к оплате:</span>
+                                    <span data-topup-total>0 ₽</span>
+                                </div>
+                                <p class="apply-summary-balance" data-topup-balance>На балансе карты будет 0 $</p>
+
+                                <p class="apply-error" data-topup-error hidden></p>
+                                <button type="submit" class="btn btn-hero-orange apply-submit">
+                                    Оплатить и выпустить карту
+                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                </button>
+                                <p class="apply-hint apply-topup-note">После оплаты начнётся автоматический выпуск карты</p>
                             </div>
                         </div>
-
-                        <p class="apply-error" data-topup-error hidden></p>
-                        <button type="submit" class="btn btn-hero-orange apply-submit">
-                            Оплатить и выпустить карту
-                        </button>
-                        <p class="apply-hint apply-topup-note">Оплата на защищённой странице банка. Карта пополнится в течение 3 минут после выпуска карты.</p>
                     </form>
                 </div>
             </div>

@@ -101,24 +101,46 @@ body{background:var(--bg);color:var(--ink);font-weight:450;overflow-x:hidden}
 .apply-pay-name{display:block;font-weight:700;font-size:.92rem}
 .apply-pay-desc{display:block;margin-top:2px;font-size:.78rem;color:var(--muted)}
 
-/* Форма пополнения баланса: сумма (переключатель ₽/$ + поле) и итоговая сумма «К оплате»
-   в одной строке, каждый по 50%; кнопка оплаты — отдельно, во всю ширину; на мобилке
-   сумма и итоговая строка идут друг под другом во всю ширину. */
-/* CSS Grid с именованными областями — место каждого элемента задано явно для каждого брейкпоинта отдельно, без flex-wrap/order и без зависимости от того, влезают ли элементы в одну строку (без случайных переносов из-за gap/округления). На мобилке: поле / лимиты / «К оплате» друг под другом. На десктопе: поле и «К оплате» — по 50% в одной строке, лимиты — отдельной строкой под обеими колонками (как и было). */
-.apply-amount-row{display:grid;grid-template-columns:1fr;grid-template-areas:"input" "limits" "total";gap:10px}
-.apply-amount-input-group{display:flex;align-items:stretch;grid-area:input}
-.apply-amount-total{margin:0;display:flex;align-items:center;font-weight:800;color:#101010;font-size:.95rem;grid-area:total}
-.apply-amount-row [data-topup-limits]{grid-area:limits}
-@media(min-width:640px){
-    .apply-amount-row{grid-template-columns:1fr 1fr;grid-template-areas:"input total" "limits limits";gap:14px}
-    .apply-amount-input-group{min-width:0}
-    .apply-amount-total{padding-left:4px}
+/* Шаг 2 (пополнение баланса) формы оформления карты — по содержанию как в личном кабинете (NewCardOrderPage.tsx): слева —
+   сумма пополнения и способы оплаты, справа — состав платежа и кнопка оплаты, между ними —
+   вертикальный разделитель. На мобилке (до 1024px, та же граница, что и у сайдбара/формы
+   выше, lg: у .apply-panel) колонки идут друг под другом, разделитель — горизонтальный. */
+.apply-topup-grid{display:grid;grid-template-columns:1fr;gap:28px}
+.apply-topup-divider{height:1px;background:var(--border)}
+@media(min-width:1024px){
+    .apply-topup-grid{grid-template-columns:1fr 1px 280px;gap:36px}
+    .apply-topup-divider{width:1px;height:auto;align-self:stretch}
 }
-.apply-field .apply-amount-input-group input{border-radius:14px;width:100%}
-/* Суффикс $ внутри поля суммы пополнения — поле всегда в долларах (см. app.js). */
-.apply-amount-input-group-usd{position:relative}
-.apply-amount-input-group-usd input{padding-right:38px}
-.apply-amount-suffix{position:absolute;top:50%;right:16px;transform:translateY(-50%);font-size:.95rem;font-weight:700;color:var(--muted);pointer-events:none}
+
+/* Заголовок раздела внутри формы выпуска карты («Сколько зачислить…», «Способы оплаты», «Состав
+   платежа») — то же оформление, что и в ЛК. */
+.apply-section-title{font-size:1rem;font-weight:800;letter-spacing:-.01em;color:var(--ink);margin-bottom:4px}
+.apply-section-subtitle{margin:0 0 4px;font-size:.8rem;color:var(--muted)}
+.apply-divider{height:1px;background:var(--border);margin:26px 0}
+
+/* Готовые суммы пополнения кнопками под полем ввода суммы (строятся в app.js по лимитам выбранной карты). */
+.apply-amount-presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.apply-preset-btn{padding:9px 15px;border-radius:999px;border:1.5px solid var(--border);background:#fff;font-size:.8rem;font-weight:700;color:var(--ink);cursor:pointer;transition:.2s}
+.apply-preset-btn:hover{border-color:#c9c5bf}
+.apply-preset-btn.is-active{border-color:var(--orange);background:#fff7f3;color:var(--orange-dark)}
+
+/* Блок «Состав платежа» справа — строки с названием/суммой и итоговая строка. */
+.apply-summary-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:18px}
+.apply-summary-row:first-of-type{margin-top:16px}
+.apply-summary-label{font-size:.88rem;font-weight:700;color:var(--ink)}
+.apply-summary-sub{margin-top:2px;font-size:.75rem;color:var(--muted)}
+.apply-summary-amount{font-size:.9rem;font-weight:800;color:var(--ink);white-space:nowrap}
+.apply-summary-total-row{display:flex;align-items:center;justify-content:space-between;font-size:1.05rem;font-weight:800;color:#101010}
+.apply-summary-balance{margin-top:6px;font-size:.82rem;color:var(--muted)}
+
+/* Группа поля суммы пополнения — рамка визуально одна на input и суффикс «$» справа (сам input без
+   собственной рамки, см. правило ниже). */
+.apply-amount-input-group{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:14px;background:#fff;transition:border-color .2s}
+.apply-amount-input-group:focus-within{border-color:var(--orange)}
+.apply-field .apply-amount-input-group input{border:none;border-radius:14px;width:100%;flex:1 1 auto;min-width:0;background:transparent}
+.apply-field .apply-amount-input-group input:focus{border-color:transparent}
+.apply-amount-suffix{display:flex;align-items:center;gap:10px;padding-right:16px;font-size:.95rem;font-weight:800;color:var(--muted);white-space:nowrap}
+.apply-amount-suffix:before{content:"";width:1px;height:22px;background:var(--border)}
 /* Лимиты пополнения выбранной карты под полем суммы (заполняется в app.js). */
 [data-topup-limits]:empty{display:none}
 .apply-topup-note{margin-top:14px;text-align:center}

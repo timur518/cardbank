@@ -783,6 +783,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const amountInput = form.querySelector('[data-topup-amount-input]');
         const totalEl = form.querySelector('[data-topup-total]');
         const limitsEl = form.querySelector('[data-topup-limits]');
+        const issueLabelEl = form.querySelector('[data-topup-issue-label]');
+        const issueAmountEl = form.querySelector('[data-topup-issue-amount]');
+        const amountLabelEl = form.querySelector('[data-topup-amount-label]');
+        const amountRubEl = form.querySelector('[data-topup-amount-rub]');
+        const balanceEl = form.querySelector('[data-topup-balance]');
+        const presetsEl = form.querySelector('[data-amount-presets]');
         const usdRate = parseFloat(form.dataset.usdRate) || 0;
 
         if (!amountInput || !totalEl) {
@@ -793,9 +799,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const selectedCard = () => document.querySelector('input[name="card_product"]:checked');
 
+        // Заготовленные суммы пополнения кнопками — минимум выбранной карты плюс несколько типовых сумм, но
+        // только те, что укладываются в [issue_min_amount; issue_max_amount] карты (и без дублей, если минимум
+        // совпадает с одной из типовых сумм) — та же логика, что и в NewCardOrderPage.tsx (ЛК).
+        const renderPresets = () => {
+            if (!presetsEl) {
+                return;
+            }
+
+            const card = selectedCard();
+            const min = parseFloat(card?.dataset.issueMin) || 10;
+            const max = parseFloat(card?.dataset.issueMax);
+            const maxLimit = Number.isFinite(max) ? max : null;
+
+            const candidates = [
+                { value: min, label: `${Math.round(min)}$ минимум` },
+                { value: 50, label: '50$' },
+                { value: 100, label: '100$' },
+                { value: 300, label: '300$' },
+            ];
+            const seen = new Set();
+
+            presetsEl.innerHTML = '';
+
+            candidates.forEach(({ value, label }) => {
+                if (value < min || (maxLimit !== null && value > maxLimit) || seen.has(value)) {
+                    return;
+                }
+
+                seen.add(value);
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'apply-preset-btn';
+                button.textContent = label;
+                button.addEventListener('click', () => {
+                    amountInput.value = String(value);
+                    amountInput.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+
+                presetsEl.appendChild(button);
+            });
+        };
+
         const updateTotal = () => {
             const topupUsd = parseFloat(amountInput.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
             const card = selectedCard();
+            const productName = card?.dataset.productName ?? '';
             const priceRub = parseFloat(card?.dataset.priceRub) || 0;
             const feePercent = parseFloat(card?.dataset.feePercent) || 0;
 
@@ -803,7 +853,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const topupRub = (topupUsd + feeUsd) * usdRate;
             const totalRub = priceRub + topupRub;
 
-            totalEl.textContent = `К оплате: ${formatRub(totalRub)}`;
+            if (issueLabelEl) {
+                issueLabelEl.textContent = `Выпуск карты ${productName}`.trim();
+            }
+            if (issueAmountEl) {
+                issueAmountEl.textContent = formatRub(priceRub);
+            }
+            if (amountLabelEl) {
+                amountLabelEl.textContent = `Пополнение на ${topupUsd || 0}$`;
+            }
+            if (amountRubEl) {
+                amountRubEl.textContent = formatRub(topupRub);
+            }
+            totalEl.textContent = formatRub(totalRub);
+            if (balanceEl) {
+                balanceEl.textContent = `На балансе карты будет ${topupUsd || 0} $`;
+            }
+
+            // Активная кнопка-пресет — если введённая сумма совпадает с одной из кнопок.
+            if (presetsEl) {
+                [...presetsEl.querySelectorAll('.apply-preset-btn')].forEach((button) => {
+                    const value = parseFloat(button.textContent.replace(/[^\d.]/g, ''));
+                    button.classList.toggle('is-active', value === topupUsd);
+                });
+            }
 
             if (limitsEl) {
                 // Лимиты суммы при выпуске карты (issue_min_amount/issue_max_amount) — не путать с лимитами пополнения уже выпущенной карты (topup_min_amount/topup_max_amount) — это разные лимиты CardsPro.
@@ -817,8 +890,12 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         amountInput.addEventListener('input', updateTotal);
-        document.querySelectorAll('input[name="card_product"]').forEach((input) => input.addEventListener('change', updateTotal));
+        document.querySelectorAll('input[name="card_product"]').forEach((input) => input.addEventListener('change', () => {
+            renderPresets();
+            updateTotal();
+        }));
 
+        renderPresets();
         updateTotal();
     });
 
