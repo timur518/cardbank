@@ -87,7 +87,7 @@ class OverviewStatsWidget extends StatsOverviewWidget
             ->toArray();
 
         return Stat::make('Оборот по картам', $this->formatMoneyByCurrency($totalByCurrency))
-            ->description('Сумма всех операций по картам')
+            ->description('Сумма всех транзакций')
             ->icon(Heroicon::OutlinedBanknotes)
             ->color('primary');
     }
