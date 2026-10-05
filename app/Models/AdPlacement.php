@@ -56,6 +56,9 @@ class AdPlacement extends Model
      * Пользователи, зарегистрировавшиеся с UTM-меткой кампании (User::utm_campaign), совпадающей
      * с указанной у этого размещения — источник для счётчиков регистраций и выручки ниже.
      * Утм-метки сохраняются на пользователе при регистрации из cookie лендинга/СПА (см. AuthController::register()/registerLanding()).
+     *
+     * Учитываются только регистрации в период показа размещения (start_date/end_date) — если дата
+     * не задана, соответствующая граница не ограничивает.
      */
     protected function matchedUsersQuery(): ?\Illuminate\Database\Eloquent\Builder
     {
@@ -63,7 +66,17 @@ class AdPlacement extends Model
             return null;
         }
 
-        return User::query()->where('utm_campaign', $this->utm_campaign);
+        $query = User::query()->where('utm_campaign', $this->utm_campaign);
+
+        if ($this->start_date) {
+            $query->where('created_at', '>=', $this->start_date->copy()->startOfDay());
+        }
+
+        if ($this->end_date) {
+            $query->where('created_at', '<=', $this->end_date->copy()->endOfDay());
+        }
+
+        return $query;
     }
 
     /**
@@ -88,12 +101,23 @@ class AdPlacement extends Model
             return 0.0;
         }
 
-        return (float) Income::query()
+        $query = Income::query()
             ->whereIn('user_id', $userIds)
             ->whereIn('type', [IncomeType::CardIssue, IncomeType::CardTopup])
             ->where('payment_status', IncomePaymentStatus::Paid)
-            ->where('currency', 'RUB')
-            ->sum('amount');
+            ->where('currency', 'RUB');
+
+        // Доход тоже ограничиваем периодом показа размещения, а не всей жизнью пользователя — например, пополнение
+        // спустя месяцы после окончания кампании в выручку этого размещения уже не попадает.
+        if ($this->start_date) {
+            $query->where('created_at', '>=', $this->start_date->copy()->startOfDay());
+        }
+
+        if ($this->end_date) {
+            $query->where('created_at', '<=', $this->end_date->copy()->endOfDay());
+        }
+
+        return (float) $query->sum('amount');
     }
 
     /**
