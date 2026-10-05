@@ -643,10 +643,10 @@ document.addEventListener('DOMContentLoaded', () => {
         el.textContent = '';
     }
 
-    // Шаг 1: регистрация аккаунта (POST /api/v1/auth/register-landing — без поля пароля,
-    // он генерируется на бэкенде и приходит письмом), затем переход к шагу оплаты.
-    // Успешная регистрация сразу логинит через сессию (как и в ЛК), поэтому второй шаг
-    // (выпуск карты + оплата) может сразу обращаться к POST /api/v1/orders/issue без отдельного входа.
+    // Регистрация аккаунта (POST /api/v1/auth/register-landing — без поля пароля, он генерируется
+    // на бэкенде и приходит письмом). Успешная регистрация сразу логинит пользователя через сессию,
+    // поэтому после короткого прелоадера браузер редиректится в личный кабинет на экран выпуска карты
+    // (/cards/new) — там же, где и выбор карты, и пополнение, и оплата (см. NewCardOrderPage.tsx).
     document.querySelectorAll('[data-apply-form]').forEach((form) => {
         const wrap = form.closest('[data-apply-wrap]');
 
@@ -655,7 +655,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const loading = wrap.querySelector('[data-apply-step="loading"]');
-        const topup = wrap.querySelector('[data-apply-step="topup"]');
         const errorEl = form.querySelector('[data-apply-error]');
         const submitButton = form.querySelector('.apply-submit');
 
@@ -694,209 +693,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 form.classList.remove('is-current');
                 loading?.classList.add('is-current');
 
-                setTimeout(() => {
-                    loading?.classList.remove('is-current');
-                    topup?.classList.add('is-current');
-                }, 1200);
+                window.location.href = 'https://mne.mojno.cc/cards/new';
             } catch (error) {
                 showFormError(errorEl, firstApiErrorMessage(error.payload, 'Не удалось зарегистрироваться. Проверьте введённые данные.'));
                 submitButton?.removeAttribute('disabled');
             }
         });
-    });
-
-    // Шаг 2: оплата и выпуск карты (POST /api/v1/orders/issue — тот же эндпоинт, что и в ЛК,
-    // см. NewCardOrderPage.tsx): создаёт карту и инициирует оплату, браузер редиректится на payment_url шлюза.
-    document.querySelectorAll('[data-topup-form]').forEach((form) => {
-        const errorEl = form.querySelector('[data-topup-error]');
-        const submitButton = form.querySelector('.apply-submit');
-
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            hideFormError(errorEl);
-
-            const cardInput = document.querySelector('input[name="card_product"]:checked');
-            const payInput = form.querySelector('input[name="pay_method"]:checked');
-            const amountInput = form.querySelector('[data-topup-amount-input]');
-            const amount = parseFloat((amountInput?.value ?? '').replace(/[^\d.,]/g, '').replace(',', '.'));
-
-            if (!cardInput?.dataset.productId) {
-                showFormError(errorEl, 'Выберите карту.');
-                return;
-            }
-
-            if (!payInput) {
-                showFormError(errorEl, 'Выберите способ оплаты.');
-                return;
-            }
-
-            if (!amount || amount <= 0) {
-                showFormError(errorEl, 'Введите сумму пополнения.');
-                return;
-            }
-
-            submitButton?.setAttribute('disabled', 'disabled');
-
-            try {
-                const result = await apiPost('/api/v1/orders/issue', {
-                    card_product_id: Number(cardInput.dataset.productId),
-                    topup_amount: amount,
-                    topup_currency: 'USD',
-                    payment_method_id: Number(payInput.value),
-                });
-
-                if (result?.data?.payment_url) {
-                    window.location.href = result.data.payment_url;
-                } else {
-                    submitButton?.removeAttribute('disabled');
-                }
-            } catch (error) {
-                showFormError(errorEl, firstApiErrorMessage(error.payload, 'Не удалось оформить заказ. Попробуйте ещё раз.'));
-                submitButton?.removeAttribute('disabled');
-            }
-        });
-    });
-
-    // Форма пополнения баланса: селектор способа оплаты.
-    document.querySelectorAll('[data-pay-selector]').forEach((selector) => {
-        const options = [...selector.querySelectorAll('.apply-pay-option')];
-
-        options.forEach((option) => {
-            const input = option.querySelector('input[type="radio"]');
-
-            input?.addEventListener('change', () => {
-                options.forEach((other) => {
-                    other.classList.toggle('is-active', other === option);
-                });
-            });
-        });
-    });
-
-    // Форма пополнения баланса: итоговая сумма «К оплате» в рублях. Сумма пополнения всегда вводится в долларах.
-    //
-    // Формула повторяет OrderController::issue()/convertTopup() из ЛК: клиент платит
-    // цену карты (price_rub) плюс сумму пополнения, пересчитанную в рубли по курсу
-    // (data-usd-rate) с добавлением комиссии провайдера за пополнение
-    // (data-fee-percent из выбранной в сайдбаре карты) — сама сумма, которая попадёт
-    // на карту, от этой комиссии не зависит, платит её клиент сверху.
-    document.querySelectorAll('[data-topup-form]').forEach((form) => {
-        const amountInput = form.querySelector('[data-topup-amount-input]');
-        const totalEl = form.querySelector('[data-topup-total]');
-        const limitsEl = form.querySelector('[data-topup-limits]');
-        const issueLabelEl = form.querySelector('[data-topup-issue-label]');
-        const issueAmountEl = form.querySelector('[data-topup-issue-amount]');
-        const amountLabelEl = form.querySelector('[data-topup-amount-label]');
-        const amountRubEl = form.querySelector('[data-topup-amount-rub]');
-        const balanceEl = form.querySelector('[data-topup-balance]');
-        const presetsEl = form.querySelector('[data-amount-presets]');
-        const usdRate = parseFloat(form.dataset.usdRate) || 0;
-
-        if (!amountInput || !totalEl) {
-            return;
-        }
-
-        const formatRub = (value) => `${Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} ₽`;
-
-        const selectedCard = () => document.querySelector('input[name="card_product"]:checked');
-
-        // Заготовленные суммы пополнения кнопками — минимум выбранной карты плюс несколько типовых сумм, но
-        // только те, что укладываются в [issue_min_amount; issue_max_amount] карты (и без дублей, если минимум
-        // совпадает с одной из типовых сумм) — та же логика, что и в NewCardOrderPage.tsx (ЛК).
-        const renderPresets = () => {
-            if (!presetsEl) {
-                return;
-            }
-
-            const card = selectedCard();
-            const min = parseFloat(card?.dataset.issueMin) || 10;
-            const max = parseFloat(card?.dataset.issueMax);
-            const maxLimit = Number.isFinite(max) ? max : null;
-
-            const candidates = [
-                { value: min, label: `${Math.round(min)}$ минимум` },
-                { value: 50, label: '50$' },
-                { value: 100, label: '100$' },
-                { value: 300, label: '300$' },
-            ];
-            const seen = new Set();
-
-            presetsEl.innerHTML = '';
-
-            candidates.forEach(({ value, label }) => {
-                if (value < min || (maxLimit !== null && value > maxLimit) || seen.has(value)) {
-                    return;
-                }
-
-                seen.add(value);
-
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'apply-preset-btn';
-                button.textContent = label;
-                button.addEventListener('click', () => {
-                    amountInput.value = String(value);
-                    amountInput.dispatchEvent(new Event('input', { bubbles: true }));
-                });
-
-                presetsEl.appendChild(button);
-            });
-        };
-
-        const updateTotal = () => {
-            const topupUsd = parseFloat(amountInput.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
-            const card = selectedCard();
-            const productName = card?.dataset.productName ?? '';
-            const priceRub = parseFloat(card?.dataset.priceRub) || 0;
-            const feePercent = parseFloat(card?.dataset.feePercent) || 0;
-
-            const feeUsd = topupUsd * (feePercent / 100);
-            const topupRub = (topupUsd + feeUsd) * usdRate;
-            const totalRub = priceRub + topupRub;
-
-            if (issueLabelEl) {
-                issueLabelEl.textContent = `Выпуск карты ${productName}`.trim();
-            }
-            if (issueAmountEl) {
-                issueAmountEl.textContent = formatRub(priceRub);
-            }
-            if (amountLabelEl) {
-                amountLabelEl.textContent = `Пополнение на ${topupUsd || 0}$`;
-            }
-            if (amountRubEl) {
-                amountRubEl.textContent = formatRub(topupRub);
-            }
-            totalEl.textContent = formatRub(totalRub);
-            if (balanceEl) {
-                balanceEl.textContent = `На балансе карты будет ${topupUsd || 0} $`;
-            }
-
-            // Активная кнопка-пресет — если введённая сумма совпадает с одной из кнопок.
-            if (presetsEl) {
-                [...presetsEl.querySelectorAll('.apply-preset-btn')].forEach((button) => {
-                    const value = parseFloat(button.textContent.replace(/[^\d.]/g, ''));
-                    button.classList.toggle('is-active', value === topupUsd);
-                });
-            }
-
-            if (limitsEl) {
-                // Лимиты суммы при выпуске карты (issue_min_amount/issue_max_amount) — не путать с лимитами пополнения уже выпущенной карты (topup_min_amount/topup_max_amount) — это разные лимиты CardsPro.
-                const min = parseFloat(card?.dataset.issueMin);
-                const max = parseFloat(card?.dataset.issueMax);
-
-                limitsEl.textContent = Number.isFinite(min) && Number.isFinite(max)
-                    ? `Минимум ${Math.round(min)}$, максимум ${Math.round(max)}$`
-                    : '';
-            }
-        };
-
-        amountInput.addEventListener('input', updateTotal);
-        document.querySelectorAll('input[name="card_product"]').forEach((input) => input.addEventListener('change', () => {
-            renderPresets();
-            updateTotal();
-        }));
-
-        renderPresets();
-        updateTotal();
     });
 
     // Ротация подсказок внизу сайдбара формы оформления карты.
