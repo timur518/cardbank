@@ -37,16 +37,11 @@ class AdPlacementsTable
                     ->label('Стоимость')
                     ->money('RUB')
                     ->sortable(),
-                TextColumn::make('clicks_count')
-                    ->label('Переходов')
-                    ->sortable(),
                 TextColumn::make('registrations_count')
-                    ->label('Регистраций')
-                    ->sortable(),
+                    ->label('Регистраций'),
                 TextColumn::make('revenue_amount')
                     ->label('Заработано')
-                    ->money('RUB')
-                    ->sortable(),
+                    ->money('RUB'),
                 TextColumn::make('roi_label')
                     ->label('Окупаемость')
                     ->color(fn (AdPlacement $record) => (float) $record->revenue_amount >= (float) $record->cost_amount ? 'success' : 'danger'),

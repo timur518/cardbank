@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\IncomePaymentStatus;
+use App\Enums\IncomeType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -48,6 +50,50 @@ class AdPlacement extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class);
+    }
+
+    /**
+     * Пользователи, зарегистрировавшиеся с UTM-меткой кампании (User::utm_campaign), совпадающей
+     * с указанной у этого размещения — источник для счётчиков регистраций и выручки ниже.
+     * Утм-метки сохраняются на пользователе при регистрации из cookie лендинга/СПА (см. AuthController::register()/registerLanding()).
+     */
+    protected function matchedUsersQuery(): ?\Illuminate\Database\Eloquent\Builder
+    {
+        if (blank($this->utm_campaign)) {
+            return null;
+        }
+
+        return User::query()->where('utm_campaign', $this->utm_campaign);
+    }
+
+    /**
+     * Регистраций по этому размещению — считается на лету, а не хранится в БД (колонка
+     * registrations_count в таблице никем не заполняется и всегда равна 0), поэтому перекрываем аксессором.
+     */
+    public function getRegistrationsCountAttribute(): int
+    {
+        return $this->matchedUsersQuery()?->count() ?? 0;
+    }
+
+    /**
+     * Выручка от пользователей, пришедших по этой рекламной кампании (совпадение по utm_campaign) —
+     * сумма оплаченных выпусков/пополнений карт в рублях (тот же фильтр, что и в ProfitStatsWidget::grossProfitStat()).
+     * Так же, как и registrations_count, перекрывает статическую колонку revenue_amount, которая нигде не заполняется.
+     */
+    public function getRevenueAmountAttribute(): float
+    {
+        $userIds = $this->matchedUsersQuery()?->pluck('id');
+
+        if (blank($userIds)) {
+            return 0.0;
+        }
+
+        return (float) Income::query()
+            ->whereIn('user_id', $userIds)
+            ->whereIn('type', [IncomeType::CardIssue, IncomeType::CardTopup])
+            ->where('payment_status', IncomePaymentStatus::Paid)
+            ->where('currency', 'RUB')
+            ->sum('amount');
     }
 
     /**
