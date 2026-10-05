@@ -2,9 +2,10 @@
 
 namespace App\Enums;
 
+use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum ExpenseCategory: string implements HasLabel
+enum ExpenseCategory: string implements HasColor, HasLabel
 {
     case CardIssue = 'card_issue';
     case CardTopup = 'card_topup';
@@ -26,6 +27,17 @@ enum ExpenseCategory: string implements HasLabel
             self::ProjectUpkeep => 'Содержание проекта',
             self::AdPlacement => 'Рекламное размещение',
             self::Other => 'Прочие',
+        };
+    }
+
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::CardTopup => 'success',
+            self::CardIssue => 'info',
+            self::PaidRefund, self::Penalty => 'danger',
+            self::Salary, self::ProjectUpkeep, self::AdPlacement => 'warning',
+            self::Other => 'gray',
         };
     }
 }

@@ -2,9 +2,10 @@
 
 namespace App\Enums;
 
+use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 
-enum IncomeType: string implements HasLabel
+enum IncomeType: string implements HasColor, HasLabel
 {
     case CardIssue = 'card_issue';
     case CardTopup = 'card_topup';
@@ -20,6 +21,17 @@ enum IncomeType: string implements HasLabel
             self::PaidRefund => 'Платный возврат',
             self::Penalty => 'Штраф',
             self::Other => 'Прочие',
+        };
+    }
+
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::CardTopup => 'success',
+            self::CardIssue => 'info',
+            self::PaidRefund => 'warning',
+            self::Penalty => 'danger',
+            self::Other => 'gray',
         };
     }
 }

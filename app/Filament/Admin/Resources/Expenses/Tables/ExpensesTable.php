@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\Expenses\Tables;
 
 use App\Enums\ExpenseCategory;
+use App\Models\Expense;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -21,7 +22,11 @@ class ExpensesTable
             ->emptyStateIcon('heroicon-o-arrow-trending-down')
             ->columns([
                 TextColumn::make('id')->label('ID')->sortable(),
-                TextColumn::make('date')->label('Дата')->date('d.m.Y')->sortable(),
+                TextColumn::make('date')
+                    ->label('Дата')
+                    ->date('d.m.Y')
+                    ->description(fn (Expense $record) => $record->creator?->name)
+                    ->sortable(),
                 TextColumn::make('category')
                     ->label('Статья расходов')
                     ->badge(),
@@ -39,9 +44,6 @@ class ExpensesTable
                 TextColumn::make('comment')
                     ->label('Комментарий')
                     ->limit(40)
-                    ->placeholder('—'),
-                TextColumn::make('creator.name')
-                    ->label('Кто внёс')
                     ->placeholder('—'),
             ])
             ->filters([

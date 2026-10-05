@@ -14,7 +14,6 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -27,6 +26,7 @@ class CardsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('id', 'desc')
             ->emptyStateHeading('Карт пока нет')
             ->emptyStateDescription('Здесь появятся карты, как только клиенты начнут их выпускать.')
             ->emptyStateIcon('heroicon-o-credit-card')
@@ -61,9 +61,6 @@ class CardsTable
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge(),
-                IconColumn::make('is_sandbox')
-                    ->label('Песочница')
-                    ->boolean(),
             ])
             ->filters([
                 SelectFilter::make('status')

@@ -34,16 +34,15 @@ class RecentCardTransactionsWidget extends TableWidget
             ->emptyStateHeading('Операций по картам пока нет')
             ->emptyStateIcon('heroicon-o-arrows-right-left')
             ->columns([
-                TextColumn::make('card.masked_number')
-                    ->label('Карта'),
                 TextColumn::make('card.user.email')
-                    ->label('Пользователь'),
-                TextColumn::make('type')
-                    ->label('Тип операции')
-                    ->badge(),
+                    ->label('Пользователь')
+                    ->description(fn (CardTransaction $record) => $record->card?->masked_number),
                 TextColumn::make('amount')
                     ->label('Сумма')
                     ->money(fn (CardTransaction $record) => $record->currency),
+                TextColumn::make('type')
+                    ->label('Тип операции')
+                    ->badge(),
                 TextColumn::make('status')
                     ->label('Статус')
                     ->badge(),

@@ -40,9 +40,7 @@ class IncomesTable
                     ->badge(),
                 TextColumn::make('user.email')
                     ->label('Пользователь')
-                    ->placeholder('—'),
-                TextColumn::make('card.masked_number')
-                    ->label('Карта')
+                    ->description(fn (Income $record) => $record->card?->masked_number)
                     ->placeholder('—'),
                 TextColumn::make('created_at')->label('Дата')->dateTime('d.m.Y H:i')->sortable(),
             ])
