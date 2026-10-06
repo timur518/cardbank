@@ -9,6 +9,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class NotificationForm
@@ -24,7 +25,8 @@ class NotificationForm
                             ->label('Пользователь')
                             ->relationship('user', 'email')
                             ->searchable()
-                            ->required(),
+                            ->placeholder('— всем пользователям —')
+                            ->helperText('Оставьте пустым, чтобы показать это уведомление всем пользователям (рассылка) — одной записью вместо выбора конкретного человека.'),
                         Select::make('type')
                             ->label('Категория')
                             ->options(NotificationType::class)
@@ -50,6 +52,10 @@ class NotificationForm
                         DateTimePicker::make('read_at')
                             ->label('Прочитано')
                             ->helperText('Оставьте пустым, если уведомление ещё не прочитано.')
+                            // У общих уведомлений (без пользователя) прочтение хранится построчно в
+                            // notification_reads (см. вкладку «Просмотрели» на странице уведомления), это поле
+                            // для них не имеет смысла.
+                            ->visible(fn (Get $get): bool => filled($get('user_id')))
                             ->columnSpanFull(),
                     ]),
             ]);

@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\Notifications\Pages\CreateNotification;
 use App\Filament\Admin\Resources\Notifications\Pages\EditNotification;
 use App\Filament\Admin\Resources\Notifications\Pages\ListNotifications;
 use App\Filament\Admin\Resources\Notifications\Pages\ViewNotification;
+use App\Filament\Admin\Resources\Notifications\RelationManagers\ReadsRelationManager;
 use App\Filament\Admin\Resources\Notifications\Schemas\NotificationForm;
 use App\Filament\Admin\Resources\Notifications\Schemas\NotificationInfolist;
 use App\Filament\Admin\Resources\Notifications\Tables\NotificationsTable;
@@ -47,6 +48,13 @@ class NotificationResource extends Resource
     public static function table(Table $table): Table
     {
         return NotificationsTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            ReadsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

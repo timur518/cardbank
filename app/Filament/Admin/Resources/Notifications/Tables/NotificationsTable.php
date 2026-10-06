@@ -9,7 +9,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
@@ -30,7 +29,10 @@ class NotificationsTable
             ->columns([
                 TextColumn::make('user.email')
                     ->label('Пользователь')
-                    ->searchable(),
+                    ->searchable()
+                    // null = общее уведомление без получателя (см. Notification::notifyAll()) — видно
+                    // всем пользователям сразу в ленте ЛК.
+                    ->placeholder('Всем пользователям'),
                 TextColumn::make('type')
                     ->label('Категория')
                     ->badge(),
@@ -38,10 +40,13 @@ class NotificationsTable
                     ->label('Заголовок')
                     ->searchable()
                     ->limit(50),
-                IconColumn::make('read_at')
+                TextColumn::make('read_status')
                     ->label('Прочитано')
-                    ->boolean()
-                    ->getStateUsing(fn ($record) => (bool) $record->read_at),
+                    // У личного уведомления — просто да/нет (read_at), у общего — счётчик просмотревших из
+                    // notification_reads (полный список — на вкладке «Просмотрели» на странице уведомления).
+                    ->getStateUsing(fn ($record) => $record->user_id !== null
+                        ? ($record->read_at ? 'Да' : 'Нет')
+                        : "{$record->reads()->count()} польз."),
                 TextColumn::make('created_at')
                     ->label('Дата')
                     ->dateTime('d.m.Y H:i')

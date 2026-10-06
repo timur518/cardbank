@@ -22,7 +22,7 @@ class NotificationResource extends JsonResource
             // Маршрут SPA (например /cards/{uuid}) или внешняя ссылка — задаётся в админке;
             // null, если уведомление не кликабельно.
             'action_url' => $this->action_url,
-            'is_read' => $this->read_at !== null,
+            'is_read' => $this->isReadBy($request->user()->id),
             'created_at' => optional($this->created_at)->toIso8601String(),
         ];
     }
