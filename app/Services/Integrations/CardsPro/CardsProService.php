@@ -554,10 +554,15 @@ class CardsProService implements CardProviderIntegration
     /**
      * Определяет по тексту причины отклонения (поле `description` вебхука CARD_TRANSACTION), был ли
      * это отказ именно из-за нехватки средств на балансе карты — у CardsPro нет официального справочника
-     * кодов отклонения, поэтому это эвристика по ключевым словам. Подтверждённый на практике пример
-     * ДРУГОЙ причины — "EXPIRATION DATE ERROR" (неверно указан срок действия карты при оплате у мерчанта),
-     * которая НЕ должна определяться как нехватка средств (раньше любое отклонение считалось нехваткой
-     * средств без проверки причины — отсюда и ошибочное уведомление пользователю).
+     * кодов отклонения, поэтому это эвристика по ключевым словам, подтверждённым на практике:
+     * - "INSUFFICIENT FUNDS"/"NSF" — прямое указание на нехватку средств.
+     * - "CYCLE AMOUNT LIMIT EXCEEDED" и "Card-You have exceeded the cumulative amount limit for this
+     *   card." — на практике это тоже нехватка баланса (совокупный/циклический лимит карты
+     *   фактически равен остатку на нём), подтверждено виденными в личном кабинете CardsPro
+     *   пояснениями к конкретным отказам.
+     * Подтверждённый на практике пример причины, НЕ связанной с балансом — "EXPIRATION DATE ERROR" (неверно
+     * указан срок действия карты при оплате у мерчанта), раньше любое отклонение считалось
+     * нехваткой средств без проверки причины — отсюда и ошибочное уведомление пользователю).
      */
     public static function isInsufficientFundsDecline(?string $reason): bool
     {
@@ -567,7 +572,7 @@ class CardsProService implements CardProviderIntegration
 
         $reason = mb_strtoupper($reason);
 
-        foreach (['INSUFFICIENT', 'NSF'] as $needle) {
+        foreach (['INSUFFICIENT', 'NSF', 'CYCLE AMOUNT LIMIT', 'CUMULATIVE AMOUNT LIMIT'] as $needle) {
             if (str_contains($reason, $needle)) {
                 return true;
             }
@@ -580,6 +585,10 @@ class CardsProService implements CardProviderIntegration
      * Человеко-понятная русская подсказка для причины отклонения (поле `description`), если она нам
      * известна — иначе null (тогда уведомление/письмо показывает общий текст без конкретики, а сырой
      * текст причины от провайдера виден в деталях транзакции в ЛК и в `provider_messages` в админке).
+     * Сопоставление со списком, найденным в личном кабинете CardsPro:
+     * - "CYCLE AMOUNT LIMIT EXCEEDED" — Недостаточный баланс для оплаты подписки;
+     * - "Card-You have exceeded the cumulative amount limit for this card." — Недостаточный баланс для оплаты;
+     * - "CUSTOMER AUTH DECLINE" — Привязка/авторизация карты отклонена.
      * Список пополняется по мере появления новых подтверждённых формулировок от CardsPro.
      */
     public static function translateDeclineReason(?string $reason): ?string
@@ -588,8 +597,14 @@ class CardsProService implements CardProviderIntegration
             return null;
         }
 
-        return match (mb_strtoupper(trim($reason))) {
-            'EXPIRATION DATE ERROR' => 'Неверно указан срок действия карты при оплате — проверьте, что вводите срок действия именно этой карты.',
+        $upper = mb_strtoupper(trim($reason));
+
+        return match (true) {
+            str_contains($upper, 'EXPIRATION DATE ERROR') => 'Неверно указан срок действия карты при оплате — проверьте, что вводите срок действия именно этой карты.',
+            str_contains($upper, 'CYCLE AMOUNT LIMIT') => 'Недостаточный баланс для оплаты подписки.',
+            str_contains($upper, 'CUMULATIVE AMOUNT LIMIT') => 'Недостаточный баланс для оплаты.',
+            str_contains($upper, 'CUSTOMER AUTH DECLINE') => 'Привязка/авторизация карты отклонена.',
+            str_contains($upper, 'MAXIMUM SINGLE TRANSACTION') => 'Превышен лимит на сумму одной операции по этой карте.',
             default => null,
         };
     }
