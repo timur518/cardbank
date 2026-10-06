@@ -39,7 +39,8 @@ class StaffForm
                         Select::make('roles')
                             ->label('Роль')
                             ->relationship('roles', 'name')
-                            ->options(fn () => Role::query()->pluck('name', 'id'))
+                            // Только роли сотрудников — роль customer здесь не назначить, см. StaffResource::getEloquentQuery().
+                            ->options(fn () => Role::query()->whereIn('name', ['super_admin', 'manager'])->pluck('name', 'id'))
                             ->searchable()
                             ->preload()
                             ->required(),

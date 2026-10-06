@@ -33,9 +33,14 @@ class StaffResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    /** Только администраторы и менеджеры — клиентов (роль customer) здесь не показываем —
+     * у них своя учётка, не связанная со штатом/доступом в админку. */
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->whereHas('roles');
+        return parent::getEloquentQuery()->whereHas(
+            'roles',
+            fn (Builder $query) => $query->whereIn('name', ['super_admin', 'manager']),
+        );
     }
 
     public static function form(Schema $schema): Schema

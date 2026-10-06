@@ -54,7 +54,7 @@ class StaffTable
                 SelectFilter::make('roles')
                     ->label('Роль')
                     ->relationship('roles', 'name')
-                    ->options(fn () => Role::query()->pluck('name', 'id')),
+                    ->options(fn () => Role::query()->whereIn('name', ['super_admin', 'manager'])->pluck('name', 'id')),
             ])
             ->recordActions([
                 EditAction::make(),
