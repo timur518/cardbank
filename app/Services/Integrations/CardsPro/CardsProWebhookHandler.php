@@ -402,6 +402,11 @@ class CardsProWebhookHandler
         // сольёт расчёт с его холдом в одну запись вместо второй строки на ту же покупку.
         $originTxId = ($payload['originTxnId'] ?? null) !== null ? (string) $payload['originTxnId'] : null;
 
+        // Причина отклонения приходит в поле `description` (например, "EXPIRATION DATE ERROR",
+        // "INSUFFICIENT FUNDS") — именно она используется ниже, чтобы не показывать пользователю
+        // текст про нехватку средств, когда отклонение по другой причине (например, верный срок действия).
+        $declineReason = $payload['description'] ?? $payload['declineReason'] ?? null;
+
         $result = CardTransaction::upsertFromProvider($card->id, [
             'provider_tx_id' => $providerTxId,
             'origin_tx_id' => $originTxId,
@@ -412,7 +417,7 @@ class CardsProWebhookHandler
             'currency' => $payload['billCurrency'] ?? $card->currency,
             'merchant' => $payload['merchantName'] ?? null,
             'status' => $status,
-            'decline_reason' => $payload['declineReason'] ?? null,
+            'decline_reason' => $declineReason,
             // CardsPro отдаёт txDate без явного offset/`Z`, но фактически это всегда UTC —
             // parseProviderTimestamp() трактует строку как UTC и конвертирует в таймзону приложения.
             'occurred_at' => CardsProService::parseProviderTimestamp($payload['txDate'] ?? null),
@@ -431,13 +436,21 @@ class CardsProWebhookHandler
             $formattedAmount = NotificationEvent::money($amount, $payload['billCurrency'] ?? $card->currency);
             $merchant = $payload['merchantName'] ?? null;
 
-            // Отправка уведомления «Недостаточно средств» — на этих картах отклон почти всегда именно из-за нехватки баланса.
+            // Раньше любое отклонение безусловно считалось нехваткой средств (из-за бага с именем поля выше
+            // decline_reason всегда был null, и проверять было нечего), из-за чего приходило ложное уведомление
+            // про баланс даже при отклоне по другой причине (например, верный срок действия).
+            // Теперь ветвимся по реальному тексту причины.
+            $insufficientFunds = CardsProService::isInsufficientFundsDecline($declineReason);
+            $reasonHint = CardsProService::translateDeclineReason($declineReason);
+
             Notification::notify($card->user, NotificationEvent::CardPurchaseDeclined, [
                 'last4' => $card->card_last4,
                 'amount' => $formattedAmount,
                 'merchant' => $merchant,
+                'insufficient_funds' => $insufficientFunds,
+                'reason' => $reasonHint,
             ], '/cards/'.$card->uuid);
-            SafeMailer::send($card->user->email, new InsufficientFundsMail($card, $formattedAmount, $merchant));
+            SafeMailer::send($card->user->email, new InsufficientFundsMail($card, $formattedAmount, $merchant, $insufficientFunds, $reasonHint));
         }
 
         // Админ-уведомление по покупке шлёт два варианта: новый холд (Pending — некоторые

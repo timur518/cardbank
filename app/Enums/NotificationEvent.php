@@ -15,7 +15,10 @@ use App\Models\Notification;
  * Параметры ($params), которых ожидает body() каждого события (передаются в
  * Notification::notify(), сохраняются как есть и в Notification.data):
  * - CardIssued, CardFrozen, CardUnfrozen, CardClosed: 'last4'
- * - CardPurchaseDeclined: 'last4', 'amount' (уже отформатированная строка, см. money()), 'merchant' (?string)
+ * - CardPurchaseDeclined: 'last4', 'amount' (уже отформатированная строка, см. money()), 'merchant' (?string),
+ *   'insufficient_funds' (bool — была ли причина отклонения именно нехваткой средств,
+ *   см. CardsProService::isInsufficientFundsDecline()), 'reason' (?string — человеко-понятная русская подсказка
+ *   для причины отклонения, если она известна, см. CardsProService::translateDeclineReason())
  * - TopupSuccess: 'last4', 'amount', 'balance' (отформатированные строки)
  * - TopupFailed: 'last4', 'amount'
  * - PasswordChanged: 'datetime' (отформатированная строка)
@@ -81,7 +84,7 @@ enum NotificationEvent
             self::CardFrozen => 'Карта заморожена',
             self::CardUnfrozen => 'Карта разморожена',
             self::CardClosed => 'Карта закрыта',
-            self::CardPurchaseDeclined => 'Недостаточно средств',
+            self::CardPurchaseDeclined => ($params['insufficient_funds'] ?? true) ? 'Недостаточно средств' : 'Платёж отклонён',
             self::TopupSuccess => 'Баланс пополнен',
             self::TopupFailed => 'Пополнение не прошло',
             self::PasswordChanged => 'Пароль изменён',
@@ -139,9 +142,23 @@ enum NotificationEvent
     {
         $merchant = $params['merchant'] ?? null;
 
-        return $merchant
-            ? "Покупка на {$params['amount']} отклонена. Избегайте блокировки карты! Частые оплаты с нулевым балансом могут ограничить доступ к карте. Рекомендуем регулярно проверять баланс и пополнять его при необходимости."
-            : "Избегайте блокировки карты! Покупка на {$params['amount']} по карте •••• {$params['last4']} отклонена. Неудачные попытки оплаты могут ограничить доступ к карте. Рекомендуем регулярно проверять баланс и пополнять его при необходимости.";
+        // Старое поведение по умолчанию (без явной передачи insufficient_funds) сохраняем, чтобы не ломать
+        // вызовы этого события из других мест кода (если такие есть), но теперь это ветка только для
+        // подтверждённой нехватки средств.
+        if ($params['insufficient_funds'] ?? true) {
+            return $merchant
+                ? "Покупка на {$params['amount']} отклонена. Избегайте блокировки карты! Частые оплаты с нулевым балансом могут ограничить доступ к карте. Рекомендуем регулярно проверять баланс и пополнять его при необходимости."
+                : "Избегайте блокировки карты! Покупка на {$params['amount']} по карте •••• {$params['last4']} отклонена. Неудачные попытки оплаты могут ограничить доступ к карте. Рекомендуем регулярно проверять баланс и пополнять его при необходимости.";
+        }
+
+        // Отклонение по другой причине (например, верный срок действия) — не говорим про баланс и блокировку,
+        // вместо этого показываем переведённую подсказку причины, если она известна.
+        $reason = $params['reason'] ?? null;
+        $target = $merchant ? "покупки в {$merchant}" : "покупки по карте •••• {$params['last4']}";
+
+        return $reason
+            ? "Оплата {$target} на {$params['amount']} отклонена. {$reason}"
+            : "Оплата {$target} на {$params['amount']} отклонена. Если это была ваша операция, попробуйте ещё раз позже или обратитесь в поддержку.";
     }
 
     /**

@@ -467,7 +467,10 @@ class CardsProService implements CardProviderIntegration
             'commission_amount' => isset($payload['fee']) ? $fee : null,
             'currency' => (string) ($payload['billCurrency'] ?? ''),
             'merchant' => $payload['merchantName'] ?? null,
-            'decline_reason' => $payload['declineReason'] ?? null,
+            // CardsPro присылает причину отклонения в вебхуке CARD_TRANSACTION в поле `description`
+            // (например, "EXPIRATION DATE ERROR", "INSUFFICIENT FUNDS") — `declineReason` оставлен как
+            // запасной вариант на случай другого формата, но реальные вебхуки используют именно `description`.
+            'decline_reason' => $payload['description'] ?? $payload['declineReason'] ?? null,
             'occurred_at' => self::parseProviderTimestamp($payload['txDate'] ?? null),
             'balance_delta' => $balanceSign * $amount,
         ];
@@ -503,7 +506,7 @@ class CardsProService implements CardProviderIntegration
             'commission_amount' => isset($payload['transactionCommission']) ? (float) $payload['transactionCommission'] : null,
             'currency' => (string) ($payload['cardCurrency'] ?? ''),
             'merchant' => $payload['transactionRecipient'] ?? null,
-            'decline_reason' => $payload['declineReason'] ?? null,
+            'decline_reason' => $payload['description'] ?? $payload['declineReason'] ?? null,
             'occurred_at' => self::parseProviderTimestamp($payload['date'] ?? null),
             'balance_delta' => $balanceSign * $amount,
         ];
@@ -545,6 +548,49 @@ class CardsProService implements CardProviderIntegration
             'verification_expense' => [CardTransactionType::Purchase, CardTransactionStatus::Success, -1],
             'maintenance_fee' => [CardTransactionType::Fee, CardTransactionStatus::Success, -1],
             default => [CardTransactionType::Purchase, CardTransactionStatus::Pending, 0],
+        };
+    }
+
+    /**
+     * Определяет по тексту причины отклонения (поле `description` вебхука CARD_TRANSACTION), был ли
+     * это отказ именно из-за нехватки средств на балансе карты — у CardsPro нет официального справочника
+     * кодов отклонения, поэтому это эвристика по ключевым словам. Подтверждённый на практике пример
+     * ДРУГОЙ причины — "EXPIRATION DATE ERROR" (неверно указан срок действия карты при оплате у мерчанта),
+     * которая НЕ должна определяться как нехватка средств (раньше любое отклонение считалось нехваткой
+     * средств без проверки причины — отсюда и ошибочное уведомление пользователю).
+     */
+    public static function isInsufficientFundsDecline(?string $reason): bool
+    {
+        if (! $reason) {
+            return false;
+        }
+
+        $reason = mb_strtoupper($reason);
+
+        foreach (['INSUFFICIENT', 'NSF'] as $needle) {
+            if (str_contains($reason, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Человеко-понятная русская подсказка для причины отклонения (поле `description`), если она нам
+     * известна — иначе null (тогда уведомление/письмо показывает общий текст без конкретики, а сырой
+     * текст причины от провайдера виден в деталях транзакции в ЛК и в `provider_messages` в админке).
+     * Список пополняется по мере появления новых подтверждённых формулировок от CardsPro.
+     */
+    public static function translateDeclineReason(?string $reason): ?string
+    {
+        if (! $reason) {
+            return null;
+        }
+
+        return match (mb_strtoupper(trim($reason))) {
+            'EXPIRATION DATE ERROR' => 'Неверно указан срок действия карты при оплате — проверьте, что вводите срок действия именно этой карты.',
+            default => null,
         };
     }
 
