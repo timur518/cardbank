@@ -9,6 +9,7 @@ import { CardChoiceGridSkeleton } from '../../components/common/Skeleton';
 import { CardProductChoice } from '../../components/orders/CardProductChoice';
 import { PaymentMethodOption } from '../../components/orders/PaymentMethodOption';
 import { useTopupQuote } from '../../hooks/useTopupQuote';
+import { trackAddToCart, trackProductListView, storePendingPurchase } from '../../utils/ecommerce';
 import { formatRub } from '../../utils/format';
 
 type OrderStep = 'select' | 'topup';
@@ -46,6 +47,15 @@ export function NewCardOrderPage() {
                 setProducts(loadedProducts);
                 setMethods(loadedMethods);
                 setSelectedMethodId(loadedMethods[0]?.id ?? null);
+
+                // Эл.коммерция: открытие списка карточных продуктов на шаге 1.
+                trackProductListView(
+                    loadedProducts.map((product) => ({
+                        id: String(product.id),
+                        name: product.name,
+                        price: Number(product.price_rub),
+                    })),
+                );
             })
             .catch((error) => setLoadError(extractErrorMessage(error, 'Не удалось загрузить каталог карт.')))
             .finally(() => setIsLoading(false));
@@ -117,6 +127,16 @@ export function NewCardOrderPage() {
             });
 
             if (result.payment_url) {
+                // Эл.коммерция: сохраняем заказ — событие purchase отправится после возврата
+                // клиента со страницы оплаты (см. DashboardLayout.tsx / flushPendingPurchase()).
+                storePendingPurchase(
+                    {
+                        id: String(result.card_id),
+                        name: `Выпуск карты ${selectedProduct.name} и пополнение`,
+                        price: Number(result.total_rub),
+                    },
+                    idempotencyKey.current,
+                );
                 window.location.href = result.payment_url;
                 return;
             }
@@ -162,6 +182,14 @@ export function NewCardOrderPage() {
                             onSelect={() => {
                                 setSelectedProductId(product.id);
                                 setStep('topup');
+
+                                // Эл.коммерция: добавление в корзину — сумма пополнения ещё не введена,
+                                // цена — только стоимость выпуска самой карты.
+                                trackAddToCart({
+                                    id: String(product.id),
+                                    name: `Выпуск карты ${product.name} и пополнение`,
+                                    price: Number(product.price_rub),
+                                });
                             }}
                         />
                     ))}

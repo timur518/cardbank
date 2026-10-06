@@ -5,6 +5,7 @@ import { extractErrorMessage } from '../../api/client';
 import { topupOrder } from '../../api/orders';
 import type { CardDetail, PaymentMethod } from '../../api/types';
 import { useTopupQuote } from '../../hooks/useTopupQuote';
+import { trackAddToCart, storePendingPurchase } from '../../utils/ecommerce';
 import { formatRub } from '../../utils/format';
 import { Modal } from '../common/Modal';
 import { PaymentMethodsSkeleton } from '../common/Skeleton';
@@ -72,6 +73,14 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
             .finally(() => setIsLoading(false));
     }, []);
 
+    // Эл.коммерция: модалка монтируется только при клике на «Пополнить
+    // баланс» (CardDetailPage.tsx/BalancePanel.tsx) — этот момент и есть «добавление в корзину» —
+    // сумма пополнения ещё не введена, поэтому без цены.
+    useEffect(() => {
+        trackAddToCart({ id: `topup-${card.id}`, name: 'Пополнение баланса' });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     async function handleSubmit(event: FormEvent) {
         event.preventDefault();
         setError(null);
@@ -99,6 +108,12 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
             });
 
             if (result.payment_url) {
+                // Эл.коммерция: событие purchase отправится после возврата клиента со
+                // страницы оплаты (см. DashboardLayout.tsx / flushPendingPurchase()).
+                storePendingPurchase(
+                    { id: `topup-${card.id}`, name: 'Пополнение баланса', price: Number(result.total_rub) },
+                    idempotencyKey.current,
+                );
                 window.location.href = result.payment_url;
                 return;
             }

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../hooks/useNotifications';
+import { flushPendingPurchase } from '../../utils/ecommerce';
 import { ChatWidget } from '../chat/ChatWidget';
 import { BrandLogo } from '../common/BrandLogo';
 import { PinSetupPrompt } from '../pin/PinSetupPrompt';
@@ -39,6 +40,15 @@ export function DashboardLayout() {
         updateScrolled();
         window.addEventListener('scroll', updateScrolled, { passive: true });
         return () => window.removeEventListener('scroll', updateScrolled);
+    }, []);
+
+    // Эл.коммерция: если клиент только что вернулся со страницы оплаты (success_url
+    // способа оплаты всегда ведёт куда-то в ЛК, т.е. под этот layout), отправляет
+    // отложенное событие purchase и забывает заказ. DashboardLayout монтируется один раз
+    // на полную перезагрузку страницы — ровно то, что нужно (не дублирует событие
+    // при обычной SPA-навигации между разделами ЛК).
+    useEffect(() => {
+        flushPendingPurchase();
     }, []);
 
     return (
