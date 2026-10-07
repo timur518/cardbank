@@ -31,7 +31,7 @@ class AdminPanelProvider extends PanelProvider
 
         return $panel
             ->id('admin')
-            ->path('backdoor')
+            ->path('mozgi')
             ->login()
             ->BrandLogo($siteSettings?->brand_logo)
             ->colors([
