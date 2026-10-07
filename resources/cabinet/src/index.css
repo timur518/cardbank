@@ -1466,8 +1466,10 @@ html::-webkit-scrollbar {
 /* Вторая плавающая кнопка над chat-fab — внешняя ссылка на Telegram-поддержку
 (тот же адрес, что и «Поддержка» в футере лендинга, site-footer.blade.php). Тот же размер
 и форма, что и у chat-fab, но серая (var(--color-ink)) вместо оранжевой, чтобы не путаться с
-кнопкой открытия чата, и смещена на высоту одной кнопки + отступ выше. На мобильном также
-прячется, пока открыта панель чата — та же логика, что и у chat-fab.is-open. */
+кнопкой открытия чата, и смещена на высоту одной кнопки + отступ выше. Прячется целиком
+(.is-open ниже без исключения для десктопа — в отличие от chat-fab), пока открыта панель чата: на
+десктопе она покрывает правый нижний угол (right: 24px; bottom: 96px, высота до min(600px, ...)),
+т.е. и место telegram-fab тоже. */
 .telegram-fab {
     position: fixed;
     right: 16px;
@@ -1570,7 +1572,6 @@ html::-webkit-scrollbar {
     .chat-fab { bottom: 24px; }
     .chat-fab.is-open { display: flex; }
     .telegram-fab { bottom: calc(24px + 56px + 12px); }
-    .telegram-fab.is-open { display: flex; }
     .chat-panel {
         inset: auto;
         right: 24px;
