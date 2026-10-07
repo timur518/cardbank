@@ -1463,6 +1463,34 @@ html::-webkit-scrollbar {
 .chat-panel-close в шапке панели). На десктопе (ниже, @media 640px+) перекрытия нет — кнопка остаётся видимой. */
 .chat-fab.is-open { display: none; }
 
+/* Вторая плавающая кнопка над chat-fab — внешняя ссылка на Telegram-поддержку
+(тот же адрес, что и «Поддержка» в футере лендинга, site-footer.blade.php). Тот же размер
+и форма, что и у chat-fab, но серая (var(--color-ink)) вместо оранжевой, чтобы не путаться с
+кнопкой открытия чата, и смещена на высоту одной кнопки + отступ выше. На мобильном также
+прячется, пока открыта панель чата — та же логика, что и у chat-fab.is-open. */
+.telegram-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(84px + 56px + 12px + env(safe-area-inset-bottom));
+    z-index: 45;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: #fff;
+    box-shadow: 0 14px 30px rgba(58, 60, 64, .3);
+    cursor: pointer;
+    text-decoration: none;
+    transition: transform .15s ease, background .15s ease;
+}
+.telegram-fab:hover { background: #2b2d30; transform: translateY(-2px); color: #fff; }
+.telegram-fab:active { transform: scale(.94); }
+.telegram-fab.is-open { display: none; }
+
 .chat-panel {
     position: fixed;
     inset: 12px 12px calc(96px + env(safe-area-inset-bottom));
@@ -1541,6 +1569,8 @@ html::-webkit-scrollbar {
 @media (min-width: 640px) {
     .chat-fab { bottom: 24px; }
     .chat-fab.is-open { display: flex; }
+    .telegram-fab { bottom: calc(24px + 56px + 12px); }
+    .telegram-fab.is-open { display: flex; }
     .chat-panel {
         inset: auto;
         right: 24px;

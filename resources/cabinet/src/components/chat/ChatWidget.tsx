@@ -8,6 +8,19 @@ import { useEffect, useState } from 'react';
 // виджет нигде не показывается, чтобы не выводить пустое/битое окно до настройки на проде.
 const CHAT_WIDGET_URL = import.meta.env.VITE_CHAT_WIDGET_URL;
 
+// Ссылка на телеграм-поддержку — та же, что и «Поддержка» в футере лендинга
+// (site-footer.blade.php). Кнопка показывается всегда, независимо от CHAT_WIDGET_URL.
+const TELEGRAM_SUPPORT_URL = 'https://t.me/mojno_support';
+
+/** Минимальная иконка-логотип Telegram — в @heroicons/react своей нет, поэтому инлайн SVG. */
+function TelegramIcon() {
+    return (
+        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="currentColor" aria-hidden="true">
+            <path d="M21.5 3.6 2.9 11.1c-1.2.5-1.2 1.2-.2 1.5l4.8 1.5 1.8 5.6c.2.6.4.8.8.8.4 0 .6-.2.8-.5l2.2-2.1 4.6 3.4c.8.5 1.4.2 1.6-.8l3-14.1c.3-1.3-.4-1.9-1.4-1.5Zm-11.8 10 8.6-5.4c.4-.2.8-.1.5.2l-7.1 6.4-.3 3-1-4.2Z" />
+        </svg>
+    );
+}
+
 /**
  * Плавающий виджет чата с ИИ-консультантом — классический паттерн онлайн-чата на сайтах
  * (круглая кнопка-бабл в углу экрана, по клику раскрывается компактное окно), но в
@@ -54,28 +67,38 @@ export function ChatWidget() {
         return () => clearTimeout(timeout);
     }, [open]);
 
-    if (!CHAT_WIDGET_URL) {
-        return null;
-    }
-
     return (
         <>
-            <button
-                type="button"
-                // is-open — на мобильных скрывает кнопку через CSS, пока открыта панель
-                // (chat-panel): на мобильном её кнопка-крестик по позиции перекрывает
-                // кнопку отправки сообщения внутри iframe-виджета (chat.js/chat.css в
-                // public/mojno-help). Закрыть чат на мобильном можно через chat-panel-close
-                // в шапке панели. На десктопе (см. index.css, @media 640px+) кнопка
-                // перекрытия не создаёт и остаётся видимой как обычно.
-                className={`chat-fab${open ? ' is-open' : ''}`}
-                aria-label={open ? 'Закрыть чат с консультантом' : 'Открыть чат с консультантом'}
-                onClick={() => setOpen((value) => !value)}
+            {/* Ссылка на Telegram-поддержку — всегда над кнопкой чата, независимо от того,
+            настроен ли ChatWidget (CHAT_WIDGET_URL). */}
+            <a
+                href={TELEGRAM_SUPPORT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`telegram-fab${open ? ' is-open' : ''}`}
+                aria-label="Написать в Telegram"
             >
-                {open ? <XMarkIcon className="h-6 w-6" /> : <ChatBubbleLeftRightIcon className="h-6 w-6" />}
-            </button>
+                <TelegramIcon />
+            </a>
 
-            {mounted && (
+            {CHAT_WIDGET_URL && (
+                <button
+                    type="button"
+                    // is-open — на мобильных скрывает кнопку через CSS, пока открыта панель
+                    // (chat-panel): на мобильном её кнопка-крестик по позиции перекрывает
+                    // кнопку отправки сообщения внутри iframe-виджета (chat.js/chat.css в
+                    // public/mojno-help). Закрыть чат на мобильном можно через chat-panel-close
+                    // в шапке панели. На десктопе (см. index.css, @media 640px+) кнопка
+                    // перекрытия не создаёт и остаётся видимой как обычно.
+                    className={`chat-fab${open ? ' is-open' : ''}`}
+                    aria-label={open ? 'Закрыть чат с консультантом' : 'Открыть чат с консультантом'}
+                    onClick={() => setOpen((value) => !value)}
+                >
+                    {open ? <XMarkIcon className="h-6 w-6" /> : <ChatBubbleLeftRightIcon className="h-6 w-6" />}
+                </button>
+            )}
+
+            {mounted && CHAT_WIDGET_URL && (
                 <div className={`chat-panel${visible ? ' is-visible' : ''}`} role="dialog" aria-label="Чат с консультантом">
                     <div className="chat-panel-header">
                         <div>
