@@ -27,10 +27,8 @@ export function BitbankerTile({ state, onAction, isActionLoading, methodName }: 
                 <QrCodeIcon className="h-5 w-5" />
             </span>
             <span className="apply-pay-info">
-                <span className="apply-pay-name">
-                    {methodName || 'BitBanker (СБП)'}
-                    <span className="apply-pay-badge">{BITBANKER_BADGE}</span>
-                </span>
+                <span className="apply-pay-name">{methodName || 'BitBanker (СБП)'}</span>
+                <span className="apply-pay-badge">{BITBANKER_BADGE}</span>
                 {state === 3 && <span className="apply-pay-desc">Заявка на рассмотрении</span>}
                 {state === '3a' && (
                     <span className="apply-pay-desc">Пополнение через BitBanker недоступно, обратитесь в поддержку</span>

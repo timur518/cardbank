@@ -856,10 +856,12 @@ html::-webkit-scrollbar {
 .apply-pay-name { display: block; font-weight: 700; font-size: .82rem; }
 .apply-pay-desc { display: block; margin-top: 2px; font-size: .7rem; color: var(--color-muted); }
 
-/* Бейдж рядом с названием способа оплаты («Без комиссии!» у BitBanker, PaymentMethodOption/BitbankerTile). */
+/* Бейдж под названием способа оплаты, отдельной строкой («Без комиссии!» у BitBanker,
+   PaymentMethodOption/BitbankerTile) — следует сразу за .apply-pay-name (display: block),
+   поэтому переносится на новую строку без отдельного display:block у самого бейджа. */
 .apply-pay-badge {
     display: inline-block;
-    margin-left: 6px;
+    margin-top: 4px;
     padding: 2px 8px;
     border-radius: 999px;
     background: #fff1ea;
@@ -867,7 +869,6 @@ html::-webkit-scrollbar {
     font-size: .65rem;
     font-weight: 800;
     white-space: nowrap;
-    vertical-align: middle;
 }
 
 /* Плитка BitBanker, пока он ещё недоступен для оплаты (BitbankerTile, состояния 1-3a) —

@@ -37,10 +37,8 @@ export function PaymentMethodOption({ method, selected, onSelect, badge }: Payme
                 <PaymentMethodIcon method={method} />
             </span>
             <span className="apply-pay-info">
-                <span className="apply-pay-name">
-                    {method.name}
-                    {badge && <span className="apply-pay-badge">{badge}</span>}
-                </span>
+                <span className="apply-pay-name">{method.name}</span>
+                {badge && <span className="apply-pay-badge">{badge}</span>}
             </span>
         </label>
     );
