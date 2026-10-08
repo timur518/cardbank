@@ -6,6 +6,7 @@ use App\Enums\PaymentGatewayCode;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\Webhooks\PaymentWebhookController;
 use App\Models\PaymentMethod;
+use App\Services\Integrations\Bitbanker\BitbankerGateway;
 use App\Services\Integrations\ParityPay\ParityPayGateway;
 
 /**
@@ -23,6 +24,7 @@ class PaymentGatewayResolver
     {
         return match ($paymentMethod->gateway_code) {
             PaymentGatewayCode::ParityPay => ParityPayGateway::for($paymentMethod),
+            PaymentGatewayCode::Bitbanker => BitbankerGateway::for($paymentMethod),
             // null или ещё не подключённая интеграция — тестовая заглушка (см. привязку в AppServiceProvider).
             default => app(PaymentGatewayContract::class),
         };

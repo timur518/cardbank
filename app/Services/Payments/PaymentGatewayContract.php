@@ -15,8 +15,11 @@ interface PaymentGatewayContract
 {
     /**
      * Создать платёж на сумму в рублях, вернуть id транзакции и ссылку на оплату.
+     * `qr_code`/`fallback_url` — необязательные ключи для способов оплаты по QR (например,
+     * BitbankerGateway) — base64 PNG и резервная ссылка соответственно; ParityPay/Stub их не
+     * возвращают (ключи отсутствуют в массиве, а не равны `null`).
      *
-     * @return array{transaction_id: string, payment_url: string}
+     * @return array{transaction_id: string, payment_url: string, qr_code?: ?string, fallback_url?: ?string}
      */
     public function initiate(float $amountRub, string $description, string $orderReference): array;
 
@@ -29,10 +32,14 @@ interface PaymentGatewayContract
 
     /**
      * Разобрать тело вебхука в наш нормализованный формат — конкретные названия полей
-     * зависят от платёжной системы.
+     * зависят от платёжной системы. `amount_usd` — необязательный ключ для систем
+     * с реальной конвертацией валют (BitbankerGateway) — при наличии PaymentWebhookHandler
+     * перезаписывает `Income.amount_usd` этим значением вместо рассчитанного заранее
+     * по внутреннему курсу (см. OrderController); ParityPay/Stub его не возвращают, поведение не
+     * меняется.
      *
      * @param  array<string, mixed>  $payload
-     * @return array{transaction_id: string, status: 'paid'|'failed'|'unknown'}
+     * @return array{transaction_id: string, status: 'paid'|'failed'|'unknown', amount_usd?: ?float}
      */
     public function parseWebhookPayload(array $payload): array;
 

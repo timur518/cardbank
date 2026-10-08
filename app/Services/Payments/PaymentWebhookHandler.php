@@ -34,7 +34,7 @@ class PaymentWebhookHandler
     }
 
     /**
-     * @param  array{transaction_id: string, status: 'paid'|'failed'|'unknown'}  $event
+     * @param  array{transaction_id: string, status: 'paid'|'failed'|'unknown', amount_usd?: ?float}  $event
      */
     public function handle(array $event): void
     {
@@ -49,14 +49,24 @@ class PaymentWebhookHandler
         }
 
         match ($event['status']) {
-            'paid' => $this->handlePaid($income),
+            'paid' => $this->handlePaid($income, $event['amount_usd'] ?? null),
             'failed' => $this->cancelUnpaidOrder($income, IncomePaymentStatus::Failed, 'Оплата заказа не прошла (вебхук платёжной системы)'),
         };
     }
 
-    protected function handlePaid(Income $income): void
+    /**
+     * $amountUsd — реальная сумма конвертации от платёжной системы (сейчас — только
+     * у BitbankerGateway, см. PaymentGatewayContract::parseWebhookPayload()) — при наличии перезаписывает
+     * `Income.amount_usd`, рассчитанный заранее по внутреннему курсу в OrderController. `topup_usd` (сумма,
+     * которая реально начисляется на карту ниже) не трогается — клиент должен получить ровно ту
+     * сумму, которая была показана ему до оплаты, независимо от реального курса конвертации BitBanker.
+     */
+    protected function handlePaid(Income $income, ?float $amountUsd = null): void
     {
-        $income->update(['payment_status' => IncomePaymentStatus::Paid]);
+        $income->update(array_filter([
+            'payment_status' => IncomePaymentStatus::Paid,
+            'amount_usd' => $amountUsd,
+        ], fn ($value) => $value !== null));
 
         // Начисление партнёру, пригласившему платёжника этого Income (referral_code), если таковой есть.
         ReferralService::accrueForIncome($income);

@@ -5,15 +5,22 @@ namespace App\Services\Integrations\Bitbanker;
 use App\Enums\NotificationEvent;
 use App\Models\BitbankerClient;
 use App\Models\Notification;
+use RuntimeException;
 
 /**
  * Обработка Events Webhook BitBanker — пока единственное известное событие
- * `sbp_client_permission_changed` (смена `is_verified_for_sbp`/`check_status` у
- * уже зарегистрированного клиента, см. BITBANKER_INTEGRATION_PLAN.md раздел 5.5).
+ * `sbp_client_permission_changed` (смена `is_verified_for_sbp` у уже
+ * зарегистрированного клиента, см. BITBANKER_INTEGRATION_PLAN.md раздел 5.5).
  * Формат тела официально не описан в OpenAPI (это push от BitBanker к нам, а не
- * их API) — читаем поля максимально терпимо и не падаем, если какого-то из них
- * не оказалось: это push-уведомление, а не источник истины (им остаётся
- * `GET /api/v3/partner-clients`, см. BitbankerClientService::refreshStatus()).
+ * их API), но в примере из документации в `data` есть только
+ * `client_id`/`is_verified_for_sbp`/`previous_is_verified_for_sbp` —
+ * **`check_status` в самом Events Webhook нет вообще**, он есть только в ответе
+ * `POST`/`GET /api/v3/partner-clients`. Поэтому при получении этого события
+ * `check_status` проставляется в `completed` явно: сам факт «смены разрешения»
+ * означает, что фоновые проверки завершились — иначе, оставь `check_status=pending`
+ * как было, `BitbankerClient::isApproved()` никогда не стал бы `true` через один
+ * только вебхук, даже когда `is_verified_for_sbp=true`. Источником истины при этом
+ * всё равно остаётся `GET /api/v3/partner-clients` (см. BitbankerClientService::refreshStatus()).
  */
 class BitbankerEventsWebhookHandler
 {
@@ -27,7 +34,7 @@ class BitbankerEventsWebhookHandler
         $data = (array) ($payload['data'] ?? $payload);
         $externalClientId = (string) ($data['client_id'] ?? '');
 
-        if ($externalClientId === '') {
+        if ($externalClientId === '' || ! array_key_exists('is_verified_for_sbp', $data)) {
             return;
         }
 
@@ -36,15 +43,15 @@ class BitbankerEventsWebhookHandler
             ->first();
 
         if (! $record) {
-            report(new \RuntimeException("BitBanker Events Webhook: неизвестный client_id {$externalClientId}."));
+            report(new RuntimeException("BitBanker Events Webhook: неизвестный client_id {$externalClientId}."));
 
             return;
         }
 
         $wasApproved = $record->isApproved();
 
-        $record->is_verified_for_sbp = (bool) ($data['is_verified_for_sbp'] ?? $record->is_verified_for_sbp);
-        $record->check_status = isset($data['check_status']) ? (string) $data['check_status'] : $record->check_status;
+        $record->is_verified_for_sbp = (bool) $data['is_verified_for_sbp'];
+        $record->check_status = 'completed';
         $record->last_synced_at = now();
         $record->save();
 

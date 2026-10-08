@@ -99,7 +99,7 @@ class OrderController extends Controller
 
         $gateway = PaymentGatewayResolver::for(PaymentMethod::findOrFail($data['payment_method_id']));
         $payment = $gateway->initiate($totalRub, "Заказ для {$request->user()->email}", (string) $income->id);
-        $income->update(['payment_transaction_id' => $payment['transaction_id'], 'payment_url' => $payment['payment_url']]);
+        $this->storePaymentResult($income, $payment);
 
         return $this->issueResponse($card, $income, $idempotencyKey);
     }
@@ -149,9 +149,29 @@ class OrderController extends Controller
 
         $gateway = PaymentGatewayResolver::for(PaymentMethod::findOrFail($data['payment_method_id']));
         $payment = $gateway->initiate($topupRub, "Пополнение для {$request->user()->email}", (string) $income->id);
-        $income->update(['payment_transaction_id' => $payment['transaction_id'], 'payment_url' => $payment['payment_url']]);
+        $this->storePaymentResult($income, $payment);
 
         return $this->topupResponse($income, $idempotencyKey);
+    }
+
+    /**
+     * Сохраняет результат `PaymentGatewayContract::initiate()` — `transaction_id`/`payment_url` в
+     * одноимённые колонки, остальные ключи (например, `qr_code`/`fallback_url` у
+     * BitbankerGateway) — в `payment_extra` целиком, чтобы при повторном идемпотентном
+     * запросе вернуть их снова, не вызывая `initiate()` повторно — см.
+     * BITBANKER_INTEGRATION_PLAN.md раздел 4.5.
+     *
+     * @param  array<string, mixed>  $payment
+     */
+    private function storePaymentResult(Income $income, array $payment): void
+    {
+        $extra = array_diff_key($payment, array_flip(['transaction_id', 'payment_url']));
+
+        $income->update([
+            'payment_transaction_id' => $payment['transaction_id'],
+            'payment_url' => $payment['payment_url'],
+            'payment_extra' => $extra !== [] ? $extra : null,
+        ]);
     }
 
     /**
@@ -222,6 +242,8 @@ class OrderController extends Controller
                 'total_rub' => number_format((float) $income->amount, 2, '.', ''),
                 'payment_transaction_id' => $income->payment_transaction_id,
                 'payment_url' => $income->payment_url,
+                'qr_code' => $income->payment_extra['qr_code'] ?? null,
+                'fallback_url' => $income->payment_extra['fallback_url'] ?? null,
                 'idempotency_key' => $idempotencyKey,
             ],
         ], 201);
@@ -237,6 +259,8 @@ class OrderController extends Controller
                 'total_rub' => number_format((float) $income->amount, 2, '.', ''),
                 'payment_transaction_id' => $income->payment_transaction_id,
                 'payment_url' => $income->payment_url,
+                'qr_code' => $income->payment_extra['qr_code'] ?? null,
+                'fallback_url' => $income->payment_extra['fallback_url'] ?? null,
                 'idempotency_key' => $idempotencyKey,
             ],
         ], 201);
