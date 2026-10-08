@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Users\Schemas;
 
 use App\Models\User;
 use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -66,6 +67,29 @@ class UserInfolist
                         TextEntry::make('utm_content')->label('Метка')->placeholder('—'),
                         TextEntry::make('referral_code')->label('Код партнёра')->placeholder('—'),
                         TextEntry::make('invite_code')->label('Собственный код приглашения')->placeholder('—'),
+                    ]),
+
+                // Подробности о самой регистрации в BitBanker (is_verified_for_sbp, check_status,
+                // last_error) — в BitbankerClientRelationManager, здесь только факт принятия
+                // оферты и итоговый список разрешённых способов оплаты (см. BITBANKER_INTEGRATION_PLAN.md раздел 9).
+                Section::make('BitBanker')
+                    ->columns(2)
+                    ->schema([
+                        IconEntry::make('bitbanker_offer_accepted')
+                            ->label('Оферта BitBanker принята')
+                            ->state(fn (User $record) => (bool) $record->bitbanker_offer_accepted_at)
+                            ->boolean(),
+                        TextEntry::make('bitbanker_offer_accepted_at')
+                            ->label('Дата принятия оферты')
+                            ->dateTime('d.m.Y H:i')
+                            ->placeholder('—'),
+                        RepeatableEntry::make('allowedPaymentMethods')
+                            ->label('Разрешённые методы оплаты')
+                            ->columnSpanFull()
+                            ->schema([
+                                TextEntry::make('name')->label('')->inlineLabel(false),
+                            ])
+                            ->placeholder('Нет ограничений — доступны все активные способы оплаты.'),
                     ]),
             ]);
     }

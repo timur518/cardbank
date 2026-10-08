@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\Users\Pages\CreateUser;
 use App\Filament\Admin\Resources\Users\Pages\EditUser;
 use App\Filament\Admin\Resources\Users\Pages\ListUsers;
 use App\Filament\Admin\Resources\Users\Pages\ViewUser;
+use App\Filament\Admin\Resources\Users\RelationManagers\BitbankerClientRelationManager;
 use App\Filament\Admin\Resources\Users\RelationManagers\KycVerificationsRelationManager;
 use App\Filament\Admin\Resources\Users\RelationManagers\OperatorNotesRelationManager;
 use App\Filament\Admin\Resources\Users\RelationManagers\RiskFlagsRelationManager;
@@ -54,6 +55,7 @@ class UserResource extends Resource
     {
         return [
             KycVerificationsRelationManager::class,
+            BitbankerClientRelationManager::class,
             RiskFlagsRelationManager::class,
             OperatorNotesRelationManager::class,
         ];

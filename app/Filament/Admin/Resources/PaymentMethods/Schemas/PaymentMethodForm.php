@@ -68,7 +68,7 @@ class PaymentMethodForm
                             ->native(false),
                         KeyValue::make('settlement_config')
                             ->label('Ключи и параметры подключения')
-                            ->helperText('Для ParityPay: shop_id, secret_key, webhook_secret_key (обязательны), success_url, fail_url, callback_url, base_url (опционально).')
+                            ->helperText('Для ParityPay: shop_id, secret_key, webhook_secret_key (обязательны), success_url, fail_url, callback_url, base_url (опционально). Для BitBanker: api_key, api_secret (обязательны), base_url, invoice_header (опционально).')
                             ->keyLabel('Параметр')
                             ->valueLabel('Значение')
                             ->columnSpanFull(),
