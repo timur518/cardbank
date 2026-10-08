@@ -1,10 +1,10 @@
 # План интеграции BitBanker (СБП → RUB→USDT)
 
-Статус: **черновик на согласование**. Код ещё не пишется — сначала фиксируем план,
-чтобы собрать замечания и принять решения по спорным местам (раздел
-«Вопросы на согласование»).
+Источник: `Документация API (СБП_ RUB-USDT).md` (приложена в задаче).
 
-Источник: `Документация API (СБП_ RUB-USDT).md` (приложен в задаче).
+Решения по спорным местам из документации BitBanker приняты и зафиксированы ниже
+(см. раздел 1.1) — документ описывает финальный сценарий, реализация ведётся по
+разделу 11.
 
 ---
 
@@ -14,159 +14,177 @@
 автоматической конвертацией рублей в USDT на стороне BitBanker. В отличие от
 уже подключённого ParityPay (обычный редирект на платёжную форму), у BitBanker
 есть дополнительный шаг **до** первого платежа: клиента нужно
-зарегистрировать/верифицировать в системе BitBanker (KYC), и платёж разрешён
-только после того, как BitBanker подтвердит готовность клиента.
+зарегистрировать в системе BitBanker, и платёж разрешён только после того, как
+BitBanker подтвердит готовность клиента (`is_verified_for_sbp=true`).
 
-Коротко по шагам (happy path из документации):
+### 1.1. Ключевое решение: свой KYC вместо KYC-виджета BitBanker
 
-1. Клиент соглашается с офертой BitBanker (один раз).
-2. Клиент проходит верификацию в BitBanker (виджет SumSub, отдельная вкладка).
-3. BitBanker в фоне прогоняет проверки (паспорт, IDX, санкционные списки) и
-   выставляет флаги `is_verified_for_sbp` / `sbp_top_up`.
-4. Как только оба флага `true` — клиенту становится доступна оплата через
-   BitBanker: он создаёт инвойс, получает QR-код, платит.
-5. BitBanker после оплаты сам конвертирует RUB → USDT и шлёт вебхук с
-   результатом (`exchange_deal`) — из него берём реальную сумму в USDT для
-   поля «Сумма в $» у «Поступления».
+У BitBanker в документации описаны два способа регистрации клиента:
 
----
+* Вариант А (`POST /api/v2/partner-clients`) — партнёр сам передаёт ФИО,
+  паспортные данные, дату рождения;
+* Вариант Б (`POST /api/v1/kyc-request`) — BitBanker выдаёт ссылку на
+  собственный виджет SumSub, пользователь проходит верификацию у них.
 
-## 2. Вопросы на согласование (нужно подтверждение перед реализацией)
+**Используем вариант А.** Своего KYC (Didit) достаточно: по пользователю,
+прошедшему внутреннюю верификацию личности, уже есть всё необходимое для
+регистрации в BitBanker (ФИО, дата рождения, паспортные данные из разбора
+документа Didit). Отдельная верификация на стороне BitBanker (SumSub,
+`kyc_url`, открытие сторонней вкладки) не используется — везде далее по
+документу, где в исходных материалах BitBanker описан KYC-виджет/`kyc-request`,
+вместо этого отправляется прямой вызов `POST /api/v2/partner-clients` с
+данными, которые уже есть в нашей системе.
 
-### 2.1. Как регистрировать клиента в BitBanker: вариант А или Б?
+### 1.2. Пользовательский флоу в личном кабинете
 
-- **Вариант А** (`POST /api/v2/partner-clients`) — мы сами собираем и
-  передаём ФИО, паспорт (серия+номер), дату выдачи, страну выдачи и т.д.
-  Проблема: наш собственный KYC (Didit) не хранит эти поля в структурированном
-  виде, пригодном для надёжной автоматической передачи (риск несовпадения
-  форматов → `NeedCompleteKYC`/`PassportFailed`).
-- **Вариант Б** (`POST /api/v1/kyc-request`, рекомендован самим BitBanker) —
-  мы передаём только `external_client_ref` + `email`, BitBanker выдаёт
-  одноразовую ссылку на виджет SumSub, пользователь сам проходит верификацию
-  (паспорт + селфи) у них, карточка клиента создаётся автоматически.
-
-**Предлагаю вариант Б** — меньше риска из-за несовпадения данных, это и есть
-официально рекомендованный сценарий. Требует открытия `kyc_url` в новой
-вкладке (не попап) — важно для iOS Safari.
-
-→ Нужно подтверждение, что это устраивает (второй KYC-шаг именно у BitBanker,
-отдельно от нашего Didit).
-
-### 2.2. Семантика поля «Разрешённые методы оплаты» у пользователя
-
-Предлагаю реализовать как связь многие-ко-многим с `payment_methods`
-(таблица `payment_method_user`), а не просто список кодов шлюзов — это даёт
-точный контроль, если когда-то заведём два способа одного шлюза (например,
-две кассы ParityPay). В Filament это всё равно один виджет — мультиселект на
-форме пользователя.
-
-**Поведение по умолчанию**: если у пользователя список пуст — ограничений нет,
-видны все активные способы оплаты (как сейчас, без regression для
-существующих пользователей). Админ использует список только тогда, когда
-хочет **сузить** набор для конкретного пользователя (например, дать доступ к
-BitBanker только пилотной группе, или наоборот — кому-то запретить конкретный
-способ).
-
-→ Нужно подтверждение логики «пусто = не ограничено» (альтернатива — «пусто =
-запрещено всё», тогда придётся сразу проставить всем существующим
-пользователям все текущие методы при миграции, иначе все перестанут видеть
-способы оплаты).
-
-### 2.3. Доступность BitBanker — независимые условия
-
-Отдельно от «Разрешённых методов оплаты» (общий список для любого способа)
-BitBanker дополнительно скрыт, пока не выполнены **все** условия:
-
-1. Внутренний KYC пользователя пройден (`users.kyc_status === approved`);
-2. Оферта BitBanker принята (`users.bitbanker_offer_accepted_at` не пусто);
-3. Клиент зарегистрирован и верифицирован в BitBanker
-   (`bitbanker_clients.is_verified_for_sbp === true`);
-4. `bitbanker_clients.sbp_top_up === true`.
-
-Если пользователь внутри «Разрешённых методов оплаты» получил доступ к
-BitBanker, но ещё не прошёл условия 1–4 — способ всё равно не показывается в
-списке на оплату, т.к. платёж технически невозможен.
-
-### 2.4. DEV/PROD и `sandbox_mode`
-
-Как и у CardsPro/ParityPay, используем уже существующий переключатель
-`PaymentMethod.sandbox_mode`: `true` → DEV-база
-(`https://ext-app.dev.bitbanker.ru` или `https://api.aws.dev.bitbanker.org/latest`
-— уточнить у BitBanker точный DEV-хост перед запуском, в документе
-встречаются оба варианта), `false` → PROD
-(`https://api.aws.bitbanker.org/latest`). Переопределяется через
-`settlement_config.base_url`, как у ParityPay.
-
-### 2.5. `getMasterBalance()` (баланс мастер-счёта)
-
-У BitBanker нет документированного эндпоинта получения баланса (вывод USDT —
-только вручную через их личный кабинет). Этот метод контракта сейчас нигде не
-вызывается в коде (проверил — используется только в самих классах шлюзов),
-поэтому для BitBanker просто бросаем исключение «не поддерживается», как
-`ParityPayGateway::refund()`.
-
-### 2.6. Возвраты (`refund()`)
-
-У BitBanker нет API возврата (см. FAQ в документации — ошибочно
-сконвертированные рубли остаются на балансе партнёра). Бросаем исключение
-«не поддерживается», аналогично п. 2.5.
+1. Пользователь открывает способ оплаты «BitBanker» на шаге оплаты заказа.
+2. Если оферта BitBanker ещё не принята — показывается окно принятия оферты.
+3. Пользователь нажимает «Принять».
+4. По этому нажатию бэкенд фиксирует принятие оферты и сразу регистрирует
+   пользователя в BitBanker (`POST /api/v2/partner-clients`, см. раздел 3).
+5. Если регистрация прошла успешно и BitBanker вернул `is_verified_for_sbp=true`
+   — способ оплаты BitBanker становится доступен этому пользователю (попадает
+   в его «Разрешённые методы оплаты»), окно закрывается, пользователь сразу
+   может продолжить оплату.
+6. Если `is_verified_for_sbp=false` (BitBanker взял данные на ручную модерацию)
+   — окно сообщает, что заявка на рассмотрении; доступ появится автоматически
+   (без повторных действий пользователя), как только BitBanker пришлёт
+   `events_webhook` или фоновая синхронизация (раздел 7) увидит `true`.
+7. Если BitBanker отклонил регистрацию (`NeedCompleteKYC` и т.п.) — окно
+   показывает, что пополнение через BitBanker временно недоступно, с
+   предложением обратиться в поддержку (повторно отправлять те же данные
+   бессмысленно — они не редактируются пользователем, т.к. берутся из уже
+   пройденного внутреннего KYC).
 
 ---
 
-## 3. Новые сущности в БД
+## 2. Условия доступности способа оплаты BitBanker
 
-### 3.1. `users` — 2 новых колонки (миграция `add_bitbanker_fields_to_users_table`)
+Способ оплаты «BitBanker» (запись `PaymentMethod` с `gateway_code=bitbanker`,
+`requires_kyc=true`) показывается пользователю в `GET /v1/payment-methods`
+только если выполнены оба условия:
+
+1. Общий фильтр «Разрешённые методы оплаты» (раздел 4.2) — метод входит в
+   список разрешённых пользователю методов, либо список пуст (не ограничен).
+2. Специфично для BitBanker — это и есть сам смысл списка разрешённых методов:
+   запись в `allowedPaymentMethods` для BitBanker добавляется автоматически
+   **только** тогда, когда регистрация в BitBanker прошла успешно и
+   `is_verified_for_sbp=true`, `sbp_top_up=true` (раздел 5.1). Для прочих
+   способов оплаты (ParityPay и т.д.) список формируется вручную в админке —
+   см. раздел 4.2.
+
+Если позже BitBanker присылает `sbp_client_permission_changed` с
+`is_verified_for_sbp=false` (ручная деактивация, например при подозрении на
+мошенничество) — запись пользователя для BitBanker удаляется из
+`allowedPaymentMethods`, способ оплаты скрывается автоматически.
+
+Внутренний KYC (`users.kyc_status=approved`) — обязательное предусловие ещё
+раньше: без него недоступны ни паспортные данные для регистрации в BitBanker
+(раздел 3.2), ни сам показ способов оплаты с `requires_kyc=true` (уже работает
+в текущем коде).
+
+---
+
+## 3. Данные для регистрации клиента в BitBanker
+
+### 3.1. Обязательные поля `POST /api/v2/partner-clients`
+
+`client_id`, `email`, `phone`, `first_name`, `last_name`, `birth_date`,
+`passport`, `passport_issue_date`, `country_of_passport_issue` (поддерживается
+только `RUS`) + технические `timestamp`, `nonce`, `full_sign`. Необязательно:
+`patronymic`, `inn`.
+
+### 3.2. Источники данных в нашей системе
+
+| Поле BitBanker | Источник | Преобразование |
+|---|---|---|
+| `client_id` | `User.uuid` | без изменений, значение после первой успешной регистрации неизменяемо на стороне BitBanker |
+| `email` | `User.email` | — |
+| `phone` | `User.phone` | без изменений (формат `+79991234567` уже используется в проекте) |
+| `first_name` | `User.first_name` | — |
+| `last_name` | `User.last_name` | — |
+| `patronymic` | `User.middle_name` | только если заполнено |
+| `birth_date` | `User.date_of_birth` | `Y-m-d` → `d.m.Y` |
+| `passport` | последняя `KycVerification` (type=provider, provider=didit, status=approved) → `provider_response.id_verifications[0].document_number` | убрать пробелы/дефисы |
+| `passport_issue_date` | та же запись → `id_verifications[0].date_of_issue` | `Y-m-d` → `d.m.Y` |
+| `country_of_passport_issue` | та же запись → `id_verifications[0].issuing_state` | передаётся как есть; если не `RUS` — регистрация не выполняется (см. 3.3) |
+| `inn` | не передаётся | в системе не собирается |
+
+### 3.3. Проверка полноты данных перед вызовом API
+
+`BitbankerClientService::register()` перед запросом к BitBanker проверяет:
+
+* `User.kyc_status === KycStatus::Approved`;
+* есть `KycVerification` (type=provider, provider=didit, status=approved) с
+  непустыми `id_verifications[0].document_number` / `date_of_issue` /
+  `issuing_state`;
+* `issuing_state === 'RUS'`;
+* `first_name`, `last_name`, `date_of_birth`, `phone`, `email` заполнены.
+
+Если хоть одно условие не выполнено — метод бросает `BitbankerException` с
+понятным текстом, контроллер (раздел 6.1) возвращает `422` и фронт показывает
+сообщение «обратитесь в поддержку» вместо повторной попытки — так как эти
+данные не редактируются пользователем в рамках этого флоу.
+
+---
+
+## 4. Новые сущности в БД
+
+### 4.1. `users` — новая колонка
+
+Миграция `add_bitbanker_offer_accepted_at_to_users_table`:
 
 | Колонка | Тип | Описание |
 |---|---|---|
-| `bitbanker_offer_accepted_at` | `timestamp nullable` | Когда пользователь принял оферту BitBanker. `null` — не принята. Отдельного булева поля не нужно — факт принятия = наличие даты (как уже сделано для `personal_data_consent_at`). |
+| `bitbanker_offer_accepted_at` | `timestamp nullable` | Когда пользователь принял оферту BitBanker. `null` — не принята. По аналогии с уже существующим `personal_data_consent_at` — без отдельного boolean-дублёра. |
 
-Итого по ТЗ «3 новых поля»: «принята/не принята» = `bitbanker_offer_accepted_at IS NOT NULL`
-(без отдельной колонки-дублёра), + «Разрешённые методы оплаты» — это не
-колонка, а связь (см. 3.2). Если нужна отдельная колонка-флаг
-`bitbanker_offer_accepted` boolean вместо вычисляемого — скажите, это
-тривиально добавить, просто сейчас в коде так же устроено `personal_data_consent_at`
-без отдельного boolean, и предлагаю для единообразия.
+### 4.2. `payment_method_user` — pivot-таблица «Разрешённые методы оплаты»
 
-### 3.2. `payment_method_user` — pivot-таблица (миграция `create_payment_method_user_table`)
+Миграция `create_payment_method_user_table`:
 
 ```
-id, user_id (FK users), payment_method_id (FK payment_methods), timestamps
+id, user_id (FK users, cascadeOnDelete), payment_method_id (FK payment_methods, cascadeOnDelete), timestamps
 ```
 
 `User::allowedPaymentMethods(): BelongsToMany`.
 
-### 3.3. `bitbanker_clients` — новая таблица (миграция `create_bitbanker_clients_table`)
+Семантика: если у пользователя список пуст — ограничений нет, видны все
+активные способы оплаты (без регрессии для существующих пользователей). Для
+ParityPay и прочих обычных способов админ использует список только чтобы
+**сузить** набор конкретному пользователю. Для BitBanker запись в этот список
+добавляется и удаляется автоматически кодом (раздел 5.1/7), а не руками в
+админке.
 
-Аналог `KycVerification`, но для стороны BitBanker:
+### 4.3. `bitbanker_clients` — новая таблица
+
+Миграция `create_bitbanker_clients_table`:
 
 | Колонка | Тип | Описание |
 |---|---|---|
 | `id` | | |
-| `user_id` | FK, unique | один клиент BitBanker на пользователя |
-| `payment_method_id` | FK | к какому способу оплаты (на случай нескольких аккаунтов BitBanker) относится |
-| `external_client_id` | string | то, что мы передаём как `external_client_ref`/`client_id` — предлагаю `users.uuid` |
-| `partner_client_id` | string nullable | внутренний ID клиента в BitBanker из ответа `kyc-request` |
-| `kyc_url` | text nullable | последняя выданная ссылка на верификацию |
-| `kyc_url_issued_at` | timestamp nullable | для контроля часа жизни ссылки на своей стороне |
-| `is_verified_for_sbp` | boolean default false | главный флаг готовности к оплате |
+| `user_id` | FK `users`, unique | один клиент BitBanker на пользователя |
+| `payment_method_id` | FK `payment_methods` | к какому способу оплаты (кассе BitBanker) относится — на случай нескольких касс, как у ParityPay |
+| `external_client_id` | string | = `User.uuid`, то же значение, что отправлено как `client_id` |
+| `registered_at` | timestamp | когда прошла первая успешная регистрация (`POST /api/v2/partner-clients` вернул `2xx`) |
+| `is_verified_for_sbp` | boolean default false | флаг готовности к оплате — определяет попадание в `payment_method_user` |
 | `sbp_top_up` | boolean default false | |
-| `status` | string nullable | последний `reason`/статус из ответов BitBanker (`kyc_bridge_disabled`, `manual_review_required`, `kyc_final_rejection`, `access_locked_contact_manager` и т.п.) — для показа клиенту/оператору |
-| `last_error` | json nullable | сырая ошибка последнего неуспешного вызова (`NeedCompleteKYC` + `data.errors` и т.п.) |
-| `last_synced_at` | timestamp nullable | когда последний раз обновляли статус (вебхуком или опросом) |
+| `status` | string nullable | последняя причина/код состояния от BitBanker (`manual_review_required`, `kyc_final_rejection`, `access_locked_contact_manager` и т.п.) — для отображения оператору |
+| `last_error` | json nullable | сырое тело последней ошибки вызова (`NeedCompleteKYC` + `data.errors` и т.п.) |
+| `last_synced_at` | timestamp nullable | когда последний раз обновляли флаги (вебхуком или опросом) |
 | `timestamps` | | |
 
-### 3.4. `payment_methods` — без изменений в схеме
+`User::bitbankerClient(): HasOne`, `PaymentMethod::bitbankerClients(): HasMany`.
+
+### 4.4. `payment_methods` — без изменений в схеме
 
 Новый способ оплаты заводится как обычная запись «Способы оплаты» в админке с
-`gateway_code = bitbanker`, `settlement_config = {api_key, api_secret,
-base_url?}`. Поля `requires_kyc`, `sandbox_mode`, `fee_percent`,
-`min_amount`/`max_amount` (лимиты 1000–50000 ₽ выставляются здесь же, как у
-любого другого способа) уже существуют и переиспользуются.
+`gateway_code=bitbanker`, `requires_kyc=true`, `settlement_config={api_key,
+api_secret, base_url?}`. Лимиты (`min_amount`/`max_amount` — 1000–50000 ₽),
+`fee_percent`, `sandbox_mode` уже существуют и переиспользуются как есть.
 
 ---
 
-## 4. Новая папка интеграции — `app/Services/Integrations/Bitbanker`
+## 5. Новая папка интеграции — `app/Services/Integrations/Bitbanker`
 
 По аналогии с `app/Services/Integrations/ParityPay`:
 
@@ -175,138 +193,149 @@ app/Services/Integrations/Bitbanker/
 ├── BitbankerSigner.php          — canonical_json + HMAC-SHA256 (full_sign), генерация nonce
 ├── BitbankerClient.php          — низкоуровневый HTTP-транспорт (X-API-KEY, timestamp/nonce/full_sign, Idempotency-Key, base_url по sandbox_mode)
 ├── BitbankerGateway.php         — implements PaymentGatewayContract (создание инвойса + QR, разбор invoices_webhook)
-├── BitbankerClientService.php   — регистрация/опрос статуса клиента (kyc-request, partner-clients GET), синхронизация в BitbankerClient
+├── BitbankerClientService.php   — регистрация клиента (partner-clients) + опрос статуса + синхронизация allowedPaymentMethods
 ├── BitbankerEventsWebhookHandler.php — обработка Events Webhook (sbp_client_permission_changed)
 └── Exceptions/
     └── BitbankerException.php
 ```
 
-Назначение каждого файла:
+### 5.1. `BitbankerSigner`
 
-- **`BitbankerSigner`** — общая утилита подписи, нужна и для исходящих
-  запросов (`full_sign` тела), и для входящих вебхуков (проверка `full_sign`
-  в payload). Отдельный класс, т.к. используется и `BitbankerClient` (запросы),
-  и `BitbankerGateway`/`BitbankerEventsWebhookHandler` (проверка вебхуков) —
-  логика подписи одна и та же (canonical JSON без `sign`/`sign_2`/`full_sign`,
-  `sort_keys`, `separators=(',',':')`, `ensure_ascii=False`, HMAC-SHA256 hex).
+Общая утилита подписи — нужна и для исходящих запросов (`full_sign` тела), и
+для входящих вебхуков (проверка `full_sign` в payload): canonical JSON без
+`sign`/`sign_2`/`full_sign`, ключи рекурсивно отсортированы, компактный JSON
+(`separators=(',',':')`, без экранирования non-ASCII), HMAC-SHA256 hex с
+`api_secret` способа оплаты.
 
-- **`BitbankerClient`** — транспорт, аналог `ParityPayClient`: шлёт
-  `X-API-KEY`, добавляет `timestamp`/`nonce`/`full_sign` в тело (кроме
-  `kyc-request` и `prediction-sbp`, которым они не нужны — см. документацию),
-  добавляет `Idempotency-Key` для `POST /api/v2/invoices` и
-  `POST /api/v2/partner-clients`, бросает `BitbankerException` на
-  `PredefinedError`-ответы и `401`.
+### 5.2. `BitbankerClient`
 
-- **`BitbankerGateway implements PaymentGatewayContract`**:
-  - `initiate()` — вызывает `POST /api/v2/exchange_prediction` (предварительный
-    расчёт, просто для логов/проверки ликвидности, не блокирует создание),
-    затем `POST /api/v2/invoices` с `sbp_payment=true`, `currency=RUBR`,
-    `is_convert_payments=true`, `take_currency=USDT`,
-    `partner_client_external_id=user.uuid`, `Idempotency-Key = Income.idempotency_key`.
-    Возвращает `transaction_id` = `id` (invoice hash) и `payment_url` =
-    `sbp_info.qr_url` (ссылка НСПК) — QR-картинку (`sbp_info.sbp_qr`,
-    base64) кладём во второй элемент результата (контракт
-    `initiate()` придётся расширить — см. раздел 5.1).
-  - `verifyWebhookSignature()` — проверка `full_sign` в теле вебхука (не в
-    заголовке, в отличие от ParityPay) через `BitbankerSigner`.
-  - `parseWebhookPayload()` — статус `payed=true` + непустой `exchange_deal`
-    → `paid`; `declined`/`failed`/`cancelled`/`expired` (из `sbp_info.status`)
-    → `failed`; иначе `unknown`/`pending` — без действий. Дополнительно
-    возвращает сумму в USDT из `exchange_deal[0].volume_take_final` — см. 5.1.
-  - `refund()` / `getMasterBalance()` — бросают «не поддерживается» (см. 2.5–2.6).
+Транспорт, аналог `ParityPayClient`: заголовок `X-API-KEY`, добавляет в тело
+`timestamp`/`nonce`/`full_sign` (кроме `kyc-request`/`prediction-sbp`, которым
+они не нужны — но эти методы в проекте не используются, см. 1.1), добавляет
+`Idempotency-Key` для `POST /api/v2/invoices` и `POST /api/v2/partner-clients`,
+бросает `BitbankerException` на `PredefinedError`-ответы и `401`.
 
-- **`BitbankerClientService`** — отдельно от `PaymentGatewayContract` (туда не
-  вписывается, это не про оплату, а про подготовку клиента):
-  - `startVerification(User $user, PaymentMethod $method): BitbankerClient` —
-    вызывает `POST /api/v1/kyc-request` (или переиспользует ещё не
-    истёкшую `kyc_url`, если она была выдана меньше часа назад — сам BitBanker
-    это уже делает на своей стороне, но дублируем проверку на своей, чтобы не
-    дёргать их API лишний раз), сохраняет `kyc_url`/`partner_client_id` в
-    `bitbanker_clients`.
-  - `refreshStatus(BitbankerClient $client): void` — `GET
-    /api/v2/partner-clients?external_id=...`, обновляет
-    `is_verified_for_sbp`/`sbp_top_up`/`status`/`last_error`.
+### 5.3. `BitbankerGateway implements PaymentGatewayContract`
 
-- **`BitbankerEventsWebhookHandler`** — обрабатывает
-  `sbp_client_permission_changed`: находит `BitbankerClient` по
-  `data.client_id` (= `external_client_id`), обновляет
-  `is_verified_for_sbp`/`sbp_top_up`. Если флаг стал `true` — можно отправить
-  пользователю уведомление «BitBanker доступен для оплаты» (переиспользуем
-  `Notification::notify()`/`NotificationEvent`, как у остальных событий).
+* `initiate()` — `POST /api/v2/invoices` с `sbp_payment=true`, `currency=RUBR`,
+  `is_convert_payments=true`, `take_currency=USDT`,
+  `partner_client_external_id=user.uuid`, `Idempotency-Key = Income.idempotency_key`.
+  Возвращает `transaction_id` = `id` инвойса и `payment_url` = `sbp_info.qr_url`
+  (ссылка НСПК); QR-картинка (`sbp_info.sbp_qr`, base64) и `link` (хостед-страница
+  инвойса BitBanker, резервная ссылка) кладутся в дополнительные ключи
+  возвращаемого массива — контракт расширяется, см. 6.1.
+* `verifyWebhookSignature()` — проверка `full_sign` в теле вебхука (в теле, не
+  в заголовке, в отличие от ParityPay) через `BitbankerSigner`.
+* `parseWebhookPayload()` — `payed=true` + непустой `exchange_deal` → `paid`;
+  `sbp_info.status` в (`declined`/`failed`/`cancelled`/`expired`) → `failed`;
+  иначе `unknown` (без действий). Дополнительно возвращает сумму в USDT из
+  `exchange_deal[0].volume_take_final` через ключ `amount_usd` (раздел 6.1).
+* `refund()` / `getMasterBalance()` — бросают `BitbankerException` «не
+  поддерживается» (у BitBanker нет API возврата и API баланса — вывод USDT и
+  спорные транзакции обрабатываются вручную через их личный кабинет/почту
+  compliance@bitbanker.org).
+
+### 5.4. `BitbankerClientService`
+
+* `register(User $user, PaymentMethod $method): BitbankerClient` — проверяет
+  полноту данных (раздел 3.3), собирает payload (раздел 3.2), вызывает
+  `POST /api/v2/partner-clients`, сохраняет/обновляет запись в
+  `bitbanker_clients` (`registered_at`, `is_verified_for_sbp`, `sbp_top_up`,
+  `status`, `last_error`, `last_synced_at`), при `is_verified_for_sbp=true`
+  вызывает `syncAllowedPaymentMethod()`. На `NeedCompleteKYC`/прочие ошибки —
+  сохраняет `last_error`/`status`, пробрасывает `BitbankerException` вызывающему
+  коду с понятным сообщением.
+* `refreshStatus(BitbankerClient $client): void` — `GET /api/v2/partner-clients`
+  (query `client_id` = `external_client_id`), обновляет
+  `is_verified_for_sbp`/`sbp_top_up`/`status`/`last_synced_at`, вызывает
+  `syncAllowedPaymentMethod()`.
+* `syncAllowedPaymentMethod(BitbankerClient $client): void` — если
+  `is_verified_for_sbp && sbp_top_up` — `attach()` способа оплаты в
+  `user.allowedPaymentMethods` (если ещё не привязан); иначе — `detach()`
+  (если был привязан). Единая точка, которую вызывают и `register()`, и
+  `refreshStatus()`, и обработчик Events Webhook.
+
+### 5.5. `BitbankerEventsWebhookHandler`
+
+Обрабатывает `sbp_client_permission_changed`: находит `BitbankerClient` по
+`data.client_id` (= `external_client_id`), обновляет
+`is_verified_for_sbp`/`sbp_top_up`/`last_synced_at`, вызывает
+`BitbankerClientService::syncAllowedPaymentMethod()`. При переходе в
+`true` — уведомление пользователю через `Notification::notify()`
+(`NotificationEvent::BitbankerAvailable`, новый кейс enum). При переходе в
+`false` (деактивация доступа) — отдельное уведомление не отправляется (не
+путать пользователя), событие просто логируется через стандартный механизм
+`PaymentMethodMessage`.
 
 ---
 
-## 5. Изменения в существующей архитектуре
+## 6. Изменения в существующей архитектуре
 
-### 5.1. `PaymentGatewayContract` — расширение контракта (обратно совместимо)
+### 6.1. `PaymentGatewayContract` — расширение контракта (обратно совместимо)
 
-Нужно два небольших дополнения:
+1. `initiate()` — в возвращаемый массив добавляются необязательные ключи
+   `qr_code` (base64 PNG) и `fallback_url` (хостед-страница инвойса) — для
+   способов с оплатой по QR. ParityPay/Stub их не возвращают, как и сейчас.
+2. `parseWebhookPayload()` — добавляется необязательный ключ `amount_usd`
+   (`float|null`). `PaymentWebhookHandler::handlePaid()` при его наличии
+   перезаписывает `Income.amount_usd` этим значением (реальная конвертация
+   BitBanker) вместо значения, посчитанного заранее в `OrderController` по
+   внутреннему курсу. Отсутствие ключа — поведение не меняется (ParityPay,
+   Stub).
 
-1. `initiate()` — добавить в возвращаемый массив необязательный ключ
-   `qr_code` (base64 PNG) для способов, которые платят через QR, а не
-   редирект. ParityPay/Stub его просто не возвращают (как и сейчас).
-2. `parseWebhookPayload()` — добавить необязательный ключ `amount_usd`
-   (float|null) — заполняется только BitBanker (из `exchange_deal`).
-   `PaymentWebhookHandler::handlePaid()` при его наличии перезаписывает
-   `Income.amount_usd` этим значением **после** обычной обработки оплаты,
-   вместо значения, посчитанного заранее в `OrderController` по нашему
-   собственному курсу.
-
-Это не ломает `ParityPayGateway`/`StubPaymentGateway` — они просто не кладут
-эти ключи, `PaymentWebhookHandler` трактует отсутствие ключа как «ничего не
-менять» (нынешнее поведение).
-
-### 5.2. `PaymentGatewayCode` — новый кейс
+### 6.2. `PaymentGatewayCode` — новый кейс
 
 ```php
 case Bitbanker = 'bitbanker'; // label: 'BitBanker (СБП → USDT)'
 ```
 
-### 5.3. `PaymentGatewayResolver` — новая ветка `match`
+### 6.3. `PaymentGatewayResolver` — новая ветка `match`
 
 ```php
 PaymentGatewayCode::Bitbanker => BitbankerGateway::for($paymentMethod),
 ```
 
-### 5.4. `PaymentMethodController::index()` — фильтрация по пользователю
+### 6.4. `PaymentMethodController::index()` — фильтрация по пользователю
 
-Сейчас отдаёт все активные способы без учёта пользователя. Добавляем:
+Добавляется фильтр: если `user.allowedPaymentMethods` не пуст — пересекать с
+ним список активных способов, иначе отдавать все активные как сейчас (раздел
+4.2). Отдельной BitBanker-специфичной ветки не требуется — доступность
+BitBanker уже выражена через присутствие/отсутствие записи в этом же списке
+(раздел 2).
 
-1. Фильтр по `allowedPaymentMethods` (если у пользователя список не пуст —
-   пересечение, иначе без изменений, см. 2.2).
-2. Для способов с `gateway_code = bitbanker` — дополнительно проверять
-   условия 1–4 из раздела 2.3, иначе исключать из выдачи.
+### 6.5. `OrderController` — серверная проверка (defense in depth)
 
-### 5.5. `OrderController` — серверная проверка (defense in depth)
+В `issue()`/`topup()` перед вызовом `PaymentGatewayResolver::for()` —
+проверка, что выбранный `payment_method_id` входит в список доступных
+пользователю методов (та же логика, что и 6.4), иначе `422` — чтобы нельзя
+было оплатить в обход списка на фронте, подставив `payment_method_id` напрямую.
 
-В `issue()`/`topup()` перед вызовом `PaymentGatewayResolver::for()` — та же
-проверка, что и в 5.4 (доступность метода конкретному пользователю +
-условия BitBanker + принятая оферта), иначе `422` — чтобы нельзя было
-оплатить в обход списка на фронте, просто угадав/подставив `payment_method_id`.
+### 6.6. `NotificationEvent` — новый кейс
 
-### 5.6. `PaymentMethodMessage` — переиспользуется как есть
+`BitbankerAvailable` — «Пополнение через BitBanker теперь доступно» (раздел 5.5).
+
+### 6.7. `PaymentMethodMessage` — переиспользуется как есть
 
 И для `invoices_webhook` (через общий `PaymentWebhookController`, без
-изменений в нём), и для Events Webhook (новый контроллер, см. 6.2) — тот же
-тип лога сырых вебхуков, просто разные `event_type`.
+изменений в нём), и для Events Webhook (новый контроллер, раздел 7.2) — тот же
+тип лога сырых вебхуков, просто разный `event_type`.
 
 ---
 
-## 6. Новые маршруты
+## 7. Новые маршруты
 
-### 6.1. ЛК (авторизованные, `routes/api.php`, группа `v1`)
-
-| Метод | Путь | Назначение |
-|---|---|---|
-| `GET` | `/v1/bitbanker/status` | Текущее состояние для пользователя: оферта принята? `kyc_url` (если верификация начата и не завершена)? `is_verified_for_sbp`/`sbp_top_up`? Фронт использует, чтобы решить — показать чекбокс оферты, кнопку «Пройти верификацию» или уже доступную оплату. |
-| `POST` | `/v1/bitbanker/offer/accept` | Проставляет `bitbanker_offer_accepted_at = now()` (идемпотентно — повторный вызов ничего не ломает). |
-| `POST` | `/v1/bitbanker/kyc` | Запускает/перезапускает верификацию (`BitbankerClientService::startVerification()`), возвращает свежий `kyc_url`. |
-
-### 6.2. Вебхуки (без авторизации, подпись в теле, `routes/api.php` верхний уровень)
+### 7.1. ЛК (авторизованные, `routes/api.php`, группа `v1`)
 
 | Метод | Путь | Назначение |
 |---|---|---|
-| `POST` | `/webhooks/payment/{paymentMethod}` | **Уже существует**, ничего менять не нужно — `invoices_webhook` (оплата) идёт через общий `PaymentWebhookController`, т.к. `BitbankerGateway` реализует тот же контракт. |
+| `GET` | `/v1/bitbanker/status` | Текущее состояние для пользователя: оферта принята? есть ли `bitbanker_clients` запись и в каком она статусе (`is_verified_for_sbp`/`status`/`last_error`)? Фронт использует, чтобы решить — показать окно оферты, окно «на рассмотрении», окно ошибки или уже доступную оплату. |
+| `POST` | `/v1/bitbanker/accept` | Фиксирует `bitbanker_offer_accepted_at = now()` (идемпотентно) и сразу вызывает `BitbankerClientService::register()`. Возвращает итоговое состояние (`is_verified_for_sbp`, `sbp_top_up`, `status`) или `422` с текстом ошибки при провале проверки данных/регистрации. |
+
+### 7.2. Вебхуки (без авторизации, подпись в теле, `routes/api.php` верхний уровень)
+
+| Метод | Путь | Назначение |
+|---|---|---|
+| `POST` | `/webhooks/payment/{paymentMethod}` | **Уже существует**, не меняется — `invoices_webhook` (оплата) идёт через общий `PaymentWebhookController`, т.к. `BitbankerGateway` реализует тот же контракт. |
 | `POST` | `/webhooks/bitbanker/{paymentMethod}/events` | Новый — Events Webhook (`sbp_client_permission_changed`). Отдельный контроллер `BitbankerEventsWebhookController`, т.к. это не про `Income`/оплату, а про статус клиента. |
 
 URL для вебхуков задаётся в личном кабинете BitBanker (Профиль → API) —
@@ -314,115 +343,109 @@ URL для вебхуков задаётся в личном кабинете Bi
 
 ---
 
-## 7. Фоновая синхронизация (резервный канал, как `providers:sync-card-balances`)
+## 8. Фоновая синхронизация
 
 Новая команда `bitbanker:sync-client-status` — опрашивает
 `GET /api/v2/partner-clients` для всех `bitbanker_clients`, у которых
-`is_verified_for_sbp = false` и верификация запускалась (на случай, если
-Events Webhook не дошёл — у BitBanker есть ретраи до 7 дней, но лучше не
-полагаться только на вебхук, сам документ прямо рекомендует второй канал).
+`last_synced_at` давно не обновлялся:
+
+* записи с `is_verified_for_sbp=false` — на случай, если решение по ручной
+  модерации было принято, а `events_webhook` не дошёл (ретраев у BitBanker нет
+  — см. документацию, сама она рекомендует `GET /api/v2/partner-clients` как
+  source of truth);
+* записи с `is_verified_for_sbp=true` — реже (например, раз в сутки), на
+  случай отзыва доступа без вебхука.
+
 В `routes/console.php`:
 
 ```php
 Schedule::command('bitbanker:sync-client-status')->everyFiveMinutes()->withoutOverlapping();
 ```
 
-Отмену зависших неоплаченных заказов (`payments:cancel-expired-orders`) трогать
-не нужно — она уже работает универсально для любого шлюза по возрасту
-`Income`. Отдельно стоит учесть: QR у BitBanker живёт 1 час, а команда по
-умолчанию отменяет через 30 минут — это нормально (просто наш заказ
-закроется раньше технического истечения QR), но стоит проговорить, не нужно
-ли поднять `--minutes` именно для BitBanker-заказов. Если нужно — добавлю
-отдельный запуск команды с фильтром по `gateway_code=bitbanker` и своим
-таймаутом.
+Отмену зависших неоплаченных заказов (`payments:cancel-expired-orders`)
+трогать не нужно — она уже работает универсально для любого шлюза по возрасту
+`Income`.
 
 ---
 
-## 8. Админка (Filament)
+## 9. Админка (Filament)
 
-- **«Способы оплаты»** (`PaymentMethodForm`) — без структурных изменений,
+* **«Способы оплаты»** (`PaymentMethodForm`) — без структурных изменений,
   только обновить подсказку у `settlement_config`: для BitBanker нужны
   `api_key`, `api_secret`, опционально `base_url`.
-- **Пользователь** (`UserForm`/`UserInfolist`):
-  - Новое поле `Select::make('allowedPaymentMethods')->relationship()->multiple()`
-    — «Разрешённые методы оплаты».
-  - В `UserInfolist` (только просмотр) — «Оферта BitBanker принята»
-    (булево от `bitbanker_offer_accepted_at`) + сама дата.
-  - Новый relation-manager `BitbankerClientRelationManager` (по аналогии с
-    `KycVerificationsRelationManager`) — показывает оператору текущий статус
-    верификации в BitBanker, `last_error`, кнопку «Обновить статус»
-    (дёргает `BitbankerClientService::refreshStatus()` вручную).
+* **Пользователь** (`UserInfolist`) — «Оферта BitBanker принята» (булево от
+  `bitbanker_offer_accepted_at`) + дата. «Разрешённые методы оплаты»
+  (`allowedPaymentMethods`) показываются как обычный список — для BitBanker он
+  управляется кодом автоматически, админ может только снять доступ вручную
+  (это равнозначно ручной деактивации — при следующей синхронизации код не
+  восстановит привязку сам, т.к. источник истины для восстановления —
+  `bitbanker_clients.is_verified_for_sbp`, так что ручное снятие носит
+  временный характер до следующего успешного `refreshStatus()`; если нужно
+  снять доступ окончательно — это делается на стороне BitBanker).
+* Новый relation-manager `BitbankerClientRelationManager` (по аналогии с
+  `KycVerificationsRelationManager`) на странице пользователя — показывает
+  оператору текущий статус (`is_verified_for_sbp`, `sbp_top_up`, `status`,
+  `last_error`), кнопку «Обновить статус» (дёргает
+  `BitbankerClientService::refreshStatus()` вручную).
 
 ---
 
-## 9. Фронтенд (личный кабинет, `resources/cabinet`)
+## 10. Фронтенд (личный кабинет, `resources/cabinet`)
 
-Детальный список компонентов уточним на этапе реализации (после согласования
-бэкенда), ориентировочно:
-
-- На шаге выбора способа оплаты (`TopupModal`/`NewCardOrderPage`) — если
-  выбран BitBanker и `GET /bitbanker/status` говорит, что оферта не принята —
-  чекбокс согласия перед кнопкой «Оплатить» (запрашивается один раз).
-- Если верификация не пройдена — кнопка «Пройти верификацию» → открывает
-  `kyc_url` в новой вкладке (`target="_blank"`, обязательно по доке — iOS
-  Safari блокирует попапы) → после возврата поллинг `GET /bitbanker/status`
-  до `is_verified_for_sbp=true`.
-- Экран оплаты — показ QR (`sbp_qr`, base64 PNG) + ссылка-дублёр
-  (`qr_url`) + обратный отсчёт 1 час (таймер только на фронте, BitBanker его
-  не присылает) + поллинг статуса заказа, как уже сделано для ParityPay (если
-  там есть поллинг — переиспользуем тот же компонент).
-
----
-
-## 10. Конфиг/ENV
-
-`config/services.php`, блок `bitbanker` — только таймаут HTTP, по аналогии с
-`paritypay`/`cardspro` (ключи — в `settlement_config`, не в `.env`):
-
-```php
-'bitbanker' => [
-    'timeout' => (int) env('BITBANKER_TIMEOUT', 20),
-    // DEV/PROD base_url по умолчанию — через sandbox_mode способа оплаты,
-    // см. BitbankerClient::baseUrl(). Переопределяется settlement_config.base_url.
-],
-```
+* На шаге выбора способа оплаты, если в ответе `GET /v1/bitbanker/status`
+  `offer_accepted=false` — модальное окно оферты с кнопкой «Принять»,
+  вызывающей `POST /v1/bitbanker/accept`.
+* Пока запрос выполняется — кнопка в состоянии загрузки (вызов синхронный,
+  отдельного экрана ожидания не требуется).
+* Результат `POST /v1/bitbanker/accept`:
+  * `is_verified_for_sbp=true` — окно закрывается, способ оплаты BitBanker
+    сразу появляется в списке (обновить `GET /v1/payment-methods`).
+  * `is_verified_for_sbp=false` без ошибки — окно сообщает «заявка на
+    рассмотрении», закрывается; способ появится в списке автоматически позже
+    (поллинг `GET /v1/bitbanker/status` или просто обновление списка способов
+    при следующем заходе на экран оплаты).
+  * `422` (данные не прошли проверку) — окно показывает сообщение с
+    предложением обратиться в поддержку.
+* Экран оплаты (после того, как BitBanker выбран и `initiate()` вызван) —
+  показ QR (`qr_code`, base64 PNG) + ссылка-дублёр (`fallback_url`) + обратный
+  отсчёт 1 час (таймер только на фронте, BitBanker его не присылает) +
+  поллинг статуса заказа, как уже сделано для ParityPay.
 
 ---
 
 ## 11. Порядок реализации (этапы)
 
 1. Миграции + модели (`bitbanker_clients`, `payment_method_user`, поле
-   `users.bitbanker_offer_accepted_at`) + `User::allowedPaymentMethods()`.
-2. `BitbankerSigner` + `BitbankerClient` (подпись и транспорт) — можно
-   проверить вручную на DEV-стенде (нужны DEV-ключи BitBanker).
-3. `BitbankerClientService` (регистрация/опрос статуса) + Events Webhook +
-   команда `bitbanker:sync-client-status`.
-4. `BitbankerGateway` (контракт `PaymentGatewayContract`) + расширение
-   контракта (`qr_code`, `amount_usd`) + правка `PaymentWebhookHandler`.
-5. `PaymentGatewayCode`/`PaymentGatewayResolver` + фильтрация в
-   `PaymentMethodController`/`OrderController`.
-6. Админка (поле у пользователя, relation-manager, подсказки в форме способа
+   `users.bitbanker_offer_accepted_at`) + `User::allowedPaymentMethods()`,
+   `User::bitbankerClient()`.
+2. `BitbankerSigner` + `BitbankerClient` (подпись и транспорт) — проверить на
+   DEV-стенде BitBanker (нужны DEV-ключи).
+3. `BitbankerClientService::register()`/`refreshStatus()`/
+   `syncAllowedPaymentMethod()` + маршруты `GET/POST /v1/bitbanker/*`.
+4. Events Webhook (`BitbankerEventsWebhookController` + `BitbankerEventsWebhookHandler`)
+   + команда `bitbanker:sync-client-status`.
+5. `BitbankerGateway` (контракт `PaymentGatewayContract`) + расширение
+   контракта (`qr_code`, `fallback_url`, `amount_usd`) + правка
+   `PaymentWebhookHandler::handlePaid()`.
+6. `PaymentGatewayCode`/`PaymentGatewayResolver` + фильтрация в
+   `PaymentMethodController`/`OrderController` по `allowedPaymentMethods`.
+7. Админка (поле/relation-manager у пользователя, подсказки в форме способа
    оплаты).
-7. Фронтенд ЛК (оферта, кнопка верификации, QR-экран).
-8. Ручное тестирование на DEV по чек-листу из документации (диапазоны сумм
-   1000/2000/3000/5000/6000 ₽ → `captured`/`declined`/`failed`/`expired`/`authorized`).
+8. Фронтенд ЛК (окно оферты/статуса, QR-экран оплаты).
+9. Ручное тестирование на DEV по чек-листу из документации (диапазоны сумм
+   1000/2000/3000/5000/6000 ₽ → `captured`/`declined`/`failed`/`expired`/`authorized`,
+   плюс сценарии `NeedCompleteKYC` и ручной деактивации `is_verified_for_sbp`).
 
 ---
 
-## 12. Открытые технические детали, которые уточним по ходу
+## 12. Технические детали, уточняемые на этапе реализации
 
-- Точный DEV base_url (в документе фигурируют и
-  `https://ext-app.dev.bitbanker.ru`, и `https://api.aws.dev.bitbanker.org/latest`
-  — похоже, первый для ЛК/виджета, второй для API; нужно свериться с
-  Swagger DEV при получении доступов).
-- Нужно ли показывать клиенту ссылку `link` на страницу инвойса BitBanker как
-  запасной вариант, если свой QR-экран не отрендерился (документ это
-  предлагает как fallback).
-- Нужна ли отдельная Telegram/email-нотификация оператору при
-  `NeedCompleteKYC`/`SecurityFailed`-отказах (как уже сделано для других
-  событий через `AdminTelegramNotifier`).
+Не блокируют начало разработки — по каждому пункту ниже в коде заложен
+конкретный вариант по умолчанию, финальное значение подставляется при
+получении DEV/PROD-доступов BitBanker:
 
----
-
-Жду правок/подтверждения по разделу 2 — после этого перехожу к реализации по
-пунктам раздела 11.
+* **Base URL DEV** — используется `https://api.aws.dev.bitbanker.org/latest`
+  по умолчанию (переопределяется `settlement_config.base_url`), сверяется с
+  Swagger DEV при получении доступов.
+* **Таймаут HTTP** — `config('services.bitbanker.timeout')`, по аналогии с
+  `paritypay`/`cardspro`, значение по умолчанию 20 секунд.
