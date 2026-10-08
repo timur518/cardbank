@@ -351,6 +351,14 @@ BitBanker уже выражена через присутствие/отсутс
 изменений в нём), и для Events Webhook (новый контроллер, раздел 7.2) — тот же
 тип лога сырых вебхуков, просто разный `event_type`.
 
+### 6.8. `PaymentMethodResource` — новое поле `gateway_code`
+
+Сейчас ресурс отдаёт `id`/`name`/`type`/`currency`/`min_amount`/`max_amount`,
+без `gateway_code`. Фронту (раздел 10) нужно надёжно отличать способ BitBanker
+среди пришедших способов оплаты, не полагаясь на `name` (как сейчас сделано
+для СБП через `isSbp()` — поиск подстроки в названии). Добавляется
+`'gateway_code' => $this->gateway_code->value` в `toArray()`.
+
 ---
 
 ## 7. Новые маршруты
@@ -359,7 +367,7 @@ BitBanker уже выражена через присутствие/отсутс
 
 | Метод | Путь | Назначение |
 |---|---|---|
-| `GET` | `/v1/bitbanker/status` | Текущее состояние для пользователя: оферта принята? есть ли `bitbanker_clients` запись и в каком она статусе (`is_verified_for_sbp`/`status`/`last_error`)? Фронт использует, чтобы решить — показать окно оферты, окно «на рассмотрении», окно ошибки или уже доступную оплату. |
+| `GET` | `/v1/bitbanker/status` | Текущее состояние для пользователя: оферта принята? есть ли `bitbanker_clients` запись и в каком она статусе (`is_verified_for_sbp`/`status`/`last_error`)? Фронт использует, чтобы решить — показать окно оферты, окно «на рассмотрении», окно ошибки или уже доступную оплату. Форма ответа: `{ "offer_accepted": bool, "offer_text": string, "is_verified_for_sbp": bool, "sbp_top_up": bool, "status": string\|null }`. `offer_text` — текст оферты BitBanker для попапа принятия (раздел 10.3), берётся из настройки `bitbanker_offer_text` (раздел 9), отдаётся этим же эндпойнтом, чтобы не заводить отдельный публичный маршрут под один текст. |
 | `POST` | `/v1/bitbanker/accept` | Фиксирует `bitbanker_offer_accepted_at = now()` (идемпотентно) и сразу вызывает `BitbankerClientService::register()`. Возвращает итоговое состояние (`is_verified_for_sbp`, `sbp_top_up`, `status`) или `422` с текстом ошибки при провале проверки данных/регистрации. |
 
 ### 7.2. Вебхуки (без авторизации, подпись в теле, `routes/api.php` верхний уровень)
@@ -418,29 +426,135 @@ Schedule::command('bitbanker:sync-client-status')->everyFiveMinutes()->withoutOv
   оператору текущий статус (`is_verified_for_sbp`, `sbp_top_up`, `status`,
   `last_error`), кнопку «Обновить статус» (дёргает
   `BitbankerClientService::refreshStatus()` вручную).
+* Новая настройка `bitbanker_offer_text` (`Setting`) — полный текст оферты
+  BitBanker, который пользователь видит в попапе принятия (раздел 10.3). Управляется
+  через новую Filament-страницу настроек `BitbankerSettings` (по аналогии
+  `ReferralSettings`/`BrandSettings`) с одним полем-textarea; отдаётся в `GET /v1/bitbanker/status`
+  (раздел 7.1), без отдельного публичного эндпоинта в `SettingsController`.
 
 ---
 
 ## 10. Фронтенд (личный кабинет, `resources/cabinet`)
 
-* На шаге выбора способа оплаты, если в ответе `GET /v1/bitbanker/status`
-  `offer_accepted=false` — модальное окно оферты с кнопкой «Принять»,
-  вызывающей `POST /v1/bitbanker/accept`.
-* Пока запрос выполняется — кнопка в состоянии загрузки (вызов синхронный,
-  отдельного экрана ожидания не требуется).
-* Результат `POST /v1/bitbanker/accept`:
-  * `is_verified_for_sbp=true` — окно закрывается, способ оплаты BitBanker
-    сразу появляется в списке (обновить `GET /v1/payment-methods`).
-  * `is_verified_for_sbp=false` без ошибки — окно сообщает «заявка на
-    рассмотрении», закрывается; способ появится в списке автоматически позже
-    (поллинг `GET /v1/bitbanker/status` или просто обновление списка способов
-    при следующем заходе на экран оплаты).
-  * `422` (данные не прошли проверку) — окно показывает сообщение с
-    предложением обратиться в поддержку.
-* Экран оплаты (после того, как BitBanker выбран и `initiate()` вызван) —
-  показ QR (`qr_code`, base64 PNG) + ссылка-дублёр (`fallback_url`) + обратный
-  отсчёт 1 час (таймер только на фронте, BitBanker его не присылает) +
-  поллинг статуса заказа, как уже сделано для ParityPay.
+Сейчас блок выбора способа оплаты устроен одинаково в двух местах —
+`TopupModal.tsx` (пополнение уже выпущенной карты) и `NewCardOrderPage.tsx` (выпуск
+новой): оба просто рендерят `fetchPaymentMethods()` через `<PaymentMethodOption>` в цикле.
+Этот блок в обоих местах заменяется на общий компонент `PaymentMethodsList`
+(раздел 10.3), который умеет показывать BitBanker первым и с нужным CTA даже до
+того, как он появился в списке доступных пользователю способов оплаты.
+
+### 10.1. Почему BitBanker нельзя просто взять из `GET /v1/payment-methods`
+
+`GET /v1/payment-methods` (раздел 6.4) отдаёт только те способы, которыми пользователь
+уже может оплатить сейчас. BitBanker попадает туда только после успешной
+регистрации (раздел 2) — а до этого момента, по требованию, его всё равно
+нужно показывать первым элементом с призывом к KYC/оферте. Поэтому фронт
+держит два независимых источника данных:
+
+* обычные способы оплаты — из `GET /v1/payment-methods`, как сейчас;
+* состояние BitBanker — из `profile.kyc_status` (уже есть в `AuthContext`, без
+  доп. запроса) и нового `GET /v1/bitbanker/status` (раздел 7.1).
+
+Если среди полученных из `GET /v1/payment-methods` способов есть с `gateway_code === 'bitbanker'`
+(раздел 6.8) — он уже доступен для оплаты (состояние 4 из 10.2) и рендерится обычной
+выбираемой плиткой (`PaymentMethodOption` + бейдж). Если его там нет — вместо него
+всё равно первым рендерится некликабельная призывная плитка с нужным CTA (состояния 1–3).
+Параллельно сверять все три бэкенд-условия самому фронту не нужно — присутствие/отсутствие
+в `GET /v1/payment-methods` уже и есть итоговый флаг «доступно сейчас».
+
+### 10.2. Состояния плитки BitBanker
+
+BitBanker всегда первый в списке и всегда с бейджем «Выгоднее до 10%!» (не
+только в состоянии 4) — отличается только то, что показано рядом с бейджем — кнопка/текст
+состояния или радио-переключатель выбора.
+
+| № | Условие | Что видит пользователь | Действие по кнопке |
+|---|---|---|---|
+| 1 | `profile.kyc_status !== 'approved'` | Кнопка «Пройти верификацию» вместо радио-кнопки выбора | Тот же поток, что и в «Мой профиль»: `startKycVerification()` + `KycVerificationModal` (тот же iframe Didit). По `didit:completed` — закрыть модалку, `refreshProfile()` (уже есть в `AuthContext`) + перезапросить `GET /v1/bitbanker/status`. |
+| 2 | `kyc_status === 'approved'` и `offer_accepted === false` | Кнопка «Принять оферту» | Открывает `BitbankerOfferModal` (раздел 10.3). |
+| 3 | `kyc_status === 'approved'`, `offer_accepted === true`, но НЕ (`is_verified_for_sbp && sbp_top_up`) | Неактивная плитка, текст «Заявка на рассмотрении», без кнопки | Ничего — обновляется само при следующем монтировании `PaymentMethodsList` (перезапрос `GET /v1/bitbanker/status` при каждом открытии экрана оплаты). |
+| 4 | `kyc_status === 'approved'`, `offer_accepted === true`, `is_verified_for_sbp && sbp_top_up === true` | Обычная выбираемая плитка (как ParityPay), первая в списке, с бейджем | Выбор радио-кнопкой, как у любого способа оплаты. |
+
+Состояние 4 на практике совпадает с тем, что BitBanker уже есть в `GET /v1/payment-methods`
+(см. 10.1) — поэтому фронту не нужно самому сверять все четыре условия — достаточно
+проверить, есть ли BitBanker в списке методов; если нет — смотреть на `kyc_status`/`offer_accepted`/
+`is_verified_for_sbp`+`sbp_top_up`, чтобы выбрать между 1/2/3.
+
+### 10.3. Новые и изменённые файлы
+
+**Новые:**
+
+* `resources/cabinet/src/api/bitbanker.ts` — `fetchBitbankerStatus(): Promise<BitbankerStatus>`,
+  `acceptBitbankerOffer(): Promise<BitbankerStatus>` (оба по аналогии `api/kyc.ts`).
+* `resources/cabinet/src/components/orders/BitbankerTile.tsx` — рендерит состояния 1–3
+  (некликабельная плитка в том же стиле, что `apply-pay-option` у `PaymentMethodOption`, чтобы
+  не выбиваться из списка визуально), с бейджем «Выгоднее до 10%!» и кнопкой/текстом
+  согласно таблице в 10.2.
+* `resources/cabinet/src/components/orders/BitbankerOfferModal.tsx` — попап принятия
+  оферты: прокручиваемый блок с `offer_text` (из `GET /v1/bitbanker/status`, раздел 7.1/9),
+  чекбокс согласия, кнопка «Принять» (задизаблена, пока чекбокс не отмечен). Три
+  внутренних состояния попапа (`idle | loading | success`):
+  * клик по «Принять» → `loading` (спиннер/анимированная загрузка) → вызов
+    `acceptBitbankerOffer()` (= `POST /v1/bitbanker/accept`);
+  * успех (независимо от `is_verified_for_sbp` — важен сам факт регистрации, а
+    доступность оплаты уже определяется отдельно через состояния 3/4 плитки) → `success`:
+    иконка успеха + текст «Теперь вам доступен более выгодный способ пополнения
+    карты!», авто-закрытие через `window.setTimeout(..., 10000)` (с очисткой таймера в
+    `useEffect`), по закрытию — колбэк `onAccepted()` наверх, чтобы `PaymentMethodsList`
+    перезапросил `GET /v1/payment-methods` и `GET /v1/bitbanker/status`;
+  * `422` (данные не прошли проверку — раздел 3.3) → текст ошибки внутри попапа
+    с предложением обратиться в поддержку (кнопка «Принять» снова активна, но
+    повторная попытка бесполезна — данные не редактируются пользователем в этом попапе).
+* `resources/cabinet/src/components/orders/PaymentMethodsList.tsx` — общий компонент
+  выбора способа оплаты, заменяющий текущий инлайновый `methods.map(...)` в
+  `TopupModal.tsx`/`NewCardOrderPage.tsx`. Пропы: `methods: PaymentMethod[]`,
+  `selectedMethodId: number \| null`, `onSelect: (id: number) => void`, `onMethodsRefresh: () => void`
+  (вызывается после успешного завершения попапов верификации/оферты, чтобы
+  родительский `TopupModal`/`NewCardOrderPage` перезапросил `fetchPaymentMethods()`).
+  Внутри себя: через `useAuth()` берёт `profile.kyc_status`, при монтировании
+  вызывает `fetchBitbankerStatus()`, выбирает состояние 1–4 по правилам 10.1/10.2,
+  рендерит BitBanker первым (либо `BitbankerTile`, либо `PaymentMethodOption` с бейджем), затем
+  остальные методы из `methods` (исключая BitBanker, чтобы не задвоить, если он там уже
+  есть). Держит открытый `KycVerificationModal`/`BitbankerOfferModal` в своём состоянии.
+
+**Изменённые:**
+
+* `PaymentMethodOption.tsx` — новый необязательный проп `badge?: string`, рендерится
+  как `<span className="apply-pay-badge">{badge}</span>` рядом с `apply-pay-name`.
+* `api/types.ts` — `PaymentMethod.gateway_code: string` (раздел 6.8); новый интерфейс
+  `BitbankerStatus` (форма — раздел 7.1); `IssueOrderResult`/`TopupOrderResult` — новые
+  необязательные поля `qr_code: string \| null`, `fallback_url: string \| null` (раздел 10.4).
+* `TopupModal.tsx`, `NewCardOrderPage.tsx` — блок `<div className="apply-pay-list">{methods.map(...)}</div>`
+  заменяется на `<PaymentMethodsList methods={methods} selectedMethodId={selectedMethodId} onSelect={setSelectedMethodId} onMethodsRefresh={() => fetchPaymentMethods().then(setMethods)} />`;
+  обработка результата отправки формы дополняется веткой для QR (раздел 10.4).
+
+### 10.4. Экран оплаты после нажатия «Оплатить» / «Оплатить и выпустить»
+
+Бекэнд возвращает `qr_code`/`fallback_url` только для BitBanker (раздел 6.1); для
+всех остальных способов по-прежнему приходит `payment_url`. В обработчике отправки
+формы (`handleSubmit` в `TopupModal.tsx`/`NewCardOrderPage.tsx`):
+
+```ts
+if (result.payment_url) {
+    window.location.href = result.payment_url; // как сейчас — ParityPay, без изменений
+} else if (result.qr_code) {
+    setQrPayment({ qrCode: result.qr_code, fallbackUrl: result.fallback_url }); // BitBanker
+} else {
+    onClose();
+}
+```
+
+Новый компонент `resources/cabinet/src/components/orders/BitbankerQrPaymentModal.tsx`:
+
+* показывает QR как `<img src={`data:image/png;base64,${qrCode}`}>`;
+* кнопка-дублёр со ссылкой `fallback_url` («Открыть в приложении банка»);
+* визуальный обратный отсчёт 1 час — чисто фронтовый таймер (BitBanker не присылает
+  срок истечения отдельно фронту — `dt_expiration` есть только внутри вебхука);
+* поллинг готовности оплаты по образцу `useNotifications.ts` (`setInterval`, каждые 5 секунд):
+  опрашивает `GET /v1/cards/{id}` — для выпуска карты признак оплаты — пропадание
+  `pending_payment` в `null` (тот же признак, на котором сейчас держится `PendingPaymentPanel`), для
+  пополнения — изменение баланса карты. По успеху — закрыть модалку, показать
+  успех, перейти на страницу карты.
 
 ---
 
@@ -462,7 +576,9 @@ Schedule::command('bitbanker:sync-client-status')->everyFiveMinutes()->withoutOv
    `PaymentMethodController`/`OrderController` по `allowedPaymentMethods`.
 7. Админка (поле/relation-manager у пользователя, подсказки в форме способа
    оплаты).
-8. Фронтенд ЛК (окно оферты/статуса, QR-экран оплаты).
+8. Фронтенд ЛК (раздел 10): `PaymentMethodsList` + `BitbankerTile` + `BitbankerOfferModal`
+   вместо инлайнового списка способов оплаты в `TopupModal`/`NewCardOrderPage`, затем
+   `BitbankerQrPaymentModal` на шаге оплаты.
 9. Ручное тестирование на DEV по чек-листу из документации (диапазоны сумм
    1000/2000/3000/5000/6000 ₽ → `captured`/`declined`/`failed`/`expired`/`authorized`,
    плюс сценарии `NeedCompleteKYC` и ручной деактивации `is_verified_for_sbp`).
