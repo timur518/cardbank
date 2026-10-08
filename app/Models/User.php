@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -48,6 +49,7 @@ class User extends Authenticatable implements FilamentUser
         'pin_set_at',
         'last_login_at',
         'personal_data_consent_at',
+        'bitbanker_offer_accepted_at',
     ];
 
     /**
@@ -79,6 +81,7 @@ class User extends Authenticatable implements FilamentUser
             'pin_set_at' => 'datetime',
             'last_login_at' => 'datetime',
             'personal_data_consent_at' => 'datetime',
+            'bitbanker_offer_accepted_at' => 'datetime',
         ];
     }
 
@@ -146,6 +149,25 @@ class User extends Authenticatable implements FilamentUser
     public function incomes(): HasMany
     {
         return $this->hasMany(Income::class);
+    }
+
+    /**
+     * «Разрешённые методы оплаты» — пустой список означает отсутствие ограничений
+     * (видны все активные способы оплаты). Для BitBanker запись сюда добавляется/
+     * удаляется автоматически (см. BitbankerClientService::syncAllowedPaymentMethod()),
+     * для остальных способов — вручную в админке. См. BITBANKER_INTEGRATION_PLAN.md раздел 4.2.
+     */
+    public function allowedPaymentMethods(): BelongsToMany
+    {
+        return $this->belongsToMany(PaymentMethod::class);
+    }
+
+    /**
+     * Состояние регистрации этого пользователя в BitBanker (см. BitbankerClientService).
+     */
+    public function bitbankerClient(): HasOne
+    {
+        return $this->hasOne(BitbankerClient::class);
     }
 
     /**

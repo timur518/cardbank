@@ -26,6 +26,7 @@ class Income extends Model
         'payment_method_id',
         'payment_transaction_id',
         'payment_url',
+        'payment_extra',
         'payment_status',
         'idempotency_key',
         'comment',
@@ -40,6 +41,7 @@ class Income extends Model
             'amount' => 'decimal:2',
             'amount_usd' => 'decimal:2',
             'topup_usd' => 'decimal:2',
+            'payment_extra' => 'array',
         ];
     }
 

@@ -7,6 +7,7 @@ use App\Enums\PaymentGatewayCode;
 use App\Enums\PaymentMethodType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PaymentMethod extends Model
@@ -50,5 +51,23 @@ class PaymentMethod extends Model
     public function usages(): HasMany
     {
         return $this->hasMany(PaymentMethodUsage::class);
+    }
+
+    /**
+     * Пользователи, у которых этот способ оплаты явно в списке разрешённых
+     * (см. User::allowedPaymentMethods()).
+     */
+    public function allowedForUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class);
+    }
+
+    /**
+     * Клиенты BitBanker, зарегистрированные через эту кассу BitBanker — на случай
+     * нескольких касс BitBanker, как у ParityPay.
+     */
+    public function bitbankerClients(): HasMany
+    {
+        return $this->hasMany(BitbankerClient::class);
     }
 }
