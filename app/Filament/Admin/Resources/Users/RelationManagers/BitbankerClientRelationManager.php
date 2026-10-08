@@ -16,11 +16,10 @@ use Illuminate\Database\Eloquent\Model;
  * Состояние регистрации пользователя в BitBanker — у пользователя не больше
  * одной записи (см. User::bitbankerClient(), HasOne), поэтому таблица всегда
  * показывает 0 или 1 строку. Запись создаётся/обновляется кодом
- * (BitbankerController::accept(), Events Webhook, фоновая команда
+ * (BitbankerController::accept(), вебхук событий BitBanker, фоновая команда
  * bitbanker:sync-client-status) — админ здесь ничего не создаёт и не
  * редактирует вручную, только опрашивает актуальный статус кнопкой
- * «Обновить статус» (BitbankerClientService::refreshStatus()), см.
- * BITBANKER_INTEGRATION_PLAN.md раздел 9.
+ * «Обновить статус» (BitbankerClientService::refreshStatus()).
  */
 class BitbankerClientRelationManager extends RelationManager
 {
@@ -40,7 +39,7 @@ class BitbankerClientRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('external_client_id')
             ->emptyStateHeading('Клиент не зарегистрирован в BitBanker')
-            ->emptyStateDescription('Появится после того, как пользователь примет оферту и пройдёт регистрацию (раздел 2 BITBANKER_INTEGRATION_PLAN.md).')
+            ->emptyStateDescription('Появится после того, как пользователь примет оферту и пройдёт регистрацию в BitBanker.')
             ->emptyStateIcon('heroicon-o-qr-code')
             ->columns([
                 TextColumn::make('external_client_id')

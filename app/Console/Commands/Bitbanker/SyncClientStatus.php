@@ -10,12 +10,12 @@ use Illuminate\Console\Command;
  * php artisan bitbanker:sync-client-status [--minutes=5]
  *
  * Переопрашивает `GET /api/v3/partner-clients` для клиентов BitBanker, у которых
- * `last_synced_at` старше `--minutes` минут — подстраховка на случай, если Events
- * Webhook (`sbp_client_permission_changed`) не дошёл: у BitBanker нет ретраев
- * вебхуков, а GET /api/v3/partner-clients — официальный source of truth (см.
- * BITBANKER_INTEGRATION_PLAN.md раздел 8). Обрабатывает все записи без исключения —
- * отдельно частить опрос уже одобренных клиентов (на случай отзыва доступа без
- * вебхука) не нужно: обычный интервал запуска команды уже покрывает оба случая.
+ * `last_synced_at` старше `--minutes` минут — подстраховка на случай, если вебхук
+ * смены статуса не дошёл: у BitBanker нет ретраев вебхуков, а
+ * GET /api/v3/partner-clients всегда отдаёт актуальный статус. Обрабатывает
+ * все записи без исключения — отдельно частить опрос уже одобренных клиентов
+ * (на случай отзыва доступа без вебхука) не нужно: обычный интервал
+ * запуска команды уже покрывает оба случая.
  */
 class SyncClientStatus extends Command
 {

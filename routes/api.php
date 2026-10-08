@@ -71,7 +71,7 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
         // Верификация личности через Didit — блок на странице профиля (перед «Мои данные»).
         Route::post('/kyc/start', [KycController::class, 'start'])->name('kyc.start');
 
-        // Оферта/статус BitBanker в блоке выбора способа оплаты — см. BITBANKER_INTEGRATION_PLAN.md раздел 7.1.
+        // Оферта/статус BitBanker в блоке выбора способа оплаты в личном кабинете.
         Route::get('/bitbanker/status', [BitbankerController::class, 'status'])->name('bitbanker.status');
         Route::post('/bitbanker/accept', [BitbankerController::class, 'accept'])->name('bitbanker.accept');
 

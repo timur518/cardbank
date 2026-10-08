@@ -16,8 +16,7 @@ class TopupOrderRequest extends FormRequest
 
     /**
      * Защита от оплаты в обход списка на фронте (подстановка `payment_method_id` напрямую) —
-     * та же логика фильтрации, что и в PaymentMethodController::index() — см.
-     * BITBANKER_INTEGRATION_PLAN.md раздел 6.5.
+     * та же логика фильтрации, что и в PaymentMethodController::index().
      */
     protected function allowedToUser(): \Closure
     {

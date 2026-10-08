@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Состояние регистрации клиента в BitBanker (аналог KycVerification, но для
- * стороны BitBanker) — один клиент на пользователя. См. BitbankerClientService,
- * BITBANKER_INTEGRATION_PLAN.md раздел 4.3.
+ * стороны BitBanker) — один клиент на пользователя. См. BitbankerClientService.
  */
 class BitbankerClient extends Model
 {

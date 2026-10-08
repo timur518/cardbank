@@ -10,9 +10,8 @@ return new class extends Migration
      * Run the migrations.
      *
      * Состояние регистрации клиента в BitBanker (аналог KycVerification, но для
-     * стороны BitBanker, см. BITBANKER_INTEGRATION_PLAN.md раздел 4.3). Один клиент
-     * BitBanker на пользователя (может быть несколько payment_method — несколько
-     * касс BitBanker, как у ParityPay).
+     * стороны BitBanker). Один клиент BitBanker на пользователя (может быть
+     * несколько payment_method — несколько касс BitBanker, как у ParityPay).
      */
     public function up(): void
     {
@@ -26,8 +25,8 @@ return new class extends Migration
             $table->boolean('is_verified_for_sbp')->default(false);
             // pending|completed — сырой check_status из ответа BitBanker (/api/v3/partner-clients).
             $table->string('check_status')->nullable();
-            // Сырое тело последнего неуспешного HTTP-ответа BitBanker — для разбора оператором,
-            // см. BITBANKER_INTEGRATION_PLAN.md раздел 4.3 (у реального API нет именованных кодов ошибок).
+            // Сырое тело последнего неуспешного HTTP-ответа BitBanker — для разбора
+            // оператором (у реального API нет именованных кодов ошибок).
             $table->json('last_error')->nullable();
             $table->timestamp('last_synced_at')->nullable();
             $table->timestamps();

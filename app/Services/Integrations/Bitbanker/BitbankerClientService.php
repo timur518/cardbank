@@ -15,11 +15,12 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Регистрация пользователя в BitBanker (`POST`/`GET /api/v3/partner-clients`,
- * см. BITBANKER_INTEGRATION_PLAN.md раздел 3) и единая синхронизация
- * «Разрешённых методов оплаты» (User::allowedPaymentMethods()) по её результату —
- * вызывается и при первой регистрации, и при повторном опросе статуса (фоновая
- * команда, раздел 8), и из обработчика Events Webhook (раздел 5.5).
+ * Регистрация пользователя в BitBanker (`POST`/`GET /api/v3/partner-clients`) и
+ * единая синхронизация «Разрешённых методов оплаты»
+ * (User::allowedPaymentMethods()) по её результату — вызывается и при первой
+ * регистрации, и при повторном опросе статуса (фоновая команда
+ * bitbanker:sync-client-status), и из обработчика вебхука событий BitBanker
+ * (BitbankerEventsWebhookHandler).
  */
 class BitbankerClientService
 {
@@ -27,7 +28,7 @@ class BitbankerClientService
 
     /**
      * Регистрирует/обновляет пользователя в BitBanker. Бросает BitbankerException
-     * с понятным текстом, если данных недостаточно (раздел 3.3) или сам вызов API
+     * с понятным текстом, если данных недостаточно или сам вызов API
      * завершился ошибкой — в обоих случаях вызывающий код (BitbankerController)
      * должен вернуть клиенту 422.
      */
@@ -62,9 +63,9 @@ class BitbankerClientService
     /**
      * Переопрашивает текущий статус уже зарегистрированного клиента
      * (`GET /api/v3/partner-clients`) — используется фоновой командой
-     * `bitbanker:sync-client-status` (раздел 8) и кнопкой «Обновить статус» в
-     * админке (раздел 9). Ошибки HTTP не пробрасываются — только логируются в
-     * `last_error`, чтобы не прерывать пакетный опрос по всем клиентам.
+     * `bitbanker:sync-client-status` и кнопкой «Обновить статус» в админке.
+     * Ошибки HTTP не пробрасываются — только логируются в `last_error`, чтобы
+     * не прерывать пакетный опрос по всем клиентам.
      */
     public function refreshStatus(BitbankerClientRecord $record): void
     {
@@ -90,7 +91,7 @@ class BitbankerClientService
     /**
      * Единая точка синхронизации «Разрешённых методов оплаты» для BitBanker —
      * вызывается из register()/refreshStatus() этого сервиса и из
-     * BitbankerEventsWebhookHandler. См. BITBANKER_INTEGRATION_PLAN.md раздел 2.
+     * BitbankerEventsWebhookHandler.
      */
     public function syncAllowedPaymentMethod(BitbankerClientRecord $record): void
     {
@@ -123,9 +124,8 @@ class BitbankerClientService
     }
 
     /**
-     * Проверка полноты данных и сборка payload для `/api/v3/partner-clients` —
-     * см. BITBANKER_INTEGRATION_PLAN.md раздел 3.2/3.3. Бросает BitbankerException
-     * с понятным текстом при первом же несоответствии.
+     * Проверка полноты данных и сборка payload для `/api/v3/partner-clients`.
+     * Бросает BitbankerException с понятным текстом при первом же несоответствии.
      *
      * @return array<string, mixed>
      */
@@ -180,7 +180,7 @@ class BitbankerClientService
     /**
      * Находит элемент `id_verifications[]` с `document_type === "Identity Card"`
      * (внутренний паспорт РФ, а не загранпаспорт) в последней одобренной
-     * провайдерской верификации Didit — см. BITBANKER_INTEGRATION_PLAN.md раздел 3.2.
+     * провайдерской верификации Didit.
      *
      * @return array<string, mixed>|null
      */

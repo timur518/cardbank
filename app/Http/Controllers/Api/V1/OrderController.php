@@ -158,8 +158,7 @@ class OrderController extends Controller
      * Сохраняет результат `PaymentGatewayContract::initiate()` — `transaction_id`/`payment_url` в
      * одноимённые колонки, остальные ключи (например, `qr_code`/`fallback_url` у
      * BitbankerGateway) — в `payment_extra` целиком, чтобы при повторном идемпотентном
-     * запросе вернуть их снова, не вызывая `initiate()` повторно — см.
-     * BITBANKER_INTEGRATION_PLAN.md раздел 4.5.
+     * запросе вернуть их снова, не вызывая `initiate()` повторно.
      *
      * @param  array<string, mixed>  $payment
      */
@@ -237,7 +236,7 @@ class OrderController extends Controller
                 'card_id' => $card->id,
                 // uuid отдельно от card_id (сквозного id в базе, уже используется в эл.коммерции) — нужен
                 // фронту, чтобы после оплаты через BitbankerQrPaymentModal опрашивать `GET /cards/{card:uuid}`
-                // и перейти на страницу карты после подтверждения оплаты (см. BITBANKER_INTEGRATION_PLAN.md раздел 10.4).
+                // и перейти на страницу карты после подтверждения оплаты.
                 'card_uuid' => $card->uuid,
                 'status' => $card->status->value,
                 'price_rub' => number_format((float) $card->price_rub, 2, '.', ''),

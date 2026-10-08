@@ -75,14 +75,14 @@ class PaymentMethod extends Model
     /**
      * Доступен ли этот способ оплаты пользователю — общая проверка для
      * PaymentMethodController::index() и валидации payment_method_id в
-     * IssueOrderRequest/TopupOrderRequest (BITBANKER_INTEGRATION_PLAN.md раздел 6.4/6.5).
+     * IssueOrderRequest/TopupOrderRequest.
      *
      * Для BitBanker (gateway_code=bitbanker) правило «список пуст — не ограничен»
      * НЕ действует: он требует явного попадания в allowedPaymentMethods (успешная
      * регистрация+верификация, см. BitbankerClientService::syncAllowedPaymentMethod()),
-     * иначе способ был бы доступен всем ещё до прохождения KYC/оферты — именно это
-     * и есть смысл списка разрешённых методов для BitBanker (раздел 2 плана). Для
-     * гостя (user=null) BitBanker всегда недоступен.
+     * иначе способ был бы доступен всем ещё до прохождения KYC, принятия
+     * оферты и успешной регистрации — именно так ограничивается доступ к BitBanker.
+     * Для гостя (user=null) BitBanker всегда недоступен.
      *
      * Для прочих способов оплаты (ParityPay и т.д.) действует старое правило:
      * список разрешённых формируется вручную в админке, пустой список означает

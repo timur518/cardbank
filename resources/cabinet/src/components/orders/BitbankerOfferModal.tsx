@@ -20,7 +20,7 @@ const SUCCESS_AUTOCLOSE_MS = 10_000;
 
 /**
  * Попап принятия оферты BitBanker перед первой регистрацией — открывается из
- * PaymentMethodsList/BitbankerTile (состояние 2). См. BITBANKER_INTEGRATION_PLAN.md раздел 10.3.
+ * PaymentMethodsList/BitbankerTile, когда пользователь прошёл KYC, но ещё не принял оферту.
  */
 export function BitbankerOfferModal({ offerText, onClose, onAccepted }: BitbankerOfferModalProps) {
     const [agreed, setAgreed] = useState(false);

@@ -22,8 +22,8 @@ interface PaymentMethodsListProps {
 }
 
 /** Выбирает состояние плитки BitBanker (1-3a) по kyc_status/offer_accepted/check_status —
- * вызывается, только пока BitBanker ещё не присутствует среди methods (состояние 4
- * обслуживается самой methods-веткой, см. BITBANKER_INTEGRATION_PLAN.md раздел 10.2). */
+ * вызывается, только пока BitBanker ещё не присутствует среди methods — как только
+ * он становится доступен, его отображает уже обычная ветка списка methods. */
 function resolveBitbankerTileState(kycStatus: AppKycStatus, status: BitbankerStatus): BitbankerTileState {
     if (kycStatus !== 'approved') {
         return 1;
@@ -48,7 +48,8 @@ function resolveBitbankerTileState(kycStatus: AppKycStatus, status: BitbankerSta
  * Общий список способов оплаты для шага оплаты при выпуске карты (NewCardOrderPage) и
  * пополнении (TopupModal) — заменяет инлайновый `methods.map(...)`. BitBanker всегда первый:
  * обычная выбираемая плитка, если он уже есть в methods (gateway_code === 'bitbanker'), иначе —
- * некликабельная призывная плитка BitbankerTile с нужным CTA (раздел 10 BITBANKER_INTEGRATION_PLAN.md).
+ * некликабельная призывная плитка BitbankerTile с нужным CTA (пройти верификацию/
+ * принять оферту/ожидание).
  */
 export function PaymentMethodsList({ methods, selectedMethodId, onSelect, onMethodsRefresh, className }: PaymentMethodsListProps) {
     const { profile, refreshProfile } = useAuth();

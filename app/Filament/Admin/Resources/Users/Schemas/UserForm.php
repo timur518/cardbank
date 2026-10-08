@@ -2,7 +2,9 @@
 
 namespace App\Filament\Admin\Resources\Users\Schemas;
 
+use App\Enums\ActiveStatus;
 use App\Enums\KycStatus;
+use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -64,7 +66,6 @@ class UserForm
 
                 Section::make('Данные о регистрации')
                     ->columns(2)
-                    ->collapsed()
                     ->schema([
                         TextInput::make('utm_source')
                             ->label('Источник (utm_source)')
@@ -85,6 +86,32 @@ class UserForm
                             ->label('Собственный код приглашения')
                             ->disabled()
                             ->dehydrated(false),
+                    ]),
+
+                // Оферта BitBanker и разрешённые способы оплаты — в обычном состоянии оба
+                // заполняются самим пользователем в личном кабинете (принятие оферты +
+                // успешная регистрация в BitBanker). Здесь — возможность вручного вмешательства
+                // со стороны админа (включить оферту вручную или ограничить пользователя
+                // конкретными способами оплаты в обход логики в BitbankerClientService).
+                Section::make('Настройки платежей')
+                    ->columns(2)
+                    ->schema([
+                        Toggle::make('bitbanker_offer_accepted_at')
+                            ->label('Оферта BitBanker принята')
+                            ->helperText('Включено — пользователь уже принял оферту (или админ сделал это вручную). Выключение сбрасывает дату принятия — при следующем включении пользователю придётся принять её заново.')
+                            ->formatStateUsing(fn (mixed $state) => (bool) $state)
+                            ->dehydrateStateUsing(fn (bool $state, ?User $record) => $state ? ($record?->bitbanker_offer_accepted_at ?? now()) : null),
+                        Select::make('allowedPaymentMethods')
+                            ->label('Разрешённые способы оплаты')
+                            ->relationship(
+                                name: 'allowedPaymentMethods',
+                                titleAttribute: 'name',
+                                modifyQueryUsing: fn ($query) => $query->where('status', ActiveStatus::Active),
+                            )
+                            ->multiple()
+                            ->preload()
+                            ->helperText('Ничего не выбрано — ограничений нет, пользователю доступны все активные способы оплаты, кроме BitBanker — он становится доступен только после успешной регистрации или при выборе здесь вручную.')
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

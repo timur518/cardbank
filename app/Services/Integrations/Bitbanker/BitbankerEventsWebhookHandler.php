@@ -10,9 +10,9 @@ use RuntimeException;
 /**
  * Обработка Events Webhook BitBanker — пока единственное известное событие
  * `sbp_client_permission_changed` (смена `is_verified_for_sbp` у уже
- * зарегистрированного клиента, см. BITBANKER_INTEGRATION_PLAN.md раздел 5.5).
- * Формат тела официально не описан в OpenAPI (это push от BitBanker к нам, а не
- * их API), но в примере из документации в `data` есть только
+ * зарегистрированного клиента). Формат тела официально не описан
+ * в OpenAPI (это push от BitBanker к нам, а не их API), но в примере из
+ * документации в `data` есть только
  * `client_id`/`is_verified_for_sbp`/`previous_is_verified_for_sbp` —
  * **`check_status` в самом Events Webhook нет вообще**, он есть только в ответе
  * `POST`/`GET /api/v3/partner-clients`. Поэтому при получении этого события

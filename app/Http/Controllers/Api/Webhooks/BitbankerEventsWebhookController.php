@@ -15,9 +15,8 @@ use Throwable;
 
 /**
  * Events Webhook BitBanker — не про оплату (это `/webhooks/payment/{paymentMethod}`,
- * см. PaymentWebhookController), а про смену статуса клиента (`sbp_client_permission_changed`),
- * см. BITBANKER_INTEGRATION_PLAN.md раздел 7.2. URL для настройки в личном
- * кабинете BitBanker (Профиль → API):
+ * см. PaymentWebhookController), а про смену статуса клиента (`sbp_client_permission_changed`).
+ * URL для настройки в личном кабинете BitBanker (Профиль → API):
  *
  *   POST {APP_URL}/api/webhooks/bitbanker/{id способа оплаты из «Способы оплаты»}/events
  *

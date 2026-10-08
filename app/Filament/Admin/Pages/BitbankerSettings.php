@@ -17,9 +17,9 @@ use UnitEnum;
 
 /**
  * Текст оферты BitBanker, который пользователь видит в попапе принятия перед
- * регистрацией (см. BITBANKER_INTEGRATION_PLAN.md разделы 7.1, 9, 10.3) —
- * отдаётся клиенту через GET /v1/bitbanker/status (BitbankerController::status()),
- * отдельного публичного эндпоинта под один текст не заводится.
+ * регистрацией в BitBanker — отдаётся клиенту через GET /v1/bitbanker/status
+ * (BitbankerController::status()), отдельного публичного эндпоинта под один
+ * текст не заводится.
  */
 class BitbankerSettings extends Page implements HasForms
 {

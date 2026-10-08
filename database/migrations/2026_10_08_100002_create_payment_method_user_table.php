@@ -9,10 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      *
-     * Pivot «Разрешённые методы оплаты» — пустой список у пользователя означает
-     * «без ограничений» (видны все активные способы), см. BITBANKER_INTEGRATION_PLAN.md
-     * раздел 4.2. Для BitBanker запись сюда добавляется/удаляется автоматически кодом
-     * (BitbankerClientService::syncAllowedPaymentMethod()), для остальных способов — вручную в админке.
+     * Pivot «Разрешённые методы оплаты» — для большинства способов оплаты пустой
+     * список у пользователя означает «без ограничений» (видны все активные способы).
+     * Для BitBanker это исключение: он всегда требует явного попадания в этот список,
+     * даже если он пуст. Запись для BitBanker добавляется/удаляется автоматически
+     * кодом (BitbankerClientService::syncAllowedPaymentMethod()), для остальных способов —
+     * вручную в админке. Точная логика — PaymentMethod::isAllowedFor().
      */
     public function up(): void
     {

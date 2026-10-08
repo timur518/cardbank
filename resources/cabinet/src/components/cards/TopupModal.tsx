@@ -37,7 +37,7 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    // BitBanker: экран QR вместо редиректа на payment_url (раздел 10.4 BITBANKER_INTEGRATION_PLAN.md).
+    // BitBanker: экран QR вместо редиректа на payment_url.
     const [qrPayment, setQrPayment] = useState<{ qrCode: string; fallbackUrl: string | null } | null>(null);
 
     const parsedAmount = useMemo(() => parseAmount(amount), [amount]);

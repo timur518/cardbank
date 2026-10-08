@@ -41,7 +41,7 @@ export function NewCardOrderPage() {
     const [amount, setAmount] = useState('');
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    // BitBanker: экран QR вместо редиректа на payment_url (раздел 10.4 BITBANKER_INTEGRATION_PLAN.md).
+    // BitBanker: экран QR вместо редиректа на payment_url.
     const [qrPayment, setQrPayment] = useState<{ cardUuid: string; qrCode: string; fallbackUrl: string | null } | null>(null);
 
     // Не сбрасывает уже выбранный способ оплаты при повторном вызове (см.

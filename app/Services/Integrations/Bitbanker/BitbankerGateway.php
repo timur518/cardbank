@@ -17,7 +17,6 @@ use Illuminate\Http\Request;
  *   - api_secret — расчёт full_sign (запросы и вебхуки), обязателен;
  *   - base_url   — опционально, по умолчанию DEV;
  *   - invoice_header — опционально, название организации в счёте (иначе config('app.name')).
- * См. BITBANKER_INTEGRATION_PLAN.md раздел 5.3.
  */
 class BitbankerGateway implements PaymentGatewayContract
 {
@@ -40,14 +39,14 @@ class BitbankerGateway implements PaymentGatewayContract
      * Создаёt инвойс с оплатой по СБП и конвертацией в USDT (`POST /api/v2/invoices`).
      * `$orderReference` — `Income.id`: в отличие от ParityPay, BitBanker не принимает
      * свой order_id в URL, а требует `partner_client_external_id` (uuid пользователя) —
-     * поэтому Income подгружается заново вместе с `user`, см. BITBANKER_INTEGRATION_PLAN.md
-     * раздел 6 (initiate() контракта не меняется, доп. данные достаются отсюда).
+     * поэтому Income подгружается заново вместе с `user` (initiate() контракта не меняется,
+     * доп. данные достаются отсюда).
      * `Idempotency-Key` — `Income.idempotency_key` (тот же, что получает и ParityPay
      * через order_id — здесь обязателен заголовком, см. BitbankerClient::postSigned()).
      *
      * Возвращает `payment_url` = `sbp_info.qr_url` (ссылка НСПК) и дополнительно
      * `qr_code` (`sbp_info.sbp_qr`, base64 PNG) + `fallback_url` (`link`, хостед-страница
-     * инвойса BitBanker) — контракт расширен необязательными ключами, см. раздел 6.1.
+     * инвойса BitBanker) — контракт расширен необязательными ключами по сравнению с базовым PaymentGatewayContract::initiate().
      *
      * @return array{transaction_id: string, payment_url: string, qr_code: ?string, fallback_url: ?string}
      */
@@ -116,7 +115,7 @@ class BitbankerGateway implements PaymentGatewayContract
      *
      * Дополнительно возвращает сумму реальной конвертации в USDT
      * (`exchange_deal[0].volume_take_final`) через ключ `amount_usd` — контракт
-     * расширен необязательным ключом, см. раздел 6.1.
+     * расширен необязательным ключом по сравнению с базовым PaymentGatewayContract::parseWebhookPayload().
      *
      * @param  array<string, mixed>  $payload
      * @return array{transaction_id: string, status: 'paid'|'failed'|'unknown', amount_usd: ?float}

@@ -70,9 +70,10 @@ class UserInfolist
                     ]),
 
                 // Подробности о самой регистрации в BitBanker (is_verified_for_sbp, check_status,
-                // last_error) — в BitbankerClientRelationManager, здесь только факт принятия
-                // оферты и итоговый список разрешённых способов оплаты (см. BITBANKER_INTEGRATION_PLAN.md раздел 9).
-                Section::make('BitBanker')
+                // last_error) — в отдельной вкладке «BitBanker» ниже на этой странице, здесь
+                // только факт принятия оферты и итоговый список разрешённых способов оплаты.
+                // Редактируемый вариант этого же блока — на странице редактирования (см. UserForm).
+                Section::make('Настройки платежей')
                     ->columns(2)
                     ->schema([
                         IconEntry::make('bitbanker_offer_accepted')

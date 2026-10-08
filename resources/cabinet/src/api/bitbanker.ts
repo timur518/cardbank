@@ -2,8 +2,7 @@ import { apiClient } from './client';
 import type { BitbankerStatus } from './types';
 
 // Текущее состояние подключения BitBanker для пользователя (оферта/статус проверки) —
-// используется PaymentMethodsList, чтобы выбрать нужную плитку (см.
-// BITBANKER_INTEGRATION_PLAN.md раздел 10.2).
+// используется PaymentMethodsList, чтобы выбрать нужную плитку.
 export async function fetchBitbankerStatus(): Promise<BitbankerStatus> {
     const { data } = await apiClient.get<{ data: BitbankerStatus }>('/bitbanker/status');
     return data.data;

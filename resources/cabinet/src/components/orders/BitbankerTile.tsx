@@ -16,7 +16,7 @@ export const BITBANKER_BADGE = 'Без комиссии!';
 /**
  * Некликабельная плитка BitBanker в списке способов оплаты (см. PaymentMethodsList) —
  * показывается первым элементом списка, пока BitBanker ещё не появился в
- * GET /v1/payment-methods (состояния 1-3a из BITBANKER_INTEGRATION_PLAN.md раздел 10.2).
+ * GET /v1/payment-methods (пользователь ещё не прошёл KYC/оферту/регистрацию).
  * Как только способ оплаты становится доступен — на его месте рендерится обычная
  * выбираемая PaymentMethodOption с тем же бейджем (состояние 4).
  */
