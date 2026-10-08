@@ -9,14 +9,13 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 
 /**
- * Низкоуровневый транспорт для API BitBanker (DEV-swagger:
- * https://ext-api.dev.bitbanker.ru/docs/public/openapi, PROD:
- * https://api.bitbanker.org/latest/docs/public/openapi): авторизация заголовком
- * `X-API-KEY`, подпись `full_sign` через {@see BitbankerSigner} — в теле для
- * POST-запросов, в query-параметрах для GET. Бизнес-логики не содержит —
- * только HTTP. Использовать через
- * {@see \App\Services\Integrations\Bitbanker\BitbankerGateway} или
- * {@see \App\Services\Integrations\Bitbanker\BitbankerClientService}, а не напрямую.
+ * Низкоуровневый транспорт для API BitBanker (DEV: база https://ext-api.dev.bitbanker.ru,
+ * swagger https://ext-api.dev.bitbanker.ru/docs/public/openapi; PROD: база
+ * https://api.aws.bitbanker.org/latest): авторизация заголовком `X-API-KEY`,
+ * подпись `full_sign` через {@see BitbankerSigner} — в теле для POST-запросов,
+ * в query-параметрах для GET. Бизнес-логики не содержит — только HTTP.
+ * Использовать через {@see \App\Services\Integrations\Bitbanker\BitbankerGateway}
+ * или {@see \App\Services\Integrations\Bitbanker\BitbankerClientService}, а не напрямую.
  */
 class BitbankerClient
 {
@@ -32,7 +31,7 @@ class BitbankerClient
     /**
      * Подписанный POST-запрос: `timestamp`/`nonce`/`full_sign` добавляются в тело.
      * `$idempotencyKey` обязателен у BitBanker для `POST /api/v2/invoices` и
-     * `POST`/`GET /api/v3/partner-clients`.
+     * `POST`/`GET /api/v2/partner-clients`.
      *
      * @param  array<string, mixed>  $body
      * @return array<string, mixed>

@@ -9,18 +9,18 @@ use RuntimeException;
 
 /**
  * Обработка Events Webhook BitBanker — пока единственное известное событие
- * `sbp_client_permission_changed` (смена `is_verified_for_sbp` у уже
- * зарегистрированного клиента). Формат тела официально не описан
- * в OpenAPI (это push от BitBanker к нам, а не их API), но в примере из
- * документации в `data` есть только
- * `client_id`/`is_verified_for_sbp`/`previous_is_verified_for_sbp` —
- * **`check_status` в самом Events Webhook нет вообще**, он есть только в ответе
- * `POST`/`GET /api/v3/partner-clients`. Поэтому при получении этого события
+ * `sbp_client_permission_changed` (смена `is_verified_for_sbp`/`is_verified_for_qr` у уже
+ * зарегистрированного клиента). В `data` приходит `partner_client_id`,
+ * `client_id`, `is_verified_for_sbp`/`previous_is_verified_for_sbp` и
+ * `is_verified_for_qr`/`previous_is_verified_for_qr` — нам из них важны только
+ * `client_id` и `is_verified_for_sbp` (мы принимаем оплату только по СБП, не по статичному
+ * QR). **`check_status` в самом Events Webhook нет вообще**, он есть только в ответе
+ * `POST`/`GET /api/v2/partner-clients`. Поэтому при получении этого события
  * `check_status` проставляется в `completed` явно: сам факт «смены разрешения»
  * означает, что фоновые проверки завершились — иначе, оставь `check_status=pending`
  * как было, `BitbankerClient::isApproved()` никогда не стал бы `true` через один
  * только вебхук, даже когда `is_verified_for_sbp=true`. Источником истины при этом
- * всё равно остаётся `GET /api/v3/partner-clients` (см. BitbankerClientService::refreshStatus()).
+ * всё равно остаётся `GET /api/v2/partner-clients` (см. BitbankerClientService::refreshStatus()).
  */
 class BitbankerEventsWebhookHandler
 {

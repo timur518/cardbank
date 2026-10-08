@@ -10,9 +10,9 @@ use Illuminate\Http\Request;
 
 /**
  * Интеграция с платёжной системой BitBanker — оплата по СБП с автоматической
- * конвертацией в USDT (DEV-swagger: https://ext-api.dev.bitbanker.ru/docs/public/openapi,
- * PROD: https://api.bitbanker.org/latest/docs/public/openapi). Ключи подключения
- * читаются из `PaymentMethod.settlement_config`:
+ * конвертацией в USDT (DEV: база https://ext-api.dev.bitbanker.ru, swagger
+ * https://ext-api.dev.bitbanker.ru/docs/public/openapi; PROD: база https://api.aws.bitbanker.org/latest).
+ * Ключи подключения читаются из `PaymentMethod.settlement_config`:
  *   - api_key    — заголовок X-API-KEY, обязателен;
  *   - api_secret — расчёт full_sign (запросы и вебхуки), обязателен;
  *   - base_url   — опционально, по умолчанию DEV;
@@ -106,16 +106,31 @@ class BitbankerGateway implements PaymentGatewayContract
 
     /**
      * Разбирает `invoices_webhook` (формат v2 — тот же payload, что и у
-     * `GET /api/v2/invoices`). `payed=true` — top-level признак фактической оплаты
-     * (надёжнее `sbp_info.status`, который может быть промежуточным `authorized`
-     * и впоследствии ещё смениться); непустой `exchange_deal` появляется, как
-     * только сделка конвертации обработана. Полный список статусов `sbp_info.status`
-     * см. в документации BitBanker — успех: `authorized`/`captured`, отказ:
-     * `declined`/`failed`/`cancelled`, просрочка: `expired`, остальное — не финально.
+     * `GET /api/v2/invoices`). `payed=true` — самодостаточный top-level признак фактической
+     * оплаты (надёжнее `sbp_info.status`, который может быть промежуточным `authorized`
+     * и впоследствии ещё смениться). Важно: наличие `exchange_deal` НЕ гатит
+     * статус оплаты — сама документация BitBanker приводит пример webhook с
+     * `payed: true` и `exchange_deal: null` одновременно (сделка конвертации ещё не
+     * обработана на момент доставки вебхука) — если требовать непустой
+     * `exchange_deal` для `paid`, такой вебхук будет ошибочно классифицирован как `unknown`
+     * и молча проигнорирован (PaymentWebhookHandler::handle()), а повторной доставки не
+     * будет — мы отвечаем контроллеру 2xx независимо от статуса, а BitBanker ретраит
+     * вебхук только на не-2xx-ответ. Поэтому `exchange_deal` используется только как
+     * необязательное уточнение `amount_usd` ниже, а не как условие для `paid`.
+     *
+     * Полный список статусов `sbp_info.status` см. в документации BitBanker — успех:
+     * `authorized`/`captured`, отказ: `declined`/`failed`/`cancelled`, просрочка: `expired`,
+     * остальное — не финально. Если `payed=true`, статус всегда `paid` независимо от
+     * `sbp_info.status`.
      *
      * Дополнительно возвращает сумму реальной конвертации в USDT
-     * (`exchange_deal[0].volume_take_final`) через ключ `amount_usd` — контракт
-     * расширен необязательным ключом по сравнению с базовым PaymentGatewayContract::parseWebhookPayload().
+     * (`exchange_deal[0].volume_take_final`), если она уже известна на момент этого webhook,
+     * через ключ `amount_usd` — контракт расширен необязательным ключом по
+     * сравнению с базовым PaymentGatewayContract::parseWebhookPayload(). Если к моменту
+     * оплаты сделка ещё не обработана, `amount_usd` остаётся `null`, и
+     * PaymentWebhookHandler::handlePaid() просто не перезапишет ранее рассчитанный по
+     * внутреннему курсу `Income.amount_usd` — успешность оплаты и выпуск/пополнение карты
+     * никак не зависят от того, успела ли сделка конвертации к этому моменту.
      *
      * @param  array<string, mixed>  $payload
      * @return array{transaction_id: string, status: 'paid'|'failed'|'unknown', amount_usd: ?float}
@@ -127,7 +142,7 @@ class BitbankerGateway implements PaymentGatewayContract
         $sbpStatus = (string) ($payload['sbp_info']['status'] ?? '');
 
         $status = match (true) {
-            ($payload['payed'] ?? false) === true && $exchangeDeal !== [] => 'paid',
+            ($payload['payed'] ?? false) === true => 'paid',
             in_array($sbpStatus, ['declined', 'failed', 'cancelled', 'expired'], true) => 'failed',
             default => 'unknown',
         };

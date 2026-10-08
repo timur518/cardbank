@@ -60,7 +60,7 @@ return [
     'bitbanker' => [
         // Тайм-аут HTTP-запросов к API BitBanker, секунды. Учётные данные (api_key,
         // api_secret) и base_url (DEV https://ext-api.dev.bitbanker.ru по умолчанию, PROD
-        // https://api.bitbanker.org/latest) хранятся не здесь, а в settlement_config способа
+        // https://api.aws.bitbanker.org/latest) хранятся не здесь, а в settlement_config способа
         // оплаты в разделе «Настройки» → «Способы оплаты», т.к. касс BitBanker может быть несколько.
         'timeout' => (int) env('BITBANKER_TIMEOUT', 20),
     ],

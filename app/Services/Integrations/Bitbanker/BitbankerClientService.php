@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 use Throwable;
 
 /**
- * Регистрация пользователя в BitBanker (`POST`/`GET /api/v3/partner-clients`) и
+ * Регистрация пользователя в BitBanker (`POST`/`GET /api/v2/partner-clients`) и
  * единая синхронизация «Разрешённых методов оплаты»
  * (User::allowedPaymentMethods()) по её результату — вызывается и при первой
  * регистрации, и при повторном опросе статуса (фоновая команда
@@ -24,7 +24,7 @@ use Throwable;
  */
 class BitbankerClientService
 {
-    private const PARTNER_CLIENTS_PATH = '/api/v3/partner-clients';
+    private const PARTNER_CLIENTS_PATH = '/api/v2/partner-clients';
 
     /**
      * Регистрирует/обновляет пользователя в BitBanker. Бросает BitbankerException
@@ -62,7 +62,7 @@ class BitbankerClientService
 
     /**
      * Переопрашивает текущий статус уже зарегистрированного клиента
-     * (`GET /api/v3/partner-clients`) — используется фоновой командой
+     * (`GET /api/v2/partner-clients`) — используется фоновой командой
      * `bitbanker:sync-client-status` и кнопкой «Обновить статус» в админке.
      * Ошибки HTTP не пробрасываются — только логируются в `last_error`, чтобы
      * не прерывать пакетный опрос по всем клиентам.
@@ -124,7 +124,7 @@ class BitbankerClientService
     }
 
     /**
-     * Проверка полноты данных и сборка payload для `/api/v3/partner-clients`.
+     * Проверка полноты данных и сборка payload для `/api/v2/partner-clients`.
      * Бросает BitbankerException с понятным текстом при первом же несоответствии.
      *
      * @return array<string, mixed>
