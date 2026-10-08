@@ -61,7 +61,7 @@ export function BitbankerOfferModal({ offerText, onClose, onAccepted }: Bitbanke
                 </div>
             ) : (
                 <>
-                    <div className="bitbanker-offer-text">{offerText}</div>
+                    <div className="bitbanker-offer-text rich-text" dangerouslySetInnerHTML={{ __html: offerText }} />
 
                     <label className="bitbanker-offer-agree">
                         <input type="checkbox" checked={agreed} onChange={(event) => setAgreed(event.target.checked)} />

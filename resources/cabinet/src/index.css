@@ -880,6 +880,8 @@ html::-webkit-scrollbar {
 .apply-pay-option-static .btn { flex-shrink: 0; padding: .5rem .85rem; font-size: .78rem; }
 
 /* Попап оферты BitBanker (BitbankerOfferModal) — прокручиваемый блок текста + чекбокс согласия. */
+/* Текст оферты теперь приходит HTML-разметкой из RichEditor (см. BitbankerSettings.php),
+   типография тегов — через общий .rich-text, здесь только рамка/скролл. */
 .bitbanker-offer-text {
     max-height: 320px;
     overflow-y: auto;
@@ -887,9 +889,6 @@ html::-webkit-scrollbar {
     border: 1.5px solid var(--color-border);
     border-radius: 14px;
     font-size: .82rem;
-    line-height: 1.55;
-    color: var(--color-ink);
-    white-space: pre-line;
 }
 .bitbanker-offer-agree {
     display: flex;

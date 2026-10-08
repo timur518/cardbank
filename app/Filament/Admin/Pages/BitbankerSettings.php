@@ -5,7 +5,7 @@ namespace App\Filament\Admin\Pages;
 use App\Models\Setting;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
-use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
@@ -58,10 +58,9 @@ class BitbankerSettings extends Page implements HasForms
             ->components([
                 Section::make('Оферта')
                     ->schema([
-                        Textarea::make('bitbanker_offer_text')
+                        RichEditor::make('bitbanker_offer_text')
                             ->label('Текст оферты BitBanker')
-                            ->helperText('Показывается пользователю в попапе принятия перед регистрацией в BitBanker.')
-                            ->rows(10)
+                            ->helperText('Показывается пользователю в попапе принятия перед регистрацией в BitBanker. Длинный текст (например, на несколько страниц A4) — нормально, хранится без ограничения длины.')
                             ->columnSpanFull(),
                     ]),
             ])
