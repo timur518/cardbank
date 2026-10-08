@@ -260,6 +260,20 @@ ParityPay и прочих обычных способов админ испол�
 api_secret, base_url?}`. Лимиты (`min_amount`/`max_amount` — 1000–50000 ₽),
 `fee_percent`, `sandbox_mode` уже существуют и переиспользуются как есть.
 
+### 4.5. `incomes` — новая колонка `payment_extra`
+
+Найдено при реализации, не было в первоначальной версии плана. `OrderController::issue()`/`topup()`
+идемпотентны: повторный запрос с тем же `idempotency_key` возвращает ранее
+сохранённые в `Income` поля (`payment_transaction_id`/`payment_url`), не вызывая
+`initiate()` повторно. Для BitBanker этого недостаточно — расширенный контракт
+(раздел 6.1) возвращает ещё `qr_code`/`fallback_url`, для которых отдельных колонок нет.
+Чтобы не потерять их при повторном идемпотентном запросе (например, пользователь
+обновил страницу с QR до оплаты), добавлена колонка `payment_extra` (`json nullable`,
+после `payment_url`) — по аналогии `payment_url` (та же причина добавления в
+своё время). `OrderController` сохраняет туда все ключи результата `initiate()`,
+кроме `transaction_id`/`payment_url` (для ParityPay/Stub будет `null` — поведение
+не меняется).
+
 ---
 
 ## 5. Новая папка интеграции — `app/Services/Integrations/Bitbanker`
