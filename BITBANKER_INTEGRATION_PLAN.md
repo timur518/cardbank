@@ -96,18 +96,35 @@ BitBanker подтвердит готовность клиента (`is_verified
 
 ### 3.2. Источники данных в нашей системе
 
-| Поле BitBanker | Источник | Преобразование |
+`id_verifications[]` в `KycVerification.provider_response` Didit может содержать
+несколько распознанных документов разных типов (поле `document_type`:
+`Identity Card`, `Passport`, `Driver's License` и т.п. — зависит от того, что
+загрузил пользователь и что разрешает `workflow_id` в настройках Didit).
+BitBanker требует данные именно **внутреннего паспорта гражданина РФ**, а не
+загранпаспорта — у Didit это `document_type === "Identity Card"`. Загранпаспорт
+(`document_type === "Passport"`, `document_subtype === "EPASSPORT"`) для
+регистрации не подходит: у него другой формат номера (9 цифр вместо 10) и в
+MRZ нет отчества. Поэтому `BitbankerClientService` берёт из `id_verifications[]`
+не первый элемент, а первый с `document_type === "Identity Card"`.
+
+Имя/фамилия берутся не из `User` (их пользователь сам вписывает при
+регистрации, без проверки на кириллицу/соответствие паспорту — см.
+`RegisterRequest`), а из распознанных Didit данных того же документа
+(`extra_fields.*_non_latin`) — BitBanker прямо требует «кириллицей, согласно
+паспортным данным».
+
+| Поле BitBanker | Источник (из отчёта `Identity Card` в `id_verifications[]`) | Преобразование |
 |---|---|---|
 | `client_id` | `User.uuid` | без изменений, значение после первой успешной регистрации неизменяемо на стороне BitBanker |
 | `email` | `User.email` | — |
 | `phone` | `User.phone` | без изменений (формат `+79991234567` уже используется в проекте) |
-| `first_name` | `User.first_name` | — |
-| `last_name` | `User.last_name` | — |
-| `patronymic` | `User.middle_name` | только если заполнено |
-| `birth_date` | `User.date_of_birth` | `Y-m-d` → `d.m.Y` |
-| `passport` | последняя `KycVerification` (type=provider, provider=didit, status=approved) → `provider_response.id_verifications[0].document_number` | убрать пробелы/дефисы |
-| `passport_issue_date` | та же запись → `id_verifications[0].date_of_issue` | `Y-m-d` → `d.m.Y` |
-| `country_of_passport_issue` | та же запись → `id_verifications[0].issuing_state` | передаётся как есть; если не `RUS` — регистрация не выполняется (см. 3.3) |
+| `first_name` | `extra_fields.first_name_non_latin` | — (кириллица, из OCR документа, не из `User`) |
+| `last_name` | `extra_fields.last_name_non_latin` | — (кириллица, из OCR документа, не из `User`) |
+| `patronymic` | `extra_fields.middle_name_non_latin` (точное имя поля уточнить на реальном `Identity Card`-отчёте — в примере с загранпаспортом такого поля нет, см. выше) | только если заполнено |
+| `birth_date` | `date_of_birth` | `Y-m-d` → `d.m.Y` (в примере: `1995-09-18`) |
+| `passport` | `document_number` | убрать пробелы/дефисы; для `Identity Card` ожидается 10 цифр (серия 4 + номер 6) — не путать с `document_number` документа типа `Passport` (9 цифр, как в примере `778447383`) |
+| `passport_issue_date` | `date_of_issue` | `Y-m-d` → `d.m.Y` (в примере: `2026-03-06`) |
+| `country_of_passport_issue` | `issuing_state` | передаётся как есть (в примере: `RUS`); если не `RUS` — регистрация не выполняется (см. 3.3) |
 | `inn` | не передаётся | в системе не собирается |
 
 ### 3.3. Проверка полноты данных перед вызовом API
@@ -115,16 +132,24 @@ BitBanker подтвердит готовность клиента (`is_verified
 `BitbankerClientService::register()` перед запросом к BitBanker проверяет:
 
 * `User.kyc_status === KycStatus::Approved`;
-* есть `KycVerification` (type=provider, provider=didit, status=approved) с
-  непустыми `id_verifications[0].document_number` / `date_of_issue` /
-  `issuing_state`;
-* `issuing_state === 'RUS'`;
-* `first_name`, `last_name`, `date_of_birth`, `phone`, `email` заполнены.
+* у пользователя есть `KycVerification` (type=provider, provider=didit,
+  status=approved), и в её `provider_response.id_verifications[]` есть элемент
+  с `document_type === "Identity Card"` (внутренний паспорт РФ) — если такого
+  элемента нет (пользователь проходил верификацию только по загранпаспорту или
+  другому документу), регистрация не выполняется;
+* у этого элемента непустые `document_number` / `date_of_issue` /
+  `issuing_state` и `issuing_state === 'RUS'`;
+* `extra_fields.first_name_non_latin` / `last_name_non_latin` непустые;
+* `User.date_of_birth`, `User.phone`, `User.email` заполнены.
 
 Если хоть одно условие не выполнено — метод бросает `BitbankerException` с
 понятным текстом, контроллер (раздел 6.1) возвращает `422` и фронт показывает
 сообщение «обратитесь в поддержку» вместо повторной попытки — так как эти
-данные не редактируются пользователем в рамках этого флоу.
+данные не редактируются пользователем в рамках этого флоу. На практике это
+означает: если у клиента в Didit верифицирован только загранпаспорт, доступ к
+BitBanker будет недоступен, пока он не пройдёт верификацию ещё раз, загрузив
+внутренний паспорт РФ (это уже решается на стороне фронта верификации — вне
+рамок данной интеграции).
 
 ---
 
