@@ -5,12 +5,15 @@ interface PaymentMethodOptionProps {
     method: PaymentMethod;
     selected: boolean;
     onSelect: () => void;
+    // Бейдж рядом с названием (например, «BitBanker DEV» + «Без комиссии!») — см. PaymentMethodsList.
+    badge?: string;
 }
 
 // СБП определяем по названию способа оплаты (в PaymentMethod нет отдельного типа
-// для СБП — это тоже type=gateway, только с другим названием, задаётся в админке).
+// для СБП — это тоже type=gateway, только с другим названием, задаётся в админке);
+// BitBanker всегда оплата по СБП, определяется надёжнее по gateway_code.
 function isSbp(method: PaymentMethod): boolean {
-    return method.name.toLowerCase().includes('сбп');
+    return method.gateway_code === 'bitbanker' || method.name.toLowerCase().includes('сбп');
 }
 
 function PaymentMethodIcon({ method }: { method: PaymentMethod }) {
@@ -26,7 +29,7 @@ function PaymentMethodIcon({ method }: { method: PaymentMethod }) {
 }
 
 // Один способ оплаты на шаге выпуска/пополнения карты. Без подписи с диапазоном сумм под названием.
-export function PaymentMethodOption({ method, selected, onSelect }: PaymentMethodOptionProps) {
+export function PaymentMethodOption({ method, selected, onSelect, badge }: PaymentMethodOptionProps) {
     return (
         <label className={`apply-pay-option ${selected ? 'is-active' : ''}`}>
             <input type="radio" name="pay_method" className="sr-only" checked={selected} onChange={onSelect} />
@@ -34,7 +37,10 @@ export function PaymentMethodOption({ method, selected, onSelect }: PaymentMetho
                 <PaymentMethodIcon method={method} />
             </span>
             <span className="apply-pay-info">
-                <span className="apply-pay-name">{method.name}</span>
+                <span className="apply-pay-name">
+                    {method.name}
+                    {badge && <span className="apply-pay-badge">{badge}</span>}
+                </span>
             </span>
         </label>
     );

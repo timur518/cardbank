@@ -6,8 +6,9 @@ import { extractErrorMessage } from '../../api/client';
 import { issueOrder } from '../../api/orders';
 import type { CardProduct, PaymentMethod } from '../../api/types';
 import { CardChoiceGridSkeleton } from '../../components/common/Skeleton';
+import { BitbankerQrPaymentModal } from '../../components/orders/BitbankerQrPaymentModal';
 import { CardProductChoice } from '../../components/orders/CardProductChoice';
-import { PaymentMethodOption } from '../../components/orders/PaymentMethodOption';
+import { PaymentMethodsList } from '../../components/orders/PaymentMethodsList';
 import { useTopupQuote } from '../../hooks/useTopupQuote';
 import { trackAddToCart, trackProductListView, storePendingPurchase } from '../../utils/ecommerce';
 import { formatRub } from '../../utils/format';
@@ -40,6 +41,19 @@ export function NewCardOrderPage() {
     const [amount, setAmount] = useState('');
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    // BitBanker: экран QR вместо редиректа на payment_url (раздел 10.4 BITBANKER_INTEGRATION_PLAN.md).
+    const [qrPayment, setQrPayment] = useState<{ cardUuid: string; qrCode: string; fallbackUrl: string | null } | null>(null);
+
+    // Не сбрасывает уже выбранный способ оплаты при повторном вызове (см.
+    // PaymentMethodsList::onMethodsRefresh — после принятия оферты BitBanker).
+    function loadMethods() {
+        return fetchPaymentMethods()
+            .then((loadedMethods) => {
+                setMethods(loadedMethods);
+                setSelectedMethodId((current) => current ?? loadedMethods[0]?.id ?? null);
+            })
+            .catch((error) => setLoadError(extractErrorMessage(error, 'Не удалось загрузить способы оплаты.')));
+    }
 
     useEffect(() => {
         Promise.all([fetchCardProducts(), fetchPaymentMethods()])
@@ -126,6 +140,13 @@ export function NewCardOrderPage() {
                 idempotency_key: idempotencyKey.current,
             });
 
+            // qr_code проверяем первым: у BitBanker payment_url тоже заполнен (ссылка НСПК для
+            // сканирования/открытия приложением банка), но показывать нужно экран QR, а не редирект.
+            if (result.qr_code) {
+                setQrPayment({ cardUuid: result.card_uuid, qrCode: result.qr_code, fallbackUrl: result.fallback_url });
+                return;
+            }
+
             if (result.payment_url) {
                 // Эл.коммерция: сохраняем заказ — событие purchase отправится после возврата
                 // клиента со страницы оплаты (см. DashboardLayout.tsx / flushPendingPurchase()).
@@ -155,6 +176,19 @@ export function NewCardOrderPage() {
                 <h1 className="text-2xl font-extrabold tracking-tight text-ink">Оформление карты</h1>
                 <CardChoiceGridSkeleton />
             </div>
+        );
+    }
+
+    if (qrPayment) {
+        return (
+            <BitbankerQrPaymentModal
+                qrCode={qrPayment.qrCode}
+                fallbackUrl={qrPayment.fallbackUrl}
+                cardId={qrPayment.cardUuid}
+                mode="issue"
+                onClose={() => navigate('/cards')}
+                onPaid={() => navigate(`/cards/${qrPayment.cardUuid}`)}
+            />
         );
     }
 
@@ -285,16 +319,13 @@ export function NewCardOrderPage() {
 
                                 <div>
                                     <h2 className="apply-section-title">Способы оплаты</h2>
-                                    <div className="apply-pay-list mt-4">
-                                        {methods.map((method) => (
-                                            <PaymentMethodOption
-                                                key={method.id}
-                                                method={method}
-                                                selected={method.id === selectedMethodId}
-                                                onSelect={() => setSelectedMethodId(method.id)}
-                                            />
-                                        ))}
-                                    </div>
+                                    <PaymentMethodsList
+                                        className="mt-4"
+                                        methods={methods}
+                                        selectedMethodId={selectedMethodId}
+                                        onSelect={setSelectedMethodId}
+                                        onMethodsRefresh={loadMethods}
+                                    />
                                 </div>
                             </div>
                         </div>

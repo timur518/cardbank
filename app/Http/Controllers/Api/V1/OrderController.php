@@ -235,6 +235,10 @@ class OrderController extends Controller
         return response()->json([
             'data' => [
                 'card_id' => $card->id,
+                // uuid отдельно от card_id (сквозного id в базе, уже используется в эл.коммерции) — нужен
+                // фронту, чтобы после оплаты через BitbankerQrPaymentModal опрашивать `GET /cards/{card:uuid}`
+                // и перейти на страницу карты после подтверждения оплаты (см. BITBANKER_INTEGRATION_PLAN.md раздел 10.4).
+                'card_uuid' => $card->uuid,
                 'status' => $card->status->value,
                 'price_rub' => number_format((float) $card->price_rub, 2, '.', ''),
                 'topup_usd' => number_format((float) $income->topup_usd, 2, '.', ''),

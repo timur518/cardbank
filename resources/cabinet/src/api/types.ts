@@ -262,9 +262,23 @@ export interface PaymentMethod {
     id: number;
     name: string;
     type: PaymentMethodType;
+    // null у заглушки/ещё не подключённой интеграции. Используется, чтобы надёжно отличить BitBanker
+    // среди пришедших способов оплаты (PaymentMethodsList), не полагаясь на подстроку в name.
+    gateway_code: string | null;
     currency: string;
     min_amount: string;
     max_amount: string;
+}
+
+// GET /v1/bitbanker/status — состояние подключения BitBanker для текущего пользователя (см.
+// PaymentMethodsList/BitbankerTile — BITBANKER_INTEGRATION_PLAN.md раздел 7.1/10.2).
+export interface BitbankerStatus {
+    offer_accepted: boolean;
+    // Текст оферты для попапа принятия (BitbankerOfferModal).
+    offer_text: string;
+    is_verified_for_sbp: boolean;
+    // null — регистрация в BitBanker ещё ни разу не запускалась.
+    check_status: 'pending' | 'completed' | null;
 }
 
 export interface IssueOrderPayload {
@@ -278,6 +292,9 @@ export interface IssueOrderPayload {
 // Результат выпуска карты
 export interface IssueOrderResult {
     card_id: number;
+    // uuid карты (в отличие от card_id) — нужен для опроса GET /cards/{uuid} в
+    // BitbankerQrPaymentModal и перехода на страницу карты после оплаты.
+    card_uuid: string;
     status: CardStatus;
     price_rub: string;
     topup_usd: string;
@@ -285,6 +302,10 @@ export interface IssueOrderResult {
     total_rub: string;
     payment_transaction_id: string | null;
     payment_url: string | null;
+    // Только у BitBanker (base64 PNG) — см. BitbankerQrPaymentModal.
+    qr_code: string | null;
+    // Только у BitBanker — хостед-страница инвойса, кнопка-дублёр в BitbankerQrPaymentModal.
+    fallback_url: string | null;
     idempotency_key: string;
 }
 
@@ -304,6 +325,10 @@ export interface TopupOrderResult {
     total_rub: string;
     payment_transaction_id: string | null;
     payment_url: string | null;
+    // Только у BitBanker (base64 PNG) — см. BitbankerQrPaymentModal.
+    qr_code: string | null;
+    // Только у BitBanker — хостед-страница инвойса, кнопка-дублёр в BitbankerQrPaymentModal.
+    fallback_url: string | null;
     idempotency_key: string;
 }
 

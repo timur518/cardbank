@@ -856,6 +856,70 @@ html::-webkit-scrollbar {
 .apply-pay-name { display: block; font-weight: 700; font-size: .82rem; }
 .apply-pay-desc { display: block; margin-top: 2px; font-size: .7rem; color: var(--color-muted); }
 
+/* Бейдж рядом с названием способа оплаты («Без комиссии!» у BitBanker, PaymentMethodOption/BitbankerTile). */
+.apply-pay-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #fff1ea;
+    color: var(--color-orange-dark);
+    font-size: .65rem;
+    font-weight: 800;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+/* Плитка BitBanker, пока он ещё недоступен для оплаты (BitbankerTile, состояния 1-3a) —
+   тот же .apply-pay-option, но без курсора-указателя и без hover-подсветки рамки, т.к. она не
+   является выбираемой. */
+.apply-pay-option-static { cursor: default; }
+.apply-pay-option-static:hover { border-color: var(--color-border); }
+.apply-pay-option-static .apply-pay-info { flex: 1 1 auto; min-width: 0; }
+.apply-pay-option-static .btn { flex-shrink: 0; padding: .5rem .85rem; font-size: .78rem; }
+
+/* Попап оферты BitBanker (BitbankerOfferModal) — прокручиваемый блок текста + чекбокс согласия. */
+.bitbanker-offer-text {
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 14px 16px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 14px;
+    font-size: .82rem;
+    line-height: 1.55;
+    color: var(--color-ink);
+    white-space: pre-line;
+}
+.bitbanker-offer-agree {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+    font-size: .82rem;
+    color: var(--color-ink);
+    cursor: pointer;
+}
+.bitbanker-offer-agree input { margin-top: 3px; flex-shrink: 0; }
+
+/* Экран оплаты по QR (BitbankerQrPaymentModal) — изображение QR-кода, таймер обратного
+   отсчёта, кнопка-дублёр со ссылкой fallback_url. */
+.bitbanker-qr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0 4px;
+}
+.bitbanker-qr-image {
+    width: 220px;
+    height: 220px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 16px;
+    padding: 10px;
+    background: #fff;
+}
+.bitbanker-qr-timer { font-size: .85rem; font-weight: 700; color: var(--color-muted); }
+
 /* Группа поля суммы пополнения — рамка визуально одна на input и суффикс «USD» справа
    (сам input без собственной рамки, см. правило ниже). */
 .apply-amount-input-group {

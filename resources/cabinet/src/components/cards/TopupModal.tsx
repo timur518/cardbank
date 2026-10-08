@@ -9,7 +9,8 @@ import { trackAddToCart, storePendingPurchase } from '../../utils/ecommerce';
 import { formatRub } from '../../utils/format';
 import { Modal } from '../common/Modal';
 import { PaymentMethodsSkeleton } from '../common/Skeleton';
-import { PaymentMethodOption } from '../orders/PaymentMethodOption';
+import { BitbankerQrPaymentModal } from '../orders/BitbankerQrPaymentModal';
+import { PaymentMethodsList } from '../orders/PaymentMethodsList';
 
 interface TopupModalProps {
     card: CardDetail;
@@ -36,6 +37,8 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    // BitBanker: экран QR вместо редиректа на payment_url (раздел 10.4 BITBANKER_INTEGRATION_PLAN.md).
+    const [qrPayment, setQrPayment] = useState<{ qrCode: string; fallbackUrl: string | null } | null>(null);
 
     const parsedAmount = useMemo(() => parseAmount(amount), [amount]);
     const { totalRub } = useTopupQuote({ cardId: card.id, amount: parsedAmount, currency: 'USD' });
@@ -63,14 +66,20 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
         });
     }, [minAmount, maxAmount]);
 
-    useEffect(() => {
-        fetchPaymentMethods()
+    // Не сбрасывает уже выбранный способ оплаты при повторном вызове (см.
+    // PaymentMethodsList::onMethodsRefresh — после принятия оферты BitBanker).
+    function loadMethods() {
+        return fetchPaymentMethods()
             .then((loaded) => {
                 setMethods(loaded);
-                setSelectedMethodId(loaded[0]?.id ?? null);
+                setSelectedMethodId((current) => current ?? loaded[0]?.id ?? null);
             })
-            .catch((err) => setError(extractErrorMessage(err, 'Не удалось загрузить способы оплаты.')))
-            .finally(() => setIsLoading(false));
+            .catch((err) => setError(extractErrorMessage(err, 'Не удалось загрузить способы оплаты.')));
+    }
+
+    useEffect(() => {
+        loadMethods().finally(() => setIsLoading(false));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Эл.коммерция: модалка монтируется только при клике на «Пополнить
@@ -107,6 +116,13 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
                 idempotency_key: idempotencyKey.current,
             });
 
+            // qr_code проверяем первым: у BitBanker payment_url тоже заполнен (ссылка НСПК для
+            // сканирования/открытия приложением банка), но показывать нужно экран QR, а не редирект.
+            if (result.qr_code) {
+                setQrPayment({ qrCode: result.qr_code, fallbackUrl: result.fallback_url });
+                return;
+            }
+
             if (result.payment_url) {
                 // Эл.коммерция: событие purchase отправится после возврата клиента со
                 // страницы оплаты (см. DashboardLayout.tsx / flushPendingPurchase()).
@@ -126,6 +142,22 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
         }
     }
 
+    if (qrPayment) {
+        return (
+            <BitbankerQrPaymentModal
+                qrCode={qrPayment.qrCode}
+                fallbackUrl={qrPayment.fallbackUrl}
+                cardId={card.id}
+                mode="topup"
+                initialBalance={card.balance}
+                onClose={onClose}
+                // Баланс уже обновлён на бэкенде — простая перезагрузка страницы карты
+                // надёжно подтягивает его везде (шапка, BalancePanel, история операций).
+                onPaid={() => window.location.reload()}
+            />
+        );
+    }
+
     return (
         <Modal title="Пополнить карту" onClose={onClose}>
             {isLoading ? (
@@ -134,16 +166,12 @@ export function TopupModal({ card, onClose }: TopupModalProps) {
                 <form onSubmit={handleSubmit} className="fade-in-up">
                         <div className="apply-field !mt-0">
                             <label>Способ оплаты</label>
-                            <div className="apply-pay-list">
-                                {methods.map((method) => (
-                                    <PaymentMethodOption
-                                        key={method.id}
-                                        method={method}
-                                        selected={method.id === selectedMethodId}
-                                        onSelect={() => setSelectedMethodId(method.id)}
-                                    />
-                                ))}
-                            </div>
+                            <PaymentMethodsList
+                                methods={methods}
+                                selectedMethodId={selectedMethodId}
+                                onSelect={setSelectedMethodId}
+                                onMethodsRefresh={loadMethods}
+                            />
                         </div>
 
                         <div className="apply-field">
