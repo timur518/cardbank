@@ -16,6 +16,10 @@ class PaymentMethodResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'type' => $this->type->value,
+            // Чтобы фронт мог надёжно отличить BitBanker среди пришедших способов
+            // оплаты (бейдж «Без комиссии!» и первое место в списке), не полагаясь
+            // на строку в `name`, как сейчас сделано для СБП в PaymentMethodOption.tsx (isSbp()).
+            'gateway_code' => $this->gateway_code?->value,
             'currency' => $this->currency,
             'min_amount' => number_format((float) $this->min_amount, 2, '.', ''),
             'max_amount' => number_format((float) $this->max_amount, 2, '.', ''),

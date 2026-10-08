@@ -13,6 +13,22 @@ class TopupOrderRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Защита от оплаты в обход списка на фронте (подстановка `payment_method_id` напрямую) —
+     * та же логика фильтрации, что и в PaymentMethodController::index() — см.
+     * BITBANKER_INTEGRATION_PLAN.md раздел 6.5.
+     */
+    protected function allowedToUser(): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) {
+            $user = $this->user();
+
+            if ($user && $user->allowedPaymentMethods()->exists() && ! $user->allowedPaymentMethods()->where('payment_methods.id', $value)->exists()) {
+                $fail('Этот способ оплаты вам недоступен.');
+            }
+        };
+    }
+
     public function rules(): array
     {
         return [
@@ -23,6 +39,7 @@ class TopupOrderRequest extends FormRequest
                 'required',
                 'integer',
                 Rule::exists('payment_methods', 'id')->where('status', ActiveStatus::Active->value),
+                $this->allowedToUser(),
             ],
             'idempotency_key' => ['nullable', 'string', 'max:255'],
         ];
