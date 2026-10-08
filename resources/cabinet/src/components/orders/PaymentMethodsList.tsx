@@ -112,7 +112,11 @@ export function PaymentMethodsList({ methods, selectedMethodId, onSelect, onMeth
                     badge={BITBANKER_BADGE}
                 />
             ) : (
-                bitbankerStatus && (
+                // bitbankerStatus.method_name === null значит «в админке нет активной записи BitBanker»
+                // (отключён в «Способах оплаты») — без этой проверки призывная плитка
+                // BitbankerTile показывалась бы даже при отключённом способе оплаты (methods его
+                // уже не содержит, но GET /v1/bitbanker/status по-прежнему отдаёт 200 с остальными полями).
+                bitbankerStatus?.method_name && (
                     <BitbankerTile
                         state={resolveBitbankerTileState(kycStatus, bitbankerStatus)}
                         methodName={bitbankerStatus.method_name}
