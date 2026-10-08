@@ -4,11 +4,13 @@ namespace App\Filament\Admin\Pages;
 
 use App\Mail\TestMail;
 use App\Models\Setting;
+use App\Rules\EmailDomainNotBlocked;
 use App\Services\Mail\MailConfigurator;
 use App\Services\Telegram\AdminTelegramNotifier;
 use BackedEnum;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -54,11 +56,19 @@ class NotificationSettings extends Page implements HasForms
         'notifications_notify_chat_id',
         'notifications_push_public_key',
         'notifications_push_private_key',
+        'notifications_blocked_email_domains',
     ];
 
     public function mount(): void
     {
-        $this->form->fill(Setting::getMany(self::KEYS));
+        $stored = Setting::getMany(self::KEYS);
+
+        // notifications_blocked_email_domains хранится в settings как JSON-массив строк
+        // (см. App\Rules\EmailDomainNotBlocked) — для TagsInput нужен PHP-массив.
+        $blockedDomains = json_decode((string) ($stored['notifications_blocked_email_domains'] ?? '[]'), true);
+        $stored['notifications_blocked_email_domains'] = is_array($blockedDomains) ? $blockedDomains : [];
+
+        $this->form->fill($stored);
     }
 
     public function form(Schema $schema): Schema
@@ -109,6 +119,16 @@ class NotificationSettings extends Page implements HasForms
                                     ->revealable(),
                             ])
                             ->columns(2),
+
+                        Tabs\Tab::make('Запрещённые email')
+                            ->schema([
+                                TagsInput::make('notifications_blocked_email_domains')
+                                    ->label('Запрещённые домены email')
+                                    ->helperText('Регистрация с email на этих доменах (например, mailinator.com) будет заблокирована на сайте и на лендинге.')
+                                    ->placeholder('example.com')
+                                    ->splitKeys([',', ' ', 'Tab', 'Enter'])
+                                    ->columnSpanFull(),
+                            ]),
                     ]),
             ])
             ->statePath('data');
@@ -116,7 +136,16 @@ class NotificationSettings extends Page implements HasForms
 
     public function save(): void
     {
-        Setting::setMany($this->form->getState());
+        $state = $this->form->getState();
+
+        // TagsInput отдаёт PHP-массив, а settings хранит только строки — нормализуем
+        // домены (нижний регистр, без «@»/пробелов) и кладём JSON-строкой —
+        // тот же формат, что читает App\Rules\EmailDomainNotBlocked::blockedDomains().
+        $state['notifications_blocked_email_domains'] = json_encode(
+            EmailDomainNotBlocked::normalize($state['notifications_blocked_email_domains'] ?? [])
+        );
+
+        Setting::setMany($state);
 
         Notification::make()->title('Настройки уведомлений сохранены')->success()->send();
     }

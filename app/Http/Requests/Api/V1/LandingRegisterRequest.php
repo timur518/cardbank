@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Rules\EmailDomainNotBlocked;
 use App\Support\PhoneNumber;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
@@ -43,7 +44,7 @@ class LandingRegisterRequest extends FormRequest
             'last_name' => ['required', 'string', 'max:255'],
             'middle_name' => ['nullable', 'string', 'max:255'],
             'phone' => ['required', 'string', 'unique:users,phone'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email', new EmailDomainNotBlocked],
             'date_of_birth' => ['required', 'date_format:Y-m-d', 'before:today', 'before_or_equal:' . now()->subYears(18)->format('Y-m-d')],
             'personal_data_consent' => ['required', 'accepted'],
             'referral_code' => ['nullable', 'string', 'max:255'],
