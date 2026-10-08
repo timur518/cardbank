@@ -35,7 +35,7 @@ export function BitbankerTile({ state, onAction, isActionLoading, methodName }: 
                 )}
             </span>
             {(state === 1 || state === 2) && (
-                <button type="button" className="btn" onClick={onAction} disabled={isActionLoading}>
+                <button type="button" className="btn btn-orange" onClick={onAction} disabled={isActionLoading}>
                     {state === 1 ? (isActionLoading ? 'Открываем…' : 'Пройти верификацию') : 'Принять оферту'}
                 </button>
             )}
