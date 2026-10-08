@@ -15,12 +15,14 @@ enum PaymentGatewayCode: string implements HasLabel
 {
     case Stub = 'stub';
     case ParityPay = 'paritypay';
+    case Bitbanker = 'bitbanker';
 
     public function getLabel(): string
     {
         return match ($this) {
             self::Stub => 'Заглушка (тестовый режим)',
             self::ParityPay => 'ParityPay',
+            self::Bitbanker => 'BitBanker (СБП → USDT)',
         };
     }
 }

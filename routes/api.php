@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\BitbankerController;
 use App\Http\Controllers\Api\V1\CardController;
 use App\Http\Controllers\Api\V1\CardProductController;
 use App\Http\Controllers\Api\V1\KycController;
@@ -63,6 +64,10 @@ Route::prefix('v1')->name('api.v1.')->group(function () {
 
         // Верификация личности через Didit — блок на странице профиля (перед «Мои данные»).
         Route::post('/kyc/start', [KycController::class, 'start'])->name('kyc.start');
+
+        // Оферта/статус BitBanker в блоке выбора способа оплаты — см. BITBANKER_INTEGRATION_PLAN.md раздел 7.1.
+        Route::get('/bitbanker/status', [BitbankerController::class, 'status'])->name('bitbanker.status');
+        Route::post('/bitbanker/accept', [BitbankerController::class, 'accept'])->name('bitbanker.accept');
 
         // Раздел 3. Оформление заказа.
         Route::post('/orders/issue', [OrderController::class, 'issue'])->name('orders.issue');
