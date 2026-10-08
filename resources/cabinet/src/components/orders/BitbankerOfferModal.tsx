@@ -23,7 +23,6 @@ const SUCCESS_AUTOCLOSE_MS = 10_000;
  * PaymentMethodsList/BitbankerTile, когда пользователь прошёл KYC, но ещё не принял оферту.
  */
 export function BitbankerOfferModal({ offerText, onClose, onAccepted }: BitbankerOfferModalProps) {
-    const [agreed, setAgreed] = useState(false);
     const [state, setState] = useState<ModalState>('idle');
     const [error, setError] = useState<string | null>(null);
 
@@ -63,20 +62,15 @@ export function BitbankerOfferModal({ offerText, onClose, onAccepted }: Bitbanke
                 <>
                     <div className="bitbanker-offer-text rich-text" dangerouslySetInnerHTML={{ __html: offerText }} />
 
-                    <label className="bitbanker-offer-agree">
-                        <input type="checkbox" checked={agreed} onChange={(event) => setAgreed(event.target.checked)} />
-                        <span>Я принимаю условия оферты BitBanker</span>
-                    </label>
-
                     {error && <p className="form-error-banner mt-3">{error}</p>}
 
                     <button
                         type="button"
                         className="btn btn-primary apply-submit"
                         onClick={handleAccept}
-                        disabled={!agreed || state === 'loading'}
+                        disabled={state === 'loading'}
                     >
-                        {state === 'loading' ? 'Регистрируем…' : 'Принять'}
+                        {state === 'loading' ? 'Подключение…' : 'Принять оферту'}
                     </button>
                 </>
             )}

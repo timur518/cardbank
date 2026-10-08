@@ -890,17 +890,6 @@ html::-webkit-scrollbar {
     border-radius: 14px;
     font-size: .82rem;
 }
-.bitbanker-offer-agree {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-top: 16px;
-    font-size: .82rem;
-    color: var(--color-ink);
-    cursor: pointer;
-}
-.bitbanker-offer-agree input { margin-top: 3px; flex-shrink: 0; }
-
 /* Экран оплаты по QR (BitbankerQrPaymentModal) — изображение QR-кода, таймер обратного
    отсчёта, кнопка-дублёр со ссылкой fallback_url. */
 .bitbanker-qr {
