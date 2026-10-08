@@ -26,7 +26,7 @@ use App\Models\Notification;
  * - PinSet, PinChanged: без параметров
  * - OtpCodeReceived: 'code'
  * - KycDeclined: 'reason' (?string)
- * - Welcome, CardOrderAccepted, CardIssueFailed, KycApproved: без параметров
+ * - Welcome, CardOrderAccepted, CardIssueFailed, KycApproved, BitbankerAvailable: без параметров
  */
 enum NotificationEvent
 {
@@ -47,6 +47,7 @@ enum NotificationEvent
     case OtpCodeReceived;
     case KycApproved;
     case KycDeclined;
+    case BitbankerAvailable;
 
     public function category(): NotificationType
     {
@@ -68,6 +69,7 @@ enum NotificationEvent
             self::OtpCodeReceived => NotificationType::OtpCode,
             self::KycApproved,
             self::KycDeclined => NotificationType::Kyc,
+            self::BitbankerAvailable => NotificationType::Payment,
         };
     }
 
@@ -94,6 +96,7 @@ enum NotificationEvent
             self::OtpCodeReceived => 'Код подтверждения',
             self::KycApproved => 'Верификация личности пройдена',
             self::KycDeclined => 'Верификация не пройдена',
+            self::BitbankerAvailable => 'Доступен новый способ оплаты',
         };
     }
 
@@ -120,6 +123,7 @@ enum NotificationEvent
             self::OtpCodeReceived => "Код подтверждения: {$params['code']}. Никому не сообщайте этот код!",
             self::KycApproved => 'Проверка личности успешно завершена. Теперь вам доступны все возможности личного кабинета.',
             self::KycDeclined => $this->kycDeclinedBody($params),
+            self::BitbankerAvailable => 'Теперь вам доступен более выгодный способ пополнения карты — BitBanker (оплата через СБП). Попробуйте при следующем пополнении.',
         };
     }
 

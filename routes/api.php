@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\Webhooks\CardsProWebhookController;
+use App\Http\Controllers\Api\Webhooks\BitbankerEventsWebhookController;
 use App\Http\Controllers\Api\Webhooks\DiditWebhookController;
 use App\Http\Controllers\Api\Webhooks\PaymentWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,11 @@ Route::post('/webhooks/cardspro/{provider:code}', CardsProWebhookController::cla
 
 Route::post('/webhooks/payment/{paymentMethod}', PaymentWebhookController::class)
     ->name('webhooks.payment');
+
+// Смена статуса клиента BitBanker (sbp_client_permission_changed) — отдельно от
+// webhooks/payment, т.к. это не про оплату, а про доступность способа оплаты.
+Route::post('/webhooks/bitbanker/{paymentMethod}/events', BitbankerEventsWebhookController::class)
+    ->name('webhooks.bitbanker.events');
 
 Route::post('/webhooks/didit', DiditWebhookController::class)
     ->name('webhooks.didit');

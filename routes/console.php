@@ -45,6 +45,12 @@ Schedule::command('payments:cancel-expired-orders')
     ->everyFiveMinutes()
     ->withoutOverlapping();
 
+// Переопрос статуса клиентов BitBanker — подстраховка на случай, если Events Webhook
+// не дошёл (см. App\Console\Commands\Bitbanker\SyncClientStatus).
+Schedule::command('bitbanker:sync-client-status')
+    ->everyFiveMinutes()
+    ->withoutOverlapping();
+
 // Курсы валют для страницы «Настройки» -> «Валютная система» (см.
 // App\Console\Commands\SyncCurrencyRates). ЦБ РФ обновляет курс сам не чаще раза
 // в сутки, но команда запускается почаще для устойчивости: если в момент планового
