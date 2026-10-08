@@ -1582,15 +1582,18 @@ html::-webkit-scrollbar {
     }
 }
 
-/* Попап предложения установить PWA (PwaInstallPrompt.tsx). На мобилке — узкая полоса выше
- chat-fab/нижнего меню: логотип, текст, кнопка (без подписи, только иконка) и закрытие всегда в одну
+/* Попап предложения установить PWA (PwaInstallPrompt.tsx). На мобилке — узкая полоса на уровне
+ chat-fab (тот же bottom, что и у оранжевой кнопки чата) и уже, чем раньше, чтобы не уходить
+ правым краем под колонку плавающих кнопок (chat-fab + telegram-fab, right: 16px, ширина 56px —
+ занимают полосу до 72px от правого края, поэтому у тоста right: 84px, с запасом в 12px):
+ логотип, текст, кнопка (без подписи, только иконка) и закрытие всегда в одну
  строку без переноса; на десктопе (ниже, @media 640px+) — карточка 430px в левом нижнем углу, с
  подписью на кнопке, chat-fab остаётся справа свободным. */
 .pwa-install-toast {
     position: fixed;
     left: 12px;
-    right: 12px;
-    bottom: calc(150px + env(safe-area-inset-bottom));
+    right: 84px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
     z-index: 43;
     display: flex;
     align-items: center;
