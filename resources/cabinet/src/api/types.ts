@@ -273,6 +273,10 @@ export interface PaymentMethod {
 // GET /v1/bitbanker/status — состояние подключения BitBanker для текущего пользователя (см.
 // PaymentMethodsList/BitbankerTile — BITBANKER_INTEGRATION_PLAN.md раздел 7.1/10.2).
 export interface BitbankerStatus {
+    // Название способа оплаты из админки («Способы оплаты» → PaymentMethod.name) — для
+    // плитки BitbankerTile, пока сам PaymentMethod ещё не пришёл в GET /v1/payment-methods.
+    // null, если активной записи BitBanker в админке вообще нет.
+    method_name: string | null;
     offer_accepted: boolean;
     // Текст оферты для попапа принятия (BitbankerOfferModal).
     offer_text: string;

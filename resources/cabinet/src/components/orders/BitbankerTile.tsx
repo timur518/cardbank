@@ -6,6 +6,9 @@ interface BitbankerTileProps {
     state: BitbankerTileState;
     onAction: () => void;
     isActionLoading?: boolean;
+    // Название из админки (PaymentMethod.name, см. BitbankerStatus.method_name) — фолбэк на
+    // случай, пока он ещё не загрузился.
+    methodName?: string | null;
 }
 
 export const BITBANKER_BADGE = 'Без комиссии!';
@@ -17,7 +20,7 @@ export const BITBANKER_BADGE = 'Без комиссии!';
  * Как только способ оплаты становится доступен — на его месте рендерится обычная
  * выбираемая PaymentMethodOption с тем же бейджем (состояние 4).
  */
-export function BitbankerTile({ state, onAction, isActionLoading }: BitbankerTileProps) {
+export function BitbankerTile({ state, onAction, isActionLoading, methodName }: BitbankerTileProps) {
     return (
         <div className="apply-pay-option apply-pay-option-static">
             <span className="apply-pay-icon" aria-hidden="true">
@@ -25,7 +28,7 @@ export function BitbankerTile({ state, onAction, isActionLoading }: BitbankerTil
             </span>
             <span className="apply-pay-info">
                 <span className="apply-pay-name">
-                    BitBanker (СБП)
+                    {methodName || 'BitBanker (СБП)'}
                     <span className="apply-pay-badge">{BITBANKER_BADGE}</span>
                 </span>
                 {state === 3 && <span className="apply-pay-desc">Заявка на рассмотрении</span>}

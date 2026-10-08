@@ -31,8 +31,17 @@ class BitbankerController extends Controller
         $user = $request->user();
         $client = $user->bitbankerClient;
 
+        // Название способа оплаты из админки («Способы оплаты» → PaymentMethod.name) — нужно
+        // фронту для плитки BitbankerTile, пока сам PaymentMethod ещё не попал в список
+        // доступных (GET /v1/payment-methods его ещё не отдаёт, см. PaymentMethod::isAllowedFor()).
+        $paymentMethod = PaymentMethod::query()
+            ->where('gateway_code', PaymentGatewayCode::Bitbanker)
+            ->where('status', ActiveStatus::Active)
+            ->first();
+
         return response()->json([
             'data' => [
+                'method_name' => $paymentMethod?->name,
                 'offer_accepted' => $user->bitbanker_offer_accepted_at !== null,
                 'offer_text' => (string) Setting::get('bitbanker_offer_text', ''),
                 'is_verified_for_sbp' => (bool) ($client?->is_verified_for_sbp ?? false),

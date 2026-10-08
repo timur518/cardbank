@@ -114,6 +114,7 @@ export function PaymentMethodsList({ methods, selectedMethodId, onSelect, onMeth
                 bitbankerStatus && (
                     <BitbankerTile
                         state={resolveBitbankerTileState(kycStatus, bitbankerStatus)}
+                        methodName={bitbankerStatus.method_name}
                         isActionLoading={isStartingKyc}
                         onAction={() => {
                             if (kycStatus !== 'approved') {
