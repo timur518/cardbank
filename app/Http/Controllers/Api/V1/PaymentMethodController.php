@@ -16,10 +16,10 @@ class PaymentMethodController extends Controller
      * Маршрут публичный (доступен и гостю — до входа в ЛК), но `statefulApi()`
      * (см. bootstrap/app.php) резолвит `$request->user()` и для гостевых cookie-сессий,
      * поэтому для залогиненного пользователя список дополнительно фильтруется по
-     * `allowedPaymentMethods` (см. BITBANKER_INTEGRATION_PLAN.md раздел 6.4): пустой
-     * список означает «без ограничений» (показываются все активные способы, как и для
-     * гостя), непустой — пересекаем с ним. BitBanker появляется в списке ровно тогда,
-     * когда попадает в этот список (BitbankerClientService::syncAllowedPaymentMethod()).
+     * `allowedPaymentMethods` (см. BITBANKER_INTEGRATION_PLAN.md раздел 6.4) через
+     * PaymentMethod::isAllowedFor() — BitBanker появляется в списке только после
+     * попадания в него (BitbankerClientService::syncAllowedPaymentMethod()), для
+     * остальных способов пустой список по-прежнему означает «без ограничений».
      */
     public function index(Request $request): AnonymousResourceCollection
     {
@@ -28,11 +28,9 @@ class PaymentMethodController extends Controller
             ->get();
 
         $user = $request->user();
+        $allowedMethods = $user?->allowedPaymentMethods()->get();
 
-        if ($user && $user->allowedPaymentMethods()->exists()) {
-            $allowedIds = $user->allowedPaymentMethods()->pluck('payment_methods.id');
-            $methods = $methods->whereIn('id', $allowedIds)->values();
-        }
+        $methods = $methods->filter(fn (PaymentMethod $method) => $method->isAllowedFor($user, $allowedMethods))->values();
 
         return PaymentMethodResource::collection($methods);
     }

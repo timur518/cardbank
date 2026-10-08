@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class PaymentMethod extends Model
 {
@@ -69,5 +70,48 @@ class PaymentMethod extends Model
     public function bitbankerClients(): HasMany
     {
         return $this->hasMany(BitbankerClient::class);
+    }
+
+    /**
+     * Доступен ли этот способ оплаты пользователю — общая проверка для
+     * PaymentMethodController::index() и валидации payment_method_id в
+     * IssueOrderRequest/TopupOrderRequest (BITBANKER_INTEGRATION_PLAN.md раздел 6.4/6.5).
+     *
+     * Для BitBanker (gateway_code=bitbanker) правило «список пуст — не ограничен»
+     * НЕ действует: он требует явного попадания в allowedPaymentMethods (успешная
+     * регистрация+верификация, см. BitbankerClientService::syncAllowedPaymentMethod()),
+     * иначе способ был бы доступен всем ещё до прохождения KYC/оферты — именно это
+     * и есть смысл списка разрешённых методов для BitBanker (раздел 2 плана). Для
+     * гостя (user=null) BitBanker всегда недоступен.
+     *
+     * Для прочих способов оплаты (ParityPay и т.д.) действует старое правило:
+     * список разрешённых формируется вручную в админке, пустой список означает
+     * отсутствие ограничения (видны все активные способы). Важно: автоматически
+     * добавленная запись BitBanker в allowedPaymentMethods не считается «ручным
+     * ограничением» для этой проверки — иначе одобрение BitBanker для пользователя
+     * случайно скрывало бы ему все остальные ранее неограниченные способы оплаты.
+     *
+     * $allowedMethods можно передать заранее полученной коллекцией моделей PaymentMethod
+     * из user.allowedPaymentMethods, чтобы не делать запрос на каждый способ оплаты в списке.
+     */
+    public function isAllowedFor(?User $user, ?Collection $allowedMethods = null): bool
+    {
+        if (! $user) {
+            return $this->gateway_code !== PaymentGatewayCode::Bitbanker;
+        }
+
+        $allowedMethods ??= $user->allowedPaymentMethods()->get();
+
+        if ($this->gateway_code === PaymentGatewayCode::Bitbanker) {
+            return $allowedMethods->contains('id', $this->id);
+        }
+
+        $manualAllowedMethods = $allowedMethods->where('gateway_code', '!=', PaymentGatewayCode::Bitbanker);
+
+        if ($manualAllowedMethods->isEmpty()) {
+            return true;
+        }
+
+        return $manualAllowedMethods->contains('id', $this->id);
     }
 }

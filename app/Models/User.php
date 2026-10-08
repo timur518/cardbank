@@ -152,10 +152,12 @@ class User extends Authenticatable implements FilamentUser
     }
 
     /**
-     * «Разрешённые методы оплаты» — пустой список означает отсутствие ограничений
-     * (видны все активные способы оплаты). Для BitBanker запись сюда добавляется/
-     * удаляется автоматически (см. BitbankerClientService::syncAllowedPaymentMethod()),
-     * для остальных способов — вручную в админке. См. BITBANKER_INTEGRATION_PLAN.md раздел 4.2.
+     * «Разрешённые методы оплаты». Для BitBanker запись сюда добавляется/удаляется
+     * автоматически (см. BitbankerClientService::syncAllowedPaymentMethod()) и он всегда
+     * требует явного попадания в этот список (пустой список ␣ отсутствие ограничения
+     * для него НЕ действует). Для остальных способов список формируется вручную
+     * в админке, и пустой список действительно означает отсутствие ограничений.
+     * Точная логика — PaymentMethod::isAllowedFor(). См. BITBANKER_INTEGRATION_PLAN.md раздел 4.2.
      */
     public function allowedPaymentMethods(): BelongsToMany
     {

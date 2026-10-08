@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1;
 
 use App\Enums\ActiveStatus;
+use App\Models\PaymentMethod;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,9 +22,9 @@ class TopupOrderRequest extends FormRequest
     protected function allowedToUser(): \Closure
     {
         return function (string $attribute, mixed $value, \Closure $fail) {
-            $user = $this->user();
+            $method = PaymentMethod::find($value);
 
-            if ($user && $user->allowedPaymentMethods()->exists() && ! $user->allowedPaymentMethods()->where('payment_methods.id', $value)->exists()) {
+            if ($method && ! $method->isAllowedFor($this->user())) {
                 $fail('Этот способ оплаты вам недоступен.');
             }
         };
