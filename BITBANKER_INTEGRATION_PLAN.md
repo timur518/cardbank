@@ -41,19 +41,22 @@ BitBanker подтвердит готовность клиента (`is_verified
 2. Если оферта BitBanker ещё не принята — показывается окно принятия оферты.
 3. Пользователь нажимает «Принять».
 4. По этому нажатию бэкенд фиксирует принятие оферты и сразу регистрирует
-   пользователя в BitBanker (`POST /api/v2/partner-clients`, см. раздел 3).
-5. Если регистрация прошла успешно и BitBanker вернул `is_verified_for_sbp=true`
-   — способ оплаты BitBanker становится доступен этому пользователю (попадает
-   в его «Разрешённые методы оплаты»), окно закрывается, пользователь сразу
-   может продолжить оплату.
-6. Если `is_verified_for_sbp=false` (BitBanker взял данные на ручную модерацию)
-   — окно сообщает, что заявка на рассмотрении; доступ появится автоматически
-   (без повторных действий пользователя), как только BitBanker пришлёт
-   `events_webhook` или фоновая синхронизация (раздел 7) увидит `true`.
-7. Если BitBanker отклонил регистрацию (`NeedCompleteKYC` и т.п.) — окно
-   показывает, что пополнение через BitBanker временно недоступно, с
-   предложением обратиться в поддержку (повторно отправлять те же данные
-   бессмысленно — они не редактируются пользователем, т.к. берутся из уже
+   пользователя в BitBanker (`POST /api/v3/partner-clients`, см. раздел 3).
+5. Если регистрация прошла успешно и BitBanker вернул `check_status=completed` с
+   `is_verified_for_sbp=true` — способ оплаты BitBanker становится доступен этому
+   пользователю (попадает в его «Разрешённые методы оплаты»), окно
+   закрывается, пользователь сразу может продолжить оплату.
+6. Если `check_status=pending` (идут фоновые проверки BitBanker, `is_verified_for_sbp`
+   пока ни о чём не говорит) — окно сообщает, что заявка на рассмотрении; доступ
+   появится автоматически (без повторных действий пользователя), как только
+   BitBanker пришлёт `events_webhook` или фоновая синхронизация (раздел 7) увидит
+   `check_status=completed`.
+7. Если `check_status=completed`, но `is_verified_for_sbp=false` (проверки
+   завершились отказом), или сам вызов регистрации завершился ошибкой HTTP
+   (у реального API нет детализированных кодов ошибок вроде `NeedCompleteKYC` — проверено
+   по DEV-swagger, см. 3.1) — окно показывает, что пополнение через BitBanker временно
+   недоступно, с предложением обратиться в поддержку (повторно отправлять те же
+   данные бессмысленно — они не редактируются пользователем, т.к. берутся из уже
    пройденного внутреннего KYC).
 
 ---
@@ -68,8 +71,8 @@ BitBanker подтвердит готовность клиента (`is_verified
    список разрешённых пользователю методов, либо список пуст (не ограничен).
 2. Специфично для BitBanker — это и есть сам смысл списка разрешённых методов:
    запись в `allowedPaymentMethods` для BitBanker добавляется автоматически
-   **только** тогда, когда регистрация в BitBanker прошла успешно и
-   `is_verified_for_sbp=true`, `sbp_top_up=true` (раздел 5.1). Для прочих
+   **только** тогда, когда регистрация в BitBanker завершилась (`check_status=completed`,
+   раздел 3.1) с `is_verified_for_sbp=true` (раздел 5.1). Для прочих
    способов оплаты (ParityPay и т.д.) список формируется вручную в админке —
    см. раздел 4.2.
 
@@ -77,6 +80,13 @@ BitBanker подтвердит готовность клиента (`is_verified
 `is_verified_for_sbp=false` (ручная деактивация, например при подозрении на
 мошенничество) — запись пользователя для BitBanker удаляется из
 `allowedPaymentMethods`, способ оплаты скрывается автоматически.
+
+`is_verified_for_sbp`/`check_status` — **реальные поля из ответа `POST`/`GET`
+`/api/v3/partner-clients`**, подтверждены по DEV-swagger (раздел 3.1). Поле
+`sbp_top_up`, которое фигурировало в более ранней версии плана, на самом деле относится
+к другой ветке API — «калькулятору» `prediction-sbp`/старому `kyc-request` (вариант Б,
+который мы не используем, см. 1.1) — в `PartnerClientUpsertResultV3`/`PartnerClientStatusResultV3`
+его нет, поэтому дальше по документу оно не используется.
 
 Внутренний KYC (`users.kyc_status=approved`) — обязательное предусловие ещё
 раньше: без него недоступны ни паспортные данные для регистрации в BitBanker
@@ -87,12 +97,34 @@ BitBanker подтвердит готовность клиента (`is_verified
 
 ## 3. Данные для регистрации клиента в BitBanker
 
-### 3.1. Обязательные поля `POST /api/v2/partner-clients`
+### 3.1. Эндпойнт и поля — подтверждено по DEV-swagger (`https://ext-api.dev.bitbanker.ru/docs/public/openapi`)
 
-`client_id`, `email`, `phone`, `first_name`, `last_name`, `birth_date`,
-`passport`, `passport_issue_date`, `country_of_passport_issue` (поддерживается
-только `RUS`) + технические `timestamp`, `nonce`, `full_sign`. Необязательно:
-`patronymic`, `inn`.
+Используем **`POST`/`GET /api/v3/partner-clients`** (не v2): тело запроса
+у v3 то же самое, что и у v2 (схема `PartnerClientsUpsertRequestV2` общая для обеих
+версий), но **ответ v3 дополнительно содержит `check_status`** (`pending`/`completed`) —
+это снимает неоднозначность `is_verified_for_sbp=false`, которая у v2 может означать
+как «проверки ещё идут, подожди», так и «отклонено».
+
+**Запрос `POST /api/v3/partner-clients`** (заголовки `X-API-KEY` + `Idempotency-Key`,
+тело — `PartnerClientsUpsertRequestV2`). Схема формально требует только
+`client_id`, `timestamp`, `nonce`, `full_sign` (всё остальное — `nullable`), но фактически
+без остальных полей `is_verified_for_sbp` никогда не станет `true`. Важное отличие от
+упомянутой ранее выгруженной документации — в схеме есть отдельные поля
+`first_name_native`/`last_name_native` («имя/фамилия как в документе») в дополнение к
+обычным `first_name`/`last_name` — т.е. BitBanker сам разделяет «имя клиента» и
+«имя для сверки с паспортом» (см. маппинг в 3.2). Также есть алиас
+`passport_issued_date` → `passport_issue_date` (используем каноническое имя). Поле
+`patronymic` — одно на оба имени, без `_native`-варианта.
+
+**Запрос `GET /api/v3/partner-clients`** (опрос статуса) — без `Idempotency-Key`,
+параметры `client_id`/`timestamp`/`nonce`/`full_sign` передаются **в query-строке**, а
+не в теле — `full_sign` считается по canonical JSON, собранному из этих же параметров
+(по той же схеме, что и для тела POST-запросов, см. `BitbankerSigner` в 5.1).
+
+**Создание инвойса `POST /api/v2/invoices`** — валюты подтверждены через
+`GET /public/currencies` (DEV): `currency="RUBR"` — это и есть фиатный рубль с
+`is_invoice_enabled=true` (а не просто `"RUB"` — такие коды у BitBanker зарезервированы
+под другие страновые варианты рубля с `is_invoice_enabled=false`), `take_currency="USDT"`.
 
 ### 3.2. Источники данных в нашей системе
 
@@ -107,24 +139,37 @@ BitBanker требует данные именно **внутреннего па
 MRZ нет отчества. Поэтому `BitbankerClientService` берёт из `id_verifications[]`
 не первый элемент, а первый с `document_type === "Identity Card"`.
 
-Имя/фамилия берутся не из `User` (их пользователь сам вписывает при
-регистрации, без проверки на кириллицу/соответствие паспорту — см.
-`RegisterRequest`), а из распознанных Didit данных того же документа
-(`extra_fields.*_non_latin`) — BitBanker прямо требует «кириллицей, согласно
-паспортным данным».
+У BitBanker в схеме `PartnerClientsUpsertRequestV2` есть **две пары полей для имени/фамилии**:
+`first_name`/`last_name` (общие, просто «Имя»/«Фамилия») и отдельно `first_name_native`/
+`last_name_native` («Имя/Фамилия как в документе»). С учётом этого разделения
+логично использовать оба источника: `first_name`/`last_name` — из `User` (общий
+профиль, как в ParityPay/других местах личного кабинета), а `first_name_native`/
+`last_name_native` — из распознанных Didit данных документа (`extra_fields.*_non_latin`), т.е.
+точно так, как написано в паспорте — именно это поле BitBanker сверяет с данными
+документа на своём KYC. Это снимает риск, который был в предыдущей версии плана
+(брать только OCR-значение в единственное поле `first_name`/`last_name`): теперь `User`-имя
+и OCR-имя передаются каждое в своё поле, так и задумано API BitBanker.
 
-| Поле BitBanker | Источник (из отчёта `Identity Card` в `id_verifications[]`) | Преобразование |
+У `patronymic` в схеме только одно поле, без `_native`-варианта. Отдельного поля для
+отчества кириллицей в `extra_fields` у Didit нет ни у `Passport`, ни у `Identity Card`
+(проверено на двух реальных отчётах — см. ниже), но так как для `patronymic` у
+самого BitBanker нет отдельной «как в документе»-версии — берём его из `User.middle_name`
+(отчество, введённое пользователем в профиле), как и остальные не-`_native` поля.
+
+| Поле BitBanker | Источник | Преобразование |
 |---|---|---|
 | `client_id` | `User.uuid` | без изменений, значение после первой успешной регистрации неизменяемо на стороне BitBanker |
 | `email` | `User.email` | — |
 | `phone` | `User.phone` | без изменений (формат `+79991234567` уже используется в проекте) |
-| `first_name` | `extra_fields.first_name_non_latin` | — (кириллица, из OCR документа, не из `User`) |
-| `last_name` | `extra_fields.last_name_non_latin` | — (кириллица, из OCR документа, не из `User`) |
-| `patronymic` | не передаётся | отдельного поля для отчества кириллицей в `extra_fields` нет ни у `Passport`, ни у `Identity Card` (проверено на двух реальных отчётах) — см. ниже |
-| `birth_date` | `date_of_birth` | `Y-m-d` → `d.m.Y` (в примере: `1995-09-18`) |
-| `passport` | `document_number` | убрать пробелы/дефисы; для `Identity Card` ожидается 10 цифр (серия 4 + номер 6) — не путать с `document_number` документа типа `Passport` (9 цифр, как в примере `778447383`) |
-| `passport_issue_date` | `date_of_issue` | `Y-m-d` → `d.m.Y` (в примере: `2026-03-06`) |
-| `country_of_passport_issue` | `issuing_state` | передаётся как есть (в примере: `RUS`); если не `RUS` — регистрация не выполняется (см. 3.3) |
+| `first_name` | `User.first_name` | — |
+| `last_name` | `User.last_name` | — |
+| `first_name_native` | `extra_fields.first_name_non_latin` (из элемента `Identity Card` в `id_verifications[]` Didit) | — (кириллица, точно как в паспорте) |
+| `last_name_native` | `extra_fields.last_name_non_latin` (та же запись) | — (кириллица, точно как в паспорте) |
+| `patronymic` | `User.middle_name` | только если заполнено |
+| `birth_date` | `date_of_birth` (та же запись Didit) | `Y-m-d` → `d.m.Y` (в примере: `1995-09-18`) |
+| `passport` | `document_number` (та же запись) | убрать пробелы/дефисы; для `Identity Card` ожидается 10 цифр (серия 4 + номер 6) — не путать с `document_number` документа типа `Passport` (9 цифр, как в примере `778447383`) |
+| `passport_issue_date` | `date_of_issue` (та же запись) | `Y-m-d` → `d.m.Y` (в примере: `2026-03-06`) |
+| `country_of_passport_issue` | `issuing_state` (та же запись) | передаётся как есть (в примере: `RUS`); если не `RUS` — регистрация не выполняется (см. 3.3) |
 | `inn` | не передаётся | в системе не собирается |
 
 **Подтверждено на реальном примере `Identity Card`** (внутренний паспорт РФ): `document_type` на верхнем уровне элемента действительно равен строке `"Identity Card"`, а `date_of_birth`/`date_of_issue`/`issuing_state` имеют тот же формат, что и у `Passport` (`Y-m-d`, `RUS`) — код из таблицы выше корректен. Важное уточнение: внутри самого `mrz` у этого же элемента `document_type` равен `"P"` (как и у загранпаспорта) — это подтверждает, что фильтровать тип документа нужно именно по верхнему `document_type`, а не по `mrz.document_type` (в плане так и сделано, дополнительных правок не требуется).
@@ -145,8 +190,11 @@ MRZ нет отчества. Поэтому `BitbankerClientService` берёт 
   другому документу), регистрация не выполняется;
 * у этого элемента непустые `document_number` / `date_of_issue` /
   `issuing_state` и `issuing_state === 'RUS'`;
-* `extra_fields.first_name_non_latin` / `last_name_non_latin` непустые;
-* `User.date_of_birth`, `User.phone`, `User.email` заполнены.
+* `extra_fields.first_name_non_latin` / `last_name_non_latin` непустые (идут в
+  `first_name_native`/`last_name_native`);
+* `User.first_name`, `User.last_name`, `User.date_of_birth`, `User.phone`,
+  `User.email` заполнены (идут в `first_name`/`last_name`/`birth_date`/`phone`/`email`,
+  см. 3.2).
 
 Если хоть одно условие не выполнено — метод бросает `BitbankerException` с
 понятным текстом, контроллер (раздел 6.1) возвращает `422` и фронт показывает
@@ -197,10 +245,9 @@ ParityPay и прочих обычных способов админ испол�
 | `payment_method_id` | FK `payment_methods` | к какому способу оплаты (кассе BitBanker) относится — на случай нескольких касс, как у ParityPay |
 | `external_client_id` | string | = `User.uuid`, то же значение, что отправлено как `client_id` |
 | `registered_at` | timestamp | когда прошла первая успешная регистрация (`POST /api/v2/partner-clients` вернул `2xx`) |
-| `is_verified_for_sbp` | boolean default false | флаг готовности к оплате — определяет попадание в `payment_method_user` |
-| `sbp_top_up` | boolean default false | |
-| `status` | string nullable | последняя причина/код состояния от BitBanker (`manual_review_required`, `kyc_final_rejection`, `access_locked_contact_manager` и т.п.) — для отображения оператору |
-| `last_error` | json nullable | сырое тело последней ошибки вызова (`NeedCompleteKYC` + `data.errors` и т.п.) |
+| `is_verified_for_sbp` | boolean default false | флаг готовности к оплате (из ответа `/api/v3/partner-clients`) — вместе с `check_status=completed` определяет попадание в `payment_method_user` |
+| `check_status` | string (`pending`\|`completed`) | сырой `check_status` из ответа BitBanker v3 — `pending`, пока идут фоновые проверки (тогда `is_verified_for_sbp` ещё ни о чём не говорит), `completed` — проверки завершены (итог — в `is_verified_for_sbp`) |
+| `last_error` | json nullable | сырое тело последнего неуспешного HTTP-ответа BitBanker (400/401 и т.п.) — у реального API нет детализированных кодов ошибок вроде `NeedCompleteKYC` (проверено по DEV-swagger — см. 3.1), поэтому храним сырое тело целиком для разбора оператором |
 | `last_synced_at` | timestamp nullable | когда последний раз обновляли флаги (вебхуком или опросом) |
 | `timestamps` | | |
 
@@ -270,31 +317,37 @@ app/Services/Integrations/Bitbanker/
 
 * `register(User $user, PaymentMethod $method): BitbankerClient` — проверяет
   полноту данных (раздел 3.3), собирает payload (раздел 3.2), вызывает
-  `POST /api/v2/partner-clients`, сохраняет/обновляет запись в
-  `bitbanker_clients` (`registered_at`, `is_verified_for_sbp`, `sbp_top_up`,
-  `status`, `last_error`, `last_synced_at`), при `is_verified_for_sbp=true`
-  вызывает `syncAllowedPaymentMethod()`. На `NeedCompleteKYC`/прочие ошибки —
-  сохраняет `last_error`/`status`, пробрасывает `BitbankerException` вызывающему
-  коду с понятным сообщением.
-* `refreshStatus(BitbankerClient $client): void` — `GET /api/v2/partner-clients`
+  `POST /api/v3/partner-clients`, сохраняет/обновляет запись в
+  `bitbanker_clients` (`registered_at`, `is_verified_for_sbp`, `check_status`,
+  `last_synced_at`), при `check_status=completed` вызывает
+  `syncAllowedPaymentMethod()`. На неуспешный HTTP-ответ (400/401) — сохраняет
+  сырое тело в `last_error`, пробрасывает `BitbankerException` с общим сообщением
+  «не удалось зарегистрировать в BitBanker» (у реального API нет именованных кодов
+  ошибок вроде `NeedCompleteKYC` — проверено по DEV-swagger, см. 3.1).
+* `refreshStatus(BitbankerClient $client): void` — `GET /api/v3/partner-clients`
   (query `client_id` = `external_client_id`), обновляет
-  `is_verified_for_sbp`/`sbp_top_up`/`status`/`last_synced_at`, вызывает
+  `is_verified_for_sbp`/`check_status`/`last_synced_at`, вызывает
   `syncAllowedPaymentMethod()`.
 * `syncAllowedPaymentMethod(BitbankerClient $client): void` — если
-  `is_verified_for_sbp && sbp_top_up` — `attach()` способа оплаты в
-  `user.allowedPaymentMethods` (если ещё не привязан); иначе — `detach()`
-  (если был привязан). Единая точка, которую вызывают и `register()`, и
-  `refreshStatus()`, и обработчик Events Webhook.
+  `check_status === 'completed' && is_verified_for_sbp === true` — `attach()`
+  способа оплаты в `user.allowedPaymentMethods` (если ещё не привязан); иначе
+  (проверки ещё идут, либо завершились отказом) — `detach()` (если был привязан).
+  Единая точка, которую вызывают и `register()`, и `refreshStatus()`, и обработчик
+  Events Webhook.
 
 ### 5.5. `BitbankerEventsWebhookHandler`
 
 Обрабатывает `sbp_client_permission_changed`: находит `BitbankerClient` по
 `data.client_id` (= `external_client_id`), обновляет
-`is_verified_for_sbp`/`sbp_top_up`/`last_synced_at`, вызывает
-`BitbankerClientService::syncAllowedPaymentMethod()`. При переходе в
-`true` — уведомление пользователю через `Notification::notify()`
+`is_verified_for_sbp`/`check_status`/`last_synced_at` из полей вебхука (формат самого
+этого события не документирован в OpenAPI — это push от BitBanker к нам, а не их API;
+обработчик должен толерантно читать поля, которые фактически пришли, и не падать,
+если какого-то нет, доверяя окончательный статус последующему `refreshStatus()` через
+фоновую синхронизацию), вызывает
+`BitbankerClientService::syncAllowedPaymentMethod()`. При переходе в доступное
+состояние — уведомление пользователю через `Notification::notify()`
 (`NotificationEvent::BitbankerAvailable`, новый кейс enum). При переходе в
-`false` (деактивация доступа) — отдельное уведомление не отправляется (не
+недоступное (деактивация доступа) — отдельное уведомление не отправляется (не
 путать пользователя), событие просто логируется через стандартный механизм
 `PaymentMethodMessage`.
 
@@ -367,8 +420,8 @@ BitBanker уже выражена через присутствие/отсутс
 
 | Метод | Путь | Назначение |
 |---|---|---|
-| `GET` | `/v1/bitbanker/status` | Текущее состояние для пользователя: оферта принята? есть ли `bitbanker_clients` запись и в каком она статусе (`is_verified_for_sbp`/`status`/`last_error`)? Фронт использует, чтобы решить — показать окно оферты, окно «на рассмотрении», окно ошибки или уже доступную оплату. Форма ответа: `{ "offer_accepted": bool, "offer_text": string, "is_verified_for_sbp": bool, "sbp_top_up": bool, "status": string\|null }`. `offer_text` — текст оферты BitBanker для попапа принятия (раздел 10.3), берётся из настройки `bitbanker_offer_text` (раздел 9), отдаётся этим же эндпойнтом, чтобы не заводить отдельный публичный маршрут под один текст. |
-| `POST` | `/v1/bitbanker/accept` | Фиксирует `bitbanker_offer_accepted_at = now()` (идемпотентно) и сразу вызывает `BitbankerClientService::register()`. Возвращает итоговое состояние (`is_verified_for_sbp`, `sbp_top_up`, `status`) или `422` с текстом ошибки при провале проверки данных/регистрации. |
+| `GET` | `/v1/bitbanker/status` | Текущее состояние для пользователя: оферта принята? есть ли `bitbanker_clients` запись и в каком она статусе (`is_verified_for_sbp`/`check_status`)? Фронт использует, чтобы решить — показать окно оферты, окно «на рассмотрении», окно отказа или уже доступную оплату. Форма ответа: `{ "offer_accepted": bool, "offer_text": string, "is_verified_for_sbp": bool, "check_status": "pending"\|"completed"\|null }` (`check_status=null`, пока регистрация ещё не запускалась). `offer_text` — текст оферты BitBanker для попапа принятия (раздел 10.3), берётся из настройки `bitbanker_offer_text` (раздел 9), отдаётся этим же эндпойнтом, чтобы не заводить отдельный публичный маршрут под один текст. |
+| `POST` | `/v1/bitbanker/accept` | Фиксирует `bitbanker_offer_accepted_at = now()` (идемпотентно) и сразу вызывает `BitbankerClientService::register()`. Возвращает итоговое состояние (`is_verified_for_sbp`, `check_status`) или `422` с текстом ошибки при провале проверки данных/регистрации. |
 
 ### 7.2. Вебхуки (без авторизации, подпись в теле, `routes/api.php` верхний уровень)
 
@@ -423,7 +476,7 @@ Schedule::command('bitbanker:sync-client-status')->everyFiveMinutes()->withoutOv
   снять доступ окончательно — это делается на стороне BitBanker).
 * Новый relation-manager `BitbankerClientRelationManager` (по аналогии с
   `KycVerificationsRelationManager`) на странице пользователя — показывает
-  оператору текущий статус (`is_verified_for_sbp`, `sbp_top_up`, `status`,
+  оператору текущий статус (`is_verified_for_sbp`, `check_status`,
   `last_error`), кнопку «Обновить статус» (дёргает
   `BitbankerClientService::refreshStatus()` вручную).
 * Новая настройка `bitbanker_offer_text` (`Setting`) — полный текст оферты
@@ -464,7 +517,7 @@ Schedule::command('bitbanker:sync-client-status')->everyFiveMinutes()->withoutOv
 
 ### 10.2. Состояния плитки BitBanker
 
-BitBanker всегда первый в списке и всегда с бейджем «Выгоднее до 10%!» (не
+BitBanker всегда первый в списке и всегда с бейджем «Без комиссии!» (не
 только в состоянии 4) — отличается только то, что показано рядом с бейджем — кнопка/текст
 состояния или радио-переключатель выбора.
 
@@ -472,13 +525,14 @@ BitBanker всегда первый в списке и всегда с бейд�
 |---|---|---|---|
 | 1 | `profile.kyc_status !== 'approved'` | Кнопка «Пройти верификацию» вместо радио-кнопки выбора | Тот же поток, что и в «Мой профиль»: `startKycVerification()` + `KycVerificationModal` (тот же iframe Didit). По `didit:completed` — закрыть модалку, `refreshProfile()` (уже есть в `AuthContext`) + перезапросить `GET /v1/bitbanker/status`. |
 | 2 | `kyc_status === 'approved'` и `offer_accepted === false` | Кнопка «Принять оферту» | Открывает `BitbankerOfferModal` (раздел 10.3). |
-| 3 | `kyc_status === 'approved'`, `offer_accepted === true`, но НЕ (`is_verified_for_sbp && sbp_top_up`) | Неактивная плитка, текст «Заявка на рассмотрении», без кнопки | Ничего — обновляется само при следующем монтировании `PaymentMethodsList` (перезапрос `GET /v1/bitbanker/status` при каждом открытии экрана оплаты). |
-| 4 | `kyc_status === 'approved'`, `offer_accepted === true`, `is_verified_for_sbp && sbp_top_up === true` | Обычная выбираемая плитка (как ParityPay), первая в списке, с бейджем | Выбор радио-кнопкой, как у любого способа оплаты. |
+| 3 | `kyc_status === 'approved'`, `offer_accepted === true`, `check_status === 'pending'` (проверки BitBanker ещё идут) | Неактивная плитка, текст «Заявка на рассмотрении», без кнопки | Ничего — обновляется само при следующем монтировании `PaymentMethodsList` (перезапрос `GET /v1/bitbanker/status` при каждом открытии экрана оплаты). |
+| 3a | `kyc_status === 'approved'`, `offer_accepted === true`, `check_status === 'completed'`, `is_verified_for_sbp === false` (проверки завершились отказом) | Неактивная плитка, текст «Пополнение через BitBanker недоступно, обратитесь в поддержку» (в отличие от состояния 3, это финальный исход — проверки уже завершены и поллинг сам никогда не сделает `is_verified_for_sbp` истиной) | Ничего. |
+| 4 | `kyc_status === 'approved'`, `offer_accepted === true`, `check_status === 'completed' && is_verified_for_sbp === true` | Обычная выбираемая плитка (как ParityPay), первая в списке, с бейджем | Выбор радио-кнопкой, как у любого способа оплаты. |
 
 Состояние 4 на практике совпадает с тем, что BitBanker уже есть в `GET /v1/payment-methods`
 (см. 10.1) — поэтому фронту не нужно самому сверять все четыре условия — достаточно
 проверить, есть ли BitBanker в списке методов; если нет — смотреть на `kyc_status`/`offer_accepted`/
-`is_verified_for_sbp`+`sbp_top_up`, чтобы выбрать между 1/2/3.
+`is_verified_for_sbp`+`check_status`, чтобы выбрать между 1/2/3/3a.
 
 ### 10.3. Новые и изменённые файлы
 
@@ -488,7 +542,7 @@ BitBanker всегда первый в списке и всегда с бейд�
   `acceptBitbankerOffer(): Promise<BitbankerStatus>` (оба по аналогии `api/kyc.ts`).
 * `resources/cabinet/src/components/orders/BitbankerTile.tsx` — рендерит состояния 1–3
   (некликабельная плитка в том же стиле, что `apply-pay-option` у `PaymentMethodOption`, чтобы
-  не выбиваться из списка визуально), с бейджем «Выгоднее до 10%!» и кнопкой/текстом
+  не выбиваться из списка визуально), с бейджем «Без комиссии!» и кнопкой/текстом
   согласно таблице в 10.2.
 * `resources/cabinet/src/components/orders/BitbankerOfferModal.tsx` — попап принятия
   оферты: прокручиваемый блок с `offer_text` (из `GET /v1/bitbanker/status`, раздел 7.1/9),
@@ -581,18 +635,38 @@ if (result.payment_url) {
    `BitbankerQrPaymentModal` на шаге оплаты.
 9. Ручное тестирование на DEV по чек-листу из документации (диапазоны сумм
    1000/2000/3000/5000/6000 ₽ → `captured`/`declined`/`failed`/`expired`/`authorized`,
-   плюс сценарии `NeedCompleteKYC` и ручной деактивации `is_verified_for_sbp`).
+   плюс сценарии `check_status=pending→completed(false)` и ручной деактивации
+   `is_verified_for_sbp` через Events Webhook).
 
 ---
 
-## 12. Технические детали, уточняемые на этапе реализации
+## 12. Подтверждённые параметры подключения (по DEV-swagger)
 
-Не блокируют начало разработки — по каждому пункту ниже в коде заложен
-конкретный вариант по умолчанию, финальное значение подставляется при
-получении DEV/PROD-доступов BitBanker:
+Проверено напрямую через OpenAPI-спекификацию и тестовые запросы (401
+  на неверный `X-API-KEY`, вместо 404 — значит путь/хост верны):
 
-* **Base URL DEV** — используется `https://api.aws.dev.bitbanker.org/latest`
-  по умолчанию (переопределяется `settlement_config.base_url`), сверяется с
-  Swagger DEV при получении доступов.
+* **Base URL DEV** — `https://ext-api.dev.bitbanker.ru` (без суффикса — сам swagger
+  доступен по корню этого хоста по `/docs/public/openapi`, без `servers` в самой
+  спецификации — пути относительны к этому хосту).
+* **Base URL PROD** — `https://api.bitbanker.org/latest` (сверено с
+  `https://api.bitbanker.org/latest/docs/public/openapi`, данным пользователя).
+  Оба базовых URL хранятся в `settlement_config.base_url` способа оплаты —
+  переключение DEV→PROD делается в админке сменой URL и `api_key`/`api_secret`,
+  без деплоя.
+* **Эндпойнты регистрации/статуса клиента** — `POST`/`GET /api/v3/partner-clients`
+  (не v2, см. 3.1).
+* **Валюты инвойса** — подтверждены через `GET /public/currencies` на DEV:
+  `currency="RUBR"` (фиатный рубль с `is_invoice_enabled=true`; просто `"RUB"` у
+  BitBanker зарезервирован под другие страновые варианты рубля с
+  `is_invoice_enabled=false`), `take_currency="USDT"`.
 * **Таймаут HTTP** — `config('services.bitbanker.timeout')`, по аналогии с
   `paritypay`/`cardspro`, значение по умолчанию 20 секунд.
+
+**Не подтверждено через swagger** (документировано только в тексто, поскольку
+это push от BitBanker к нам, а не их API) — проверить на реальном тестовом вебхуке
+на этапе реализации:
+
+* точный формат тела `invoices_webhook` (поля `exchange_deal`, `payed`, `payed_amount`);
+* точный формат тела Events Webhook `sbp_client_permission_changed`;
+* верхнеуровневый (вне `mrz`) `document_number` у `Identity Card` в ответе Didit —
+  10 цифр или 9 (см. 3.2).
