@@ -228,7 +228,7 @@
                 <div data-reveal><span class="eyebrow !text-[#f37338]">Онлайн за 3 минуты</span><h2 class="mt-5 text-[clamp(2.8rem,5vw,5.4rem)] font-medium leading-[.94] tracking-[-.045em] text-white">Простое и быстрое оформление карт</h2></div>
                 <div data-reveal>
                     <p class="text-lg leading-relaxed text-white/55">Никаких офисов и пластика. Всё необходимое - здесь.</p>
-                    <a href="https://mne.mojno.cc/register?utm_source=mojno&utm_campaign=land&utm_medium=prosto" class="btn btn-hero-orange mt-8">Зарегистрироваться</a>
+                    <a href="https://mne.mojno.cc/register" class="btn btn-hero-orange mt-8">Зарегистрироваться</a>
                 </div>
             </div>
             <div class="mt-20 grid gap-px overflow-hidden rounded-[32px] bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
@@ -302,7 +302,7 @@
     <section class="mt-[150px] px-6 lg:px-10">
         <div class="app-panel mx-auto max-w-[1400px] overflow-hidden rounded-[40px] bg-white">
             <div class="grid lg:grid-cols-[1fr_.75fr]">
-                <div data-reveal class="px-5 py-10 sm:p-14 lg:p-20"><span class="eyebrow">Личный кабинет</span><h2 class="mt-5 max-w-2xl text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Удобный и простой личный кабинет</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#3A3C40]/60">Выпускайте карты в пару кликов, отслеживайте актуальный баланс и историю своих платежей из одного места.</p><div class="mt-9 grid gap-4 sm:grid-cols-2">@foreach(['Быстрый выпуск карт','История операций','Пополнение баланса из России','Push-уведомления'] as $item)<div class="rounded-2xl bg-[#f3f0ee] p-5 text-sm font-semibold">{{ $item }}</div>@endforeach</div><div class="mt-8 flex flex-wrap gap-4"><a href="https://mne.mojno.cc/register?utm_source=mojno&utm_campaign=land&utm_medium=lk" class="btn btn-hero-orange">Зарегистрироваться</a><a href="https://mne.mojno.cc/" class="btn btn-hero-black">Авторизоваться</a></div></div>
+                <div data-reveal class="px-5 py-10 sm:p-14 lg:p-20"><span class="eyebrow">Личный кабинет</span><h2 class="mt-5 max-w-2xl text-[clamp(2.8rem,5vw,5rem)] font-medium leading-[.94] tracking-[-.045em]">Удобный и простой личный кабинет</h2><p class="mt-7 max-w-xl text-lg leading-relaxed text-[#3A3C40]/60">Выпускайте карты в пару кликов, отслеживайте актуальный баланс и историю своих платежей из одного места.</p><div class="mt-9 grid gap-4 sm:grid-cols-2">@foreach(['Быстрый выпуск карт','История операций','Пополнение баланса из России','Push-уведомления'] as $item)<div class="rounded-2xl bg-[#f3f0ee] p-5 text-sm font-semibold">{{ $item }}</div>@endforeach</div><div class="mt-8 flex flex-wrap gap-4"><a href="https://mne.mojno.cc/register" class="btn btn-hero-orange">Зарегистрироваться</a><a href="https://mne.mojno.cc/" class="btn btn-hero-black">Авторизоваться</a></div></div>
                 <div data-reveal class="app-visual" style="background-image:url('{{ asset('assets/images/iphone.png') }}');background-position:center;background-repeat:no-repeat;background-size: cover;"></div>
             </div>
         </div>
