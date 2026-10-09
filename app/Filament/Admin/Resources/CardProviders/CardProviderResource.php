@@ -53,8 +53,8 @@ class CardProviderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            ReserveTopupsRelationManager::class,
             MessagesRelationManager::class,
+            ReserveTopupsRelationManager::class,
             DiscrepanciesRelationManager::class,
         ];
     }

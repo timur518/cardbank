@@ -13,7 +13,8 @@ class CardProviderInfolist
         return $schema
             ->components([
                 Section::make('Основное')
-                    ->columns(3)
+                    ->columnSpanFull()
+                    ->columns(6)
                     ->schema([
                         TextEntry::make('name')->label('Название'),
                         TextEntry::make('code')->label('Код'),

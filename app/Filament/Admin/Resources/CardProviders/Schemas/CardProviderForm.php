@@ -18,7 +18,7 @@ class CardProviderForm
             ->components([
                 Section::make('Основное')
                     ->columnSpanFull()
-                    ->columns(5)
+                    ->columns(6)
                     ->schema([
                         TextInput::make('name')
                             ->label('Название провайдера')

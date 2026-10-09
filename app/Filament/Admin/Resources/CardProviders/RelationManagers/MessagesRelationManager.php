@@ -3,6 +3,10 @@
 namespace App\Filament\Admin\Resources\CardProviders\RelationManagers;
 
 use App\Enums\MessageProcessingStatus;
+use App\Models\ProviderMessage;
+use Filament\Actions\Action;
+use Filament\Forms\Components\CodeEditor;
+use Filament\Forms\Components\CodeEditor\Enums\Language;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -53,6 +57,30 @@ class MessagesRelationManager extends RelationManager
             ->headerActions([
                 // Раздел ведётся автоматически по данным от провайдера, ручное создание не предусмотрено.
             ])
-            ->recordActions([]);
+            ->recordActions([
+                Action::make('viewEvent')
+                    ->label('Посмотреть событие')
+                    ->icon('heroicon-o-eye')
+                    ->modalHeading(fn (ProviderMessage $record): string => 'Событие: '.$record->event_type)
+                    ->modalWidth('4xl')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Закрыть')
+                    ->fillForm(function (ProviderMessage $record): array {
+                        $raw = (string) ($record->getRawOriginal('payload') ?? '');
+                        $decoded = json_decode($raw);
+
+                        return ['payload' => json_last_error() === JSON_ERROR_NONE
+                            ? json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION)
+                            : $raw];
+                    })
+                    ->schema([
+                        CodeEditor::make('payload')
+                            ->label('Тело уведомления')
+                            ->language(Language::Json)
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->columnSpanFull(),
+                    ]),
+            ]);
     }
 }
