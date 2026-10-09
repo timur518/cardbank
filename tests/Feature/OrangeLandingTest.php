@@ -27,10 +27,10 @@ class OrangeLandingTest extends TestCase
 
         $this->get('/cards/orange')->assertOk()
             ->assertDontSee('Описание именно Orange')->assertSee('Условия Orange из админки')->assertDontSee('Условия White')
-            ->assertSee('data-site-header', false)->assertDontSee('class="orange-nav"', false)->assertDontSee('обслуживание 0 ₽')
+            ->assertSee('data-site-header', false)->assertDontSee('class="orange-nav"', false)->assertSee('Бесплатное обслуживание')->assertSee('обслуживание в месяц')
             ->assertSee(view('partials.site-footer')->render(), false)
-            ->assertSee('Билеты туда и обратно')->assertSee('Уточнить в поддержке')
-            ->assertSee('Что делать, если оплата не прошла?')->assertSee('Уточните правила отеля')
+            ->assertSee('Авиа и ЖД билеты')->assertSee('eSIM для путешествий')->assertSee('Уточнить в поддержке')
+            ->assertDontSee('Что делать, если оплата не прошла?')->assertSee('Уточните правила отеля')
             ->assertSee('1 234 ₽')->assertSee('2,50%')->assertSee('$0,15')
             ->assertSee('https://mne.mojno.cc/register')->assertSee('Apple Pay')->assertSee('Google Pay')->assertSee('Samsung Pay')
             ->assertSee('Booking.com')->assertSee('Airbnb')->assertSee('Откройте Samsung Wallet')
@@ -40,14 +40,14 @@ class OrangeLandingTest extends TestCase
         $product->update(['price_rub' => 2345]);
         $this->get('/cards/orange')->assertOk()->assertSee('2 345 ₽')->assertDontSee('1 234 ₽');
         $product->update(['google_pay_enabled' => false, 'samsung_pay_enabled' => false]);
-        $this->get('/cards/orange')->assertOk()->assertSee('Добавьте Orange в Apple Pay.')
-            ->assertDontSee('Добавьте Orange в Apple Pay и Google Pay.');
+        $this->get('/cards/orange')->assertOk()->assertSee('Добавьте вашу карту в Apple Pay.')
+            ->assertDontSee('Добавьте вашу карту в Apple Pay и Google Pay.');
         $product->update(['apple_pay_enabled' => false]);
         $this->get('/cards/orange')->assertOk()->assertSee('Оплата через Apple Pay, Google Pay и Samsung Pay для этой карты сейчас недоступна.')
-            ->assertDontSee('Добавьте Orange в Apple Pay.')->assertDontSee('Откройте приложение Wallet')
+            ->assertDontSee('Добавьте вашу карту в Apple Pay.')->assertDontSee('Откройте приложение Wallet')
             ->assertDontSee('Откройте Google Wallet')->assertDontSee('Откройте Samsung Wallet');
         $product->update(['samsung_pay_enabled' => true]);
-        $this->get('/cards/orange')->assertOk()->assertSee('Добавьте Orange в Samsung Pay.')
+        $this->get('/cards/orange')->assertOk()->assertSee('Добавьте вашу карту в Samsung Pay.')
             ->assertSee('Откройте Samsung Wallet')->assertDontSee('Откройте приложение Wallet');
         $this->get('/')->assertOk()->assertDontSee('/cards/orange');
     }
