@@ -2,8 +2,10 @@
 
 namespace App\Enums;
 
+use App\Services\Telegram\AdminTelegramNotifier;
+
 /**
- * Событие для админ-уведомлений в Telegram ({@see \App\Services\Telegram\AdminTelegramNotifier}).
+ * Событие для админ-уведомлений в Telegram ({@see AdminTelegramNotifier}).
  * Один `case` на событие — тексты собраны прямо здесь, без отдельного файла-шаблона на
  * каждое уведомление: подключение нового события в будущем — это один новый `case` и
  * один новый `match`-вариант в message(), вызывается напрямую из места события (контроллер,
@@ -14,6 +16,7 @@ namespace App\Enums;
  * - CardIssueStarted: 'name', 'email', 'card_product', 'amount' (уже отформатированная строка, см. money())
  * - NewIncome: 'name', 'email', 'type' (строка "Выпуск карты"/"Пополнение карты"), 'amount'
  * - CardIssued: 'name', 'email', 'card_product', 'last4'
+ * - CardBlocked, CardFrozen, CardUnfrozen: 'name', 'email', 'last4'
  * - PurchaseMade: 'name', 'email', 'last4', 'amount', 'merchant' (?string), 'pending' (bool —
  *   true для холда/авторизации, false для состоявшегося расчёта)
  * - KycStarted: 'name', 'email'
@@ -25,6 +28,9 @@ enum AdminTelegramEvent
     case CardIssueStarted;
     case NewIncome;
     case CardIssued;
+    case CardBlocked;
+    case CardFrozen;
+    case CardUnfrozen;
     case PurchaseMade;
     case KycStarted;
     case KycResult;
@@ -45,6 +51,15 @@ enum AdminTelegramEvent
 
             self::CardIssued => "✅ <b>Карта выпущена</b>\n\n{$params['name']} ({$params['email']})\n"
                 ."Продукт: {$params['card_product']}\nКарта: •••• {$params['last4']}",
+
+            self::CardBlocked => "⛔ <b>Карта заблокирована</b>\n\n".e($params['name']).' ('.e($params['email']).")\n"
+                .'Карта: •••• '.e($params['last4'])."\nИсточник: CardsPro (CARD_BLOCK)",
+
+            self::CardFrozen => "❄️ <b>Карта заморожена</b>\n\n".e($params['name']).' ('.e($params['email']).")\n"
+                .'Карта: •••• '.e($params['last4'])."\nИсточник: CardsPro (CARD_FREEZE)",
+
+            self::CardUnfrozen => "✅ <b>Карта разморожена</b>\n\n".e($params['name']).' ('.e($params['email']).")\n"
+                .'Карта: •••• '.e($params['last4'])."\nИсточник: CardsPro (CARD_UNFREEZE)",
 
             self::PurchaseMade => ($params['pending'] ?? false)
                 ? "🕐 <b>Покупка по карте (в обработке)</b>\n\n{$params['name']} ({$params['email']})\n"

@@ -366,6 +366,21 @@ class CardsProWebhookHandler
 
         $card->update(['status' => $newStatus]);
 
+        $adminEvent = match ($newStatus) {
+            CardStatus::Frozen => AdminTelegramEvent::CardFrozen,
+            CardStatus::Active => AdminTelegramEvent::CardUnfrozen,
+            CardStatus::Closed => AdminTelegramEvent::CardBlocked,
+            default => null,
+        };
+
+        if ($adminEvent) {
+            AdminTelegramNotifier::notify($adminEvent, [
+                'name' => $card->user->name,
+                'email' => $card->user->email,
+                'last4' => $card->card_last4,
+            ]);
+        }
+
         $event = match ($newStatus) {
             CardStatus::Frozen => NotificationEvent::CardFrozen,
             CardStatus::Active => NotificationEvent::CardUnfrozen,
