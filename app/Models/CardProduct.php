@@ -40,6 +40,7 @@ class CardProduct extends Model
         'price_rub',
         'apple_pay_enabled',
         'google_pay_enabled',
+        'samsung_pay_enabled',
         'wallet_activation',
         'billing_country',
         'billing_city',
@@ -72,6 +73,7 @@ class CardProduct extends Model
             'price_rub' => 'decimal:2',
             'apple_pay_enabled' => 'boolean',
             'google_pay_enabled' => 'boolean',
+            'samsung_pay_enabled' => 'boolean',
             'active' => 'boolean',
             'coming_soon' => 'boolean',
         ];

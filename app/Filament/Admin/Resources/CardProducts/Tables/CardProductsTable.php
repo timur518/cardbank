@@ -52,7 +52,7 @@ class CardProductsTable
                     ->money('RUB')
                     ->sortable(),
                 TextColumn::make('wallets')
-                    ->label('Apple/GooglePay')
+                    ->label('Apple / Google / Samsung Pay')
                     ->state(fn (CardProduct $record) => (string) $record->getKey())
                     ->formatStateUsing(fn (CardProduct $record) => self::formatWallets($record))
                     ->html(),
@@ -110,16 +110,18 @@ class CardProductsTable
     }
 
     /**
-     * Два индикатора: Apple Pay и Google Pay — галочка либо крестик за каждый.
+     * Индикаторы Apple Pay, Google Pay и Samsung Pay — галочка либо крестик за каждый.
      */
     protected static function formatWallets(CardProduct $record): string
     {
         return sprintf(
-            '<span class="%s">%s</span> <span class="%s">%s</span>',
+            '<span class="%s">%s</span> <span class="%s">%s</span> <span class="%s">%s</span>',
             $record->apple_pay_enabled ? 'text-success-600' : 'text-danger-600',
             $record->apple_pay_enabled ? '✓' : '✗',
             $record->google_pay_enabled ? 'text-success-600' : 'text-danger-600',
             $record->google_pay_enabled ? '✓' : '✗',
+            $record->samsung_pay_enabled ? 'text-success-600' : 'text-danger-600',
+            $record->samsung_pay_enabled ? '✓' : '✗',
         );
     }
 }

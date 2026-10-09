@@ -7,8 +7,8 @@ use App\Enums\CardNetwork;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
@@ -189,9 +189,13 @@ class CardProductForm
                                         Toggle::make('google_pay_enabled')
                                             ->label('Google Pay')
                                             ->live(),
+                                        Toggle::make('samsung_pay_enabled')
+                                            ->label('Samsung Pay')
+                                            ->live(),
                                         TextInput::make('wallet_activation')
                                             ->label('Способ подключения кошелька')
-                                            ->visible(fn ($get) => (bool) $get('apple_pay_enabled') || (bool) $get('google_pay_enabled'))
+                                            ->columnSpanFull()
+                                            ->visible(fn ($get) => (bool) $get('apple_pay_enabled') || (bool) $get('google_pay_enabled') || (bool) $get('samsung_pay_enabled'))
                                             ->maxLength(255),
                                     ]),
 

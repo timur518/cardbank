@@ -60,6 +60,7 @@
                         <div><dt>3DS-коды подтверждения</dt><dd>{{ $product->three_ds_supported ? 'Поддерживаются' : 'Не поддерживаются' }}</dd></div>
                         <div><dt>Apple Pay</dt><dd>{{ $product->apple_pay_enabled ? 'Доступен' : 'Недоступен' }}</dd></div>
                         <div><dt>Google Pay</dt><dd>{{ $product->google_pay_enabled ? 'Доступен' : 'Недоступен' }}</dd></div>
+                        <div><dt>Samsung Pay</dt><dd>{{ $product->samsung_pay_enabled ? 'Доступен' : 'Недоступен' }}</dd></div>
                         @if ($product->wallet_activation)
                             <div><dt>Подключение кошелька</dt><dd>{{ $product->wallet_activation }}</dd></div>
                         @endif

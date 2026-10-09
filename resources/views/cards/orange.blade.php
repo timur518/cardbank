@@ -2,13 +2,17 @@
     $available = $product && ! $product->coming_soon;
     $ctaUrl = $available ? 'https://mne.mojno.cc/register' : 'https://t.me/mojno_support';
     $ctaLabel = $available ? 'Оформить Orange' : 'Уточнить доступность';
-    $phonePayments = implode(' и ', array_filter([
+    $paymentNames = array_values(array_filter([
         $product?->apple_pay_enabled ? 'Apple Pay' : null,
         $product?->google_pay_enabled ? 'Google Pay' : null,
+        $product?->samsung_pay_enabled ? 'Samsung Pay' : null,
     ]));
+    $phonePayments = count($paymentNames) > 1
+        ? implode(', ', array_slice($paymentNames, 0, -1)).' и '.end($paymentNames)
+        : implode('', $paymentNames);
     $phonePaymentInstructions = $phonePayments
         ? 'Добавьте Orange в '.$phonePayments.' по инструкции в личном кабинете. Для оплаты в магазине нужны телефон или часы с бесконтактной оплатой и подходящий терминал.'
-        : 'Оплата через Apple Pay и Google Pay для этой карты сейчас недоступна. Для покупок онлайн используйте реквизиты из личного кабинета.';
+        : 'Оплата через Apple Pay, Google Pay и Samsung Pay для этой карты сейчас недоступна. Для покупок онлайн используйте реквизиты из личного кабинета.';
     $rub = fn ($value) => $value !== null ? number_format((float) $value, 0, ',', ' ').' ₽' : 'Уточняется';
     $usd = fn ($value) => $value !== null ? '$'.number_format((float) $value, 2, ',', ' ') : 'Уточняется';
     $percent = fn ($value) => $value !== null ? number_format((float) $value, 2, ',', ' ').'%' : 'Уточняется';
@@ -63,59 +67,120 @@
             <article class="orange-scene"><img src="{{ asset('assets/images/cafe.png') }}" alt="Отдых в кафе" loading="lazy"><div><h3>Кафе<br>и рестораны</h3><p>Платите за завтрак, кофе и ужин во время поездки.</p></div></article>
             <article class="orange-scene"><img src="{{ asset('assets/images/ecomm.png') }}" alt="Покупки в зарубежных магазинах" loading="lazy"><div><h3>Магазины<br>и сувениры</h3><p>Покупайте подарки и вещи для себя в магазинах и аэропортах.</p></div></article>
         </div>
-        <p class="orange-disclaimer">Приём карты зависит от страны, магазина и условий Orange. Для оплаты в магазинах нужен Apple Pay или Google Pay, подключённый к карте. Перед бронированием уточните у отеля, нужна ли физическая карта или залог при заселении.</p>
+        <p class="orange-disclaimer">Приём карты зависит от страны, магазина и условий Orange. Для оплаты в магазинах добавьте карту в Apple Pay, Google Pay или Samsung Pay по условиям Orange. Перед бронированием уточните у отеля, нужна ли физическая карта или залог при заселении.</p>
     </section>
 
     <section class="orange-container orange-section orange-booking">
         <div class="orange-section-heading"><h2>Планируйте поездку<br>и платите онлайн</h2><p>Покупайте билеты, бронируйте жильё и планируйте отдых с картой Orange ещё до отъезда.</p></div>
-        <div class="orange-booking-grid">
+        <div class="orange-booking-grid orange-services-grid">
             @foreach ([
-                ['air', 'Билеты туда и обратно', 'Покупайте билеты на самолёт и поезд на сайтах перевозчиков и в сервисах бронирования.'],
-                ['hotel', 'Отели и апартаменты', 'Оплачивайте жильё до поездки. Заранее уточните у отеля условия заселения и размер залога.'],
-                ['route', 'Транспорт, экскурсии и связь', 'Закажите трансфер, купите билеты в музеи и подключите мобильный интернет за границей с eSIM.'],
-            ] as [$icon, $title, $text])
+                ['Отели и апартаменты', 'Выберите жильё и проверьте, когда списывается оплата: при бронировании или заселении.', [['booking.svg', 'Booking.com'], ['airbnb.svg', 'Airbnb'], ['agoda.png', 'Agoda']]],
+                ['Билеты туда и обратно', 'Покупайте билеты на самолёт и поезд. Перед оплатой проверьте багаж, пересадки и условия возврата.', [['emirates.png', 'Emirates'], ['turkish-airlines.png', 'Turkish Airlines'], ['trainline.png', 'Trainline']]],
+                ['Поездки по городу', 'Закажите такси, трансфер или билеты на транспорт в приложении и на сайте сервиса.', [['uber.svg', 'Uber'], ['grab.png', 'Grab'], ['12go.png', '12Go']]],
+                ['Экскурсии и развлечения', 'Выберите экскурсии, музеи и достопримечательности. Оплатите билеты заранее и сохраните подтверждение.', [['getyourguide.png', 'GetYourGuide'], ['klook.png', 'Klook'], ['trip-com.png', 'Trip.com']]],
+            ] as [$title, $text, $services])
                 <article>
-                    <div class="orange-booking-icon" aria-hidden="true">
-                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            @if ($icon === 'air')<path d="m27 5-8 11 7 7-3 2-9-5-6 6-3-1 5-9-5-9 2-3 7 7 11-8Z"/>
-                            @elseif ($icon === 'hotel')<path d="M5 28V8h22v20M11 8V4h10v4M12 28v-7h8v7M9 13h3m8 0h3M9 17h3m8 0h3M3 28h26"/>
-                            @else<path d="M8 25c0-6 16-2 16-9 0-4-8-3-8-6M12 9a4 4 0 1 1 8 0c0 3-4 6-4 6s-4-3-4-6Z"/><circle cx="8" cy="26" r="2"/>
-                            @endif
-                        </svg>
-                    </div>
                     <h3>{{ $title }}</h3><p>{{ $text }}</p>
+                    <ul class="orange-service-logos">
+                        @foreach ($services as [$logo, $service])
+                            <li><img src="{{ asset('assets/images/orange/services/'.$logo) }}" alt="" aria-hidden="true" width="32" height="32" loading="lazy"><span>{{ $service }}</span></li>
+                        @endforeach
+                    </ul>
                 </article>
             @endforeach
         </div>
+        <p class="orange-service-note"><strong>Интернет в поездке</strong> Orange также можно использовать для покупки eSIM на сайтах, которые принимают карту. Проверьте, поддерживает ли ваш телефон eSIM, и выберите пакет для страны поездки.</p>
+        <details class="orange-online-guide">
+            <summary>Как оплатить бронирование на сайте <span aria-hidden="true">+</span></summary>
+            <ol>
+                <li><strong>Выберите оплату картой</strong><p>Проверьте сумму и валюту покупки, правила отмены и дату списания.</p></li>
+                <li><strong>Введите данные Orange</strong><p>Номер карты, срок действия и CVV доступны в личном кабинете. Если сайт просит платёжный адрес (billing address), скопируйте его из раздела «Платёжный адрес» вашей карты.</p></li>
+                <li><strong>Подтвердите оплату</strong><p>@if ($product?->three_ds_supported) Если потребуется код 3DS, откройте раздел «3DS коды» на странице карты в личном кабинете.@else Следуйте указаниям сайта. Поддержку подтверждения 3DS можно проверить в условиях Orange.@endif Сохраните билет или подтверждение бронирования и проверьте операцию в истории карты.</p></li>
+            </ol>
+        </details>
         <div class="orange-booking-help"><p><strong>Хотите уточнить, подойдёт ли Orange для вашей покупки?</strong> Пришлите поддержке название сайта или отеля, страну и сумму покупки. Поможем проверить условия карты до оформления.</p><a class="orange-text-link" href="https://t.me/mojno_support">Уточнить в поддержке <span aria-hidden="true">↗︎</span></a></div>
-        <p class="orange-disclaimer">Приём карты зависит от сайта, страны и ограничений Orange. Проверьте условия перед бронированием.</p>
+        <p class="orange-disclaimer">Здесь приведены популярные сервисы для поездок. Приём Orange зависит от сервиса, страны и условий карты. Уточните возможность оплаты нужного сервиса у поддержки до выпуска.</p>
     </section>
 
     <section class="orange-container orange-section">
         <div class="orange-wallet-panel">
-            <div class="orange-wallet-art" aria-hidden="true"><div class="orange-phone"><div class="orange-phone-top"></div><span>{{ ($product?->apple_pay_enabled || $product?->google_pay_enabled) ? 'Оплата телефоном' : 'Orange' }}</span><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt=""><div class="orange-contactless">)))</div><p>{{ ($product?->apple_pay_enabled || $product?->google_pay_enabled) ? 'Поднесите к терминалу' : 'Ваша карта в личном кабинете' }}</p></div><div class="orange-wallet-circle"></div></div>
+            <div class="orange-wallet-art" aria-hidden="true"><div class="orange-phone"><div class="orange-phone-top"></div><span>{{ $phonePayments ? 'Оплата телефоном' : 'Orange' }}</span><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt=""><div class="orange-contactless">)))</div><p>{{ $phonePayments ? 'Поднесите к терминалу' : 'Ваша карта в личном кабинете' }}</p></div><div class="orange-wallet-circle"></div></div>
             <div class="orange-wallet-copy">
-                @if ($product?->apple_pay_enabled || $product?->google_pay_enabled)
+                @if ($phonePayments)
                     <h2>Платите телефоном<br>за границей</h2><p>Добавьте Orange в {{ $phonePayments }}. В магазинах, кафе и ресторанах поднесите телефон или часы к терминалу для оплаты.</p>
                 @else
                     <h2>Реквизиты карты<br>в личном кабинете</h2><p>Откройте карту в личном кабинете, чтобы посмотреть её номер, срок действия и данные для оплаты покупок онлайн.</p>
                 @endif
                 <div class="orange-wallet-badges">
-                    @if ($product?->apple_pay_enabled)<span>Apple Pay</span>@endif
-                    @if ($product?->google_pay_enabled)<span>Google Pay</span>@endif
+                    @if ($product?->apple_pay_enabled)<span><img src="{{ asset('assets/images/orange/payments/apple-pay.svg') }}" width="68" height="28" alt="Apple Pay"></span>@endif
+                    @if ($product?->google_pay_enabled)<span><img src="{{ asset('assets/images/orange/payments/google-pay.svg') }}" width="68" height="28" alt="Google Pay"></span>@endif
+                    @if ($product?->samsung_pay_enabled)<span><img src="{{ asset('assets/images/orange/payments/samsung-pay.svg') }}" width="28" height="28" alt=""><b>Samsung Pay</b></span>@endif
                     @if (! $product)<span>Возможности карты уточняются</span>@endif
                 </div>
                 @if ($phonePayments)
                     <p class="orange-small">{{ $product?->wallet_activation ?: 'Инструкция по подключению '.$phonePayments.' есть в личном кабинете. Для оплаты нужны совместимые телефон или часы и терминал с бесконтактной оплатой.' }}</p>
                 @endif
-                <a class="orange-text-link" href="#terms">Посмотреть условия карты <span aria-hidden="true">↗︎</span></a>
+                <a class="orange-text-link" href="#phone-setup">Как добавить карту в телефон <span aria-hidden="true">↗︎</span></a>
             </div>
         </div>
     </section>
 
+    <section id="phone-setup" class="orange-container orange-section">
+        <div class="orange-section-heading"><h2>Добавьте Orange в телефон<br>и платите в поездке</h2><p>После выпуска откройте реквизиты карты в личном кабинете. Выберите инструкцию для своего телефона.</p></div>
+        <div class="orange-phone-guides">
+            <details class="orange-phone-guide" @if ($product?->apple_pay_enabled) open @endif>
+                <summary><img src="{{ asset('assets/images/orange/payments/apple-pay.svg') }}" width="86" height="36" alt="Apple Pay"><span>На iPhone <b aria-hidden="true">+</b></span></summary>
+                @if ($product?->apple_pay_enabled)
+                    <ol>
+                        <li><strong>Откройте приложение Wallet</strong><p>Нажмите «+», затем выберите «Дебетовая или кредитная карта».</p></li>
+                        <li><strong>Введите реквизиты Orange</strong><p>Добавьте карту вручную: укажите имя владельца, номер, срок действия и CVV из личного кабинета.</p></li>
+                        <li><strong>Пройдите подтверждение</strong><p>Следуйте указаниям Wallet и инструкции для Orange в личном кабинете. Если требуется дополнительная проверка, обратитесь в поддержку.</p></li>
+                        <li><strong>Оплачивайте покупки</strong><p>На iPhone с Face ID дважды нажмите боковую кнопку, выберите Orange и подтвердите оплату. Поднесите верхнюю часть телефона к терминалу и дождитесь отметки об успешной оплате. На моделях с Touch ID используйте кнопку «Домой».</p></li>
+                    </ol>
+                    <p class="orange-guide-note">Apple Pay должен быть доступен на вашем устройстве и в его настройках региона. Условия подключения Orange смотрите в личном кабинете.</p>
+                @else
+                    <p class="orange-guide-note">Подключение Orange к Apple Pay сейчас не подтверждено в условиях карты. Уточните доступность у поддержки перед выпуском.</p>
+                @endif
+            </details>
+            <details class="orange-phone-guide" @if ($product?->google_pay_enabled) open @endif>
+                <summary><img src="{{ asset('assets/images/orange/payments/google-pay.svg') }}" width="86" height="36" alt="Google Pay"><span>На Android <b aria-hidden="true">+</b></span></summary>
+                @if ($product?->google_pay_enabled)
+                    <ol>
+                        <li><strong>Откройте Google Wallet</strong><p>Нажмите «Добавить в Кошелёк», затем «Платёжная карта» и «Новая кредитная или дебетовая карта».</p></li>
+                        <li><strong>Добавьте Orange</strong><p>Введите номер карты, срок действия и CVV. Если потребуется платёжный адрес, возьмите его из личного кабинета.</p></li>
+                        <li><strong>Подтвердите карту и настройте NFC</strong><p>Следуйте указаниям приложения. Включите NFC и блокировку экрана. Выберите Google Wallet приложением для бесконтактной оплаты по умолчанию.</p></li>
+                        <li><strong>Платите телефоном</strong><p>Разблокируйте телефон и поднесите его к терминалу. Если добавлено несколько карт, перед оплатой выберите Orange.</p></li>
+                    </ol>
+                    <p class="orange-guide-note">Для оплаты нужен совместимый Android-смартфон с NFC. Доступность Google Pay зависит от устройства и региона. Названия пунктов меню могут отличаться.</p>
+                @else
+                    <p class="orange-guide-note">Подключение Orange к Google Pay сейчас не подтверждено в условиях карты. Уточните доступность у поддержки перед выпуском.</p>
+                @endif
+            </details>
+        </div>
+        <details class="orange-phone-guide orange-samsung-guide" @if ($product?->samsung_pay_enabled) open @endif>
+            <summary><span class="orange-samsung-brand"><img src="{{ asset('assets/images/orange/payments/samsung-pay.svg') }}" width="38" height="38" alt="">Samsung Pay</span><span><b aria-hidden="true">+</b></span></summary>
+            @if ($product?->samsung_pay_enabled)
+                <ol>
+                    <li><strong>Откройте Samsung Wallet</strong><p>На некоторых устройствах приложение называется Samsung Pay. Выберите добавление платёжной карты.</p></li>
+                    <li><strong>Введите данные Orange</strong><p>Укажите номер карты, срок действия и CVV из личного кабинета. Примите условия и пройдите проверку по указаниям приложения.</p></li>
+                    <li><strong>Подготовьте оплату</strong><p>Включите NFC. Откройте Samsung Wallet, выберите Orange и подтвердите оплату отпечатком пальца или PIN-кодом. Поднесите телефон к терминалу.</p></li>
+                </ol>
+                <p class="orange-guide-note">Samsung Pay должен быть доступен для модели телефона и региона устройства. Если карта не добавляется, обратитесь в поддержку с текстом ошибки.</p>
+            @else
+                <p class="orange-guide-note">Подключение Orange к Samsung Pay сейчас не подтверждено в условиях карты. Уточните доступность у поддержки перед выпуском.</p>
+            @endif
+        </details>
+    </section>
+
     <section id="how" class="orange-container orange-section">
         <div class="orange-section-heading"><h2>Оформите карту<br>до поездки</h2><p>Зарегистрируйтесь, выпустите Orange и пополните баланс. Все действия доступны в личном кабинете.</p></div>
-        <ol class="orange-steps"><li><span>01</span><h3>Создайте кабинет</h3><p>Создайте личный кабинет в Можно и укажите данные владельца карты.</p></li><li><span>02</span><h3>Выберите Orange</h3><p>Проверьте стоимость и условия, затем оформите карту.@if ($product?->provider_kyc_required) Для выпуска требуется проверка личности.@endif</p></li><li><span>03</span><h3>Пополните карту</h3><p>Выберите способ пополнения в личном кабинете. Проверьте курс, комиссию и сумму, которая поступит на карту.</p></li><li><span>04</span><h3>Оплачивайте покупки</h3><p>Вводите реквизиты карты при оплате онлайн.@if ($phonePayments) Для оплаты телефоном добавьте Orange в {{ $phonePayments }}.@endif</p></li></ol>
+        <ol class="orange-steps">
+            <li><span>01</span><h3>Создайте кабинет</h3><p>Зарегистрируйтесь в Можно и заполните данные владельца карты.@if ($product?->provider_kyc_required) Для выпуска потребуется проверка личности.@endif</p></li>
+            <li><span>02</span><h3>Оплатите выпуск</h3><p>Выберите Orange, сумму первого пополнения и способ оплаты. Стоимость выпуска и сумма зачисления показаны отдельно до оплаты.</p></li>
+            <li><span>03</span><h3>Дождитесь карты</h3><p>После подтверждения оплаты начнётся выпуск. Следите за статусом в личном кабинете. Готовая карта и её реквизиты появятся там же.</p></li>
+            <li><span>04</span><h3>Начните платить</h3><p>Используйте реквизиты для покупок онлайн.@if ($phonePayments) Добавьте Orange в {{ $phonePayments }} для оплаты телефоном.@endif Проверьте баланс перед первой покупкой.</p></li>
+        </ol>
+        <div class="orange-issue-help"><p><strong>Оплатили выпуск и ждёте карту?</strong> Проверьте статус в кабинете. Если возник вопрос, напишите поддержке дату, сумму и номер заказа.</p><a class="orange-text-link" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a></div>
     </section>
 
     <section class="orange-container orange-section">
@@ -137,8 +202,10 @@
                     <div><dt>Оплата в другой валюте</dt><dd>{{ $product->non_usd_payment_fee ?: 'Уточняется' }}</dd></div>
                     <div><dt>Рисковая операция</dt><dd>{{ $usd($product->risk_operation_fee_usd) }}</dd></div>
                     <div><dt>Пополнение: минимум / максимум</dt><dd>{{ $usd($product->topup_min_amount) }} / {{ $usd($product->topup_max_amount) }}</dd></div>
-                    <div><dt>Выпуск: минимум / максимум</dt><dd>{{ $usd($product->issue_min_amount) }} / {{ $usd($product->issue_max_amount) }}</dd></div>
-                    <div><dt>Apple Pay / Google Pay</dt><dd>{{ $product->apple_pay_enabled ? 'Да' : 'Нет' }} / {{ $product->google_pay_enabled ? 'Да' : 'Нет' }}</dd></div>
+                    <div><dt>Первое пополнение: минимум / максимум</dt><dd>{{ $usd($product->issue_min_amount) }} / {{ $usd($product->issue_max_amount) }}</dd></div>
+                    <div><dt>Apple Pay</dt><dd>{{ $product->apple_pay_enabled ? 'Доступен' : 'Недоступен' }}</dd></div>
+                    <div><dt>Google Pay</dt><dd>{{ $product->google_pay_enabled ? 'Доступен' : 'Недоступен' }}</dd></div>
+                    <div><dt>Samsung Pay</dt><dd>{{ $product->samsung_pay_enabled ? 'Доступен' : 'Недоступен' }}</dd></div>
                     <div><dt>Подтверждение оплаты 3DS</dt><dd>{{ $product->three_ds_supported ? 'Поддерживается' : 'Не поддерживается' }}</dd></div>
                 </dl>
             @else
@@ -154,7 +221,7 @@
     <section class="orange-container orange-section orange-ready">
         <div><h2>Проверьте карту<br>перед поездкой</h2><p>Проверьте баланс, способ оплаты и условия бронирований заранее.</p><a class="orange-text-link" href="https://t.me/mojno_support">Задать вопрос поддержке <span aria-hidden="true">↗︎</span></a></div>
         <ol>
-            <li><strong>Проверьте способ оплаты</strong><p>Для оплаты онлайн подготовьте реквизиты карты.@if ($phonePayments) Для покупок в магазинах подключите Orange к {{ $phonePayments }} и проверьте настройку оплаты на телефоне.@else Оплата через Apple Pay и Google Pay для этой карты сейчас недоступна.@endif</p></li>
+            <li><strong>Проверьте способ оплаты</strong><p>Для оплаты онлайн подготовьте реквизиты карты.@if ($phonePayments) Для покупок в магазинах подключите Orange к {{ $phonePayments }} и проверьте настройку оплаты на телефоне.@else Оплата через Apple Pay, Google Pay и Samsung Pay для этой карты сейчас недоступна.@endif</p></li>
             <li><strong>Проверьте баланс и комиссии</strong><p>Пополните карту на нужную сумму. Если валюта покупки отличается от валюты карты, проверьте комиссию за такую оплату в тарифах.</p></li>
             <li><strong>Уточните правила отеля</strong><p>Уточните, нужен ли залог или физическая карта при заселении. Условия оплаты на сайте и в самом отеле могут отличаться.</p></li>
             <li><strong>Сохраните контакт поддержки</strong><p>Сохраните @mojno_support в Telegram. По вопросам оплаты напишите поддержке и укажите дату и сумму операции из личного кабинета.</p></li>
@@ -171,7 +238,17 @@
                 ['Подойдёт ли карта для билетов, отелей и eSIM?', 'Orange можно использовать для таких покупок на сайтах, которые принимают эту карту. Перед оплатой проверьте ограничения в условиях. Если нужна помощь, пришлите поддержке название сайта, страну и сумму покупки.'],
                 ['Можно ли оплачивать отели?', 'Оплачивайте бронирование картой на сайтах, которые принимают Orange. Перед покупкой уточните у отеля, нужен ли залог или физическая карта при заселении. Orange выпускается в виртуальном формате.'],
                 ['Что делать, если оплата не прошла?', 'Проверьте баланс и статус операции в личном кабинете. За отказ в оплате может взиматься комиссия по тарифу карты. Перед повторной попыткой напишите поддержке название магазина или сайта, дату и сумму покупки. Полный номер карты, защитный код CVV и коды подтверждения сохраняйте в тайне.'],
-                ['Будет ли карта работать в России?', 'Orange предназначена для покупок за границей и не работает в России. Перед поездкой проверьте ограничения по странам в условиях карты.'],
+                ['Можно ли платить телефоном уже за границей?', $phonePayments ? 'Да, после подключения Orange к '.$phonePayments.' можно платить у терминалов с бесконтактной оплатой, которые принимают карту. Перед поездкой добавьте карту в телефон и проверьте баланс.' : 'Перед выпуском уточните возможность оплаты телефоном у поддержки. Текущие условия Apple Pay, Google Pay и Samsung Pay указаны в тарифах Orange.'],
+                ['Безопасно ли добавлять карту в телефон?', 'При оплате через Apple Pay, Google Pay и Samsung Pay магазину передаются защищённые платёжные данные вместо полного номера карты. Оплата подтверждается на вашем устройстве. Используйте блокировку экрана и сохраняйте реквизиты карты и коды подтверждения в тайне.'],
+                ['Нужен ли интернет для оплаты телефоном?', 'Для добавления карты и проверки баланса нужен интернет. Для оплаты уже добавленной картой подключение обычно не требуется, но телефон или приложение могут запросить его для проверки. Подготовьте доступ к интернету на время поездки.'],
+                ['Можно ли снять наличные или оставить залог за автомобиль?', 'Виртуальная карта предназначена прежде всего для покупок онлайн и оплаты телефоном. Снятие наличных и залоги зависят от правил банка, банкомата или компании. Уточните эти условия перед поездкой. Прокат автомобилей и некоторые отели требуют физическую карту на имя клиента.'],
+                ['Что делать, если карта не добавляется в телефон?', 'Проверьте, поддерживается ли нужный способ оплаты в тарифе Orange, совместимо ли устройство и правильно ли введены реквизиты. Затем сверьтесь с инструкцией в личном кабинете. При обращении в поддержку укажите модель телефона и текст ошибки.'],
+                ['Какой адрес указывать при оплате онлайн?', 'Используйте платёжный адрес карты из личного кабинета: страна, город, улица и индекс. На сайте он может называться billing address. Адрес отеля или домашний адрес могут не подойти.'],
+                ['Где взять код подтверждения покупки?', $product?->three_ds_supported ? 'Если сайт запросит код 3DS, откройте карту в личном кабинете и перейдите в раздел «3DS коды». Для подключения Apple Pay, Google Pay или Samsung Pay следуйте отдельной инструкции по добавлению карты.' : 'Поддержка 3DS указана в условиях Orange. Если сайт требует подтверждение, которое недоступно для вашей карты, уточните возможность оплаты у поддержки.'],
+                ['Когда деньги поступят после пополнения?', 'После подтверждения платежа и зачисления на карту баланс обновится в личном кабинете. Срок зависит от способа оплаты и обработки операции. Планируйте пополнение до вылета и важных покупок. Если баланс не обновился, напишите поддержке данные платежа.'],
+                ['Можно ли оплатить дорогой отель или несколько билетов?', 'Проверьте ограничения карты, сумму покупки и баланс с учётом комиссий. Если сумма крупная или оплата срочная, уточните условия у поддержки перед пополнением. Лимиты пополнения показаны в тарифах Orange.'],
+                ['Что делать, если покупку отменили?', 'Уточните у продавца, оформлен ли возврат, и сохраните подтверждение отмены. Возврат поступит после обработки продавцом и банком. Следите за историей операций. Если есть вопрос по статусу, напишите поддержке дату и сумму покупки.'],
+                ['Можно ли оплатить поездку из России?', 'Используйте реквизиты Orange для покупки билетов и бронирований на зарубежных сайтах, которые принимают эту карту. Покупки в российских магазинах и на российских сайтах недоступны. Доступ к самому сервису зависит от его правил и региона аккаунта.'],
                 ['Когда можно начать пользоваться?', 'После выпуска карты и зачисления денег на баланс можно оплачивать покупки онлайн. '.$phonePaymentInstructions],
             ] as [$question, $answer])
                 <details><summary>{{ $question }}<span aria-hidden="true">+</span></summary><p>{{ $answer }}</p></details>

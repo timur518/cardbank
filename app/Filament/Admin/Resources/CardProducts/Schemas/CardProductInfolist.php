@@ -106,7 +106,8 @@ class CardProductInfolist
                                     ->schema([
                                         IconEntry::make('apple_pay_enabled')->label('Apple Pay')->boolean(),
                                         IconEntry::make('google_pay_enabled')->label('Google Pay')->boolean(),
-                                        TextEntry::make('wallet_activation')->label('Способ подключения кошелька')->placeholder('—'),
+                                        IconEntry::make('samsung_pay_enabled')->label('Samsung Pay')->boolean(),
+                                        TextEntry::make('wallet_activation')->label('Способ подключения кошелька')->placeholder('—')->columnSpanFull(),
                                     ]),
 
                                 Section::make('Платёжный адрес продукта')
