@@ -40,6 +40,13 @@ Route::get('/tariffs', function () {
     ]);
 })->name('tariffs');
 
+Route::get('/cards/orange', function () {
+    return view('cards.orange', [
+        'product' => CardProduct::query()->where('key', 'orange')->where('active', true)->first(),
+        'analyticsCodes' => Setting::getMany(AnalyticsSettings::KEYS),
+    ]);
+})->name('cards.orange');
+
 // Страницы юридических документов — текст каждой берётся из админки (LegalDocument),
 // показывается последняя действующая версия соответствующего типа документа.
 // Слаг URL => [тип документа, заголовок страницы, имя роута].
