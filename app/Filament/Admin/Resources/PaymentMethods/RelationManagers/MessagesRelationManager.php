@@ -3,6 +3,10 @@
 namespace App\Filament\Admin\Resources\PaymentMethods\RelationManagers;
 
 use App\Enums\MessageProcessingStatus;
+use App\Models\PaymentMethodMessage;
+use Filament\Actions\Action;
+use Filament\Forms\Components\CodeEditor;
+use Filament\Forms\Components\CodeEditor\Enums\Language;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -25,6 +29,7 @@ class MessagesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('received_at', 'desc')
             ->recordTitleAttribute('event_type')
             ->emptyStateHeading('Сообщений пока нет')
             ->emptyStateDescription('Здесь будут появляться сообщения от платёжной системы о поступивших оплатах.')
@@ -53,6 +58,30 @@ class MessagesRelationManager extends RelationManager
             ->headerActions([
                 // Раздел ведётся автоматически, ручное создание не предусмотрено.
             ])
-            ->recordActions([]);
+            ->recordActions([
+                Action::make('viewEvent')
+                    ->label('Посмотреть событие')
+                    ->icon('heroicon-o-eye')
+                    ->modalHeading(fn (PaymentMethodMessage $record): string => 'Событие: '.$record->event_type)
+                    ->modalWidth('4xl')
+                    ->modalSubmitAction(false)
+                    ->modalCancelActionLabel('Закрыть')
+                    ->fillForm(function (PaymentMethodMessage $record): array {
+                        $raw = (string) ($record->getRawOriginal('payload') ?? '');
+                        $decoded = json_decode($raw);
+
+                        return ['payload' => json_last_error() === JSON_ERROR_NONE
+                            ? json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION)
+                            : $raw];
+                    })
+                    ->schema([
+                        CodeEditor::make('payload')
+                            ->label('Тело уведомления')
+                            ->language(Language::Json)
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->columnSpanFull(),
+                    ]),
+            ]);
     }
 }

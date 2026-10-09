@@ -54,6 +54,11 @@ class PaymentMethod extends Model
         return $this->hasMany(PaymentMethodUsage::class);
     }
 
+    public function incomes(): HasMany
+    {
+        return $this->hasMany(Income::class);
+    }
+
     /**
      * Пользователи, у которых этот способ оплаты явно в списке разрешённых
      * (см. User::allowedPaymentMethods()).

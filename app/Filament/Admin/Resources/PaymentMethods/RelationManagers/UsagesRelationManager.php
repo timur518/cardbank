@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\PaymentMethods\RelationManagers;
 
+use App\Models\Income;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -9,7 +10,7 @@ use Filament\Tables\Table;
 
 class UsagesRelationManager extends RelationManager
 {
-    protected static string $relationship = 'usages';
+    protected static string $relationship = 'incomes';
 
     protected static ?string $title = 'История применений способа оплаты';
 
@@ -23,7 +24,8 @@ class UsagesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('status')
+            ->defaultSort('created_at', 'desc')
+            ->recordTitleAttribute('id')
             ->emptyStateHeading('Пока нет платежей')
             ->emptyStateDescription('Здесь появится история платежей, прошедших через этот способ оплаты.')
             ->emptyStateIcon('heroicon-o-arrow-path')
@@ -36,8 +38,8 @@ class UsagesRelationManager extends RelationManager
                     ->placeholder('—'),
                 TextColumn::make('amount')
                     ->label('Сумма')
-                    ->money(fn ($record) => $record->paymentMethod?->currency ?? 'USD'),
-                TextColumn::make('status')
+                    ->money(fn (Income $record) => $record->currency),
+                TextColumn::make('payment_status')
                     ->label('Статус')
                     ->badge(),
                 TextColumn::make('created_at')

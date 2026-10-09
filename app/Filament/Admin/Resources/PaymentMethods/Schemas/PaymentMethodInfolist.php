@@ -15,7 +15,7 @@ class PaymentMethodInfolist
         return $schema
             ->components([
                 Section::make('Основное')
-                    ->columns(3)
+                    ->columns(2)
                     ->schema([
                         TextEntry::make('name')->label('Название'),
                         TextEntry::make('type')
