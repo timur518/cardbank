@@ -74,6 +74,7 @@ class UserInfolist
                 // только факт принятия оферты и итоговый список разрешённых способов оплаты.
                 // Редактируемый вариант этого же блока — на странице редактирования (см. UserForm).
                 Section::make('Настройки платежей')
+                    ->columnSpanFull()
                     ->columns(2)
                     ->schema([
                         IconEntry::make('bitbanker_offer_accepted')

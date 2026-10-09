@@ -65,7 +65,8 @@ class UserForm
                     ]),
 
                 Section::make('Данные о регистрации')
-                    ->columns(2)
+                    ->columnSpanFull()
+                    ->columns(6)
                     ->schema([
                         TextInput::make('utm_source')
                             ->label('Источник (utm_source)')
@@ -94,6 +95,7 @@ class UserForm
                 // со стороны админа (включить оферту вручную или ограничить пользователя
                 // конкретными способами оплаты в обход логики в BitbankerClientService).
                 Section::make('Настройки платежей')
+                    ->columnSpanFull()
                     ->columns(2)
                     ->schema([
                         Toggle::make('bitbanker_offer_accepted_at')
@@ -110,8 +112,7 @@ class UserForm
                             )
                             ->multiple()
                             ->preload()
-                            ->helperText('Ничего не выбрано — ограничений нет, пользователю доступны все активные способы оплаты, кроме BitBanker — он становится доступен только после успешной регистрации или при выборе здесь вручную.')
-                            ->columnSpanFull(),
+                            ->helperText('Ничего не выбрано — ограничений нет, пользователю доступны все активные способы оплаты, кроме BitBanker — он становится доступен только после успешной регистрации или при выборе здесь вручную.'),
                     ]),
             ]);
     }
