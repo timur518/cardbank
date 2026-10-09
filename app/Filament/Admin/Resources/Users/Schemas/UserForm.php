@@ -80,10 +80,10 @@ class UserForm
                             ->label('Метка (utm_content)')
                             ->maxLength(255),
                         TextInput::make('referral_code')
-                            ->label('Код партнёра')
+                            ->label('Код приглашения')
                             ->maxLength(255),
                         TextInput::make('invite_code')
-                            ->label('Собственный код приглашения')
+                            ->label('Реферальный код')
                             ->disabled()
                             ->dehydrated(false),
                     ]),
