@@ -45,7 +45,7 @@
 <main id="main">
     <section class="orange-hero orange-container">
         <div class="orange-hero-copy">
-            <div class="orange-product-name">Orange <span>Карта для путешествий</span></div>
+            <div class="orange-product-name">Orange <span>Карта иностранного банка для путешествий</span></div>
             <h1>Карта для ваших<br><em>путешествий</em></h1>
             <p>Оплачивайте билеты и отели онлайн, кафе и покупки — в поездке. Оформите виртуальную карту Orange онлайн и пополняйте её с любой карты российского банка</p>
             <div class="orange-actions"><a class="orange-button" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a><a class="orange-text-link" href="#terms">Посмотреть условия <span aria-hidden="true">↓</span></a></div>
@@ -95,7 +95,6 @@
                 <li><strong>Подтвердите оплату</strong><p>@if ($product?->three_ds_supported) Если потребуется код 3DS, откройте раздел «3DS коды» на странице карты в личном кабинете.@else Следуйте указаниям сайта. Поддержку подтверждения 3DS можно проверить в условиях Orange.@endif Сохраните билет или подтверждение бронирования и проверьте операцию в истории карты.</p></li>
             </ol>
         </details>
-        <div class="orange-booking-help"><p><strong>Хотите уточнить, подойдёт ли Orange для вашей покупки?</strong> Пришлите поддержке название сайта или отеля, страну и сумму покупки. Поможем проверить условия карты до оформления.</p><a class="orange-text-link" href="https://t.me/mojno_support">Уточнить в поддержке <span aria-hidden="true">↗︎</span></a></div>
     </section>
 
     <section class="orange-container orange-section">
@@ -120,7 +119,7 @@
     <section id="phone-setup" class="orange-container orange-section">
         <div class="orange-section-heading"><h2>Как добавить карту<br>в Apple Pay/Google Pay?</h2><p>После выпуска откройте реквизиты карты в личном кабинете. Выберите инструкцию для своего телефона</p></div>
         <div class="orange-phone-guides">
-            <details class="orange-phone-guide" @if ($product?->apple_pay_enabled) open @endif>
+            <details class="orange-phone-guide">
                 <summary><img src="{{ asset('assets/images/orange/payments/apple-pay.svg') }}" width="86" height="36" alt="Apple Pay"><span>На iPhone <b aria-hidden="true">+</b></span></summary>
                 @if ($product?->apple_pay_enabled)
                     <ol>
@@ -134,7 +133,7 @@
                     <p class="orange-guide-note">Подключение Orange к Apple Pay сейчас не подтверждено в условиях карты. Уточните доступность у поддержки перед выпуском.</p>
                 @endif
             </details>
-            <details class="orange-phone-guide" @if ($product?->google_pay_enabled) open @endif>
+            <details class="orange-phone-guide">
                 <summary><img src="{{ asset('assets/images/orange/payments/google-pay.svg') }}" width="86" height="36" alt="Google Pay"><span>На Android <b aria-hidden="true">+</b></span></summary>
                 @if ($product?->google_pay_enabled)
                     <ol>
@@ -148,7 +147,7 @@
                     <p class="orange-guide-note">Подключение Orange к Google Pay сейчас не подтверждено в условиях карты. Уточните доступность у поддержки перед выпуском.</p>
                 @endif
             </details>
-            <details class="orange-phone-guide orange-samsung-guide" @if ($product?->samsung_pay_enabled) open @endif>
+            <details class="orange-phone-guide orange-samsung-guide">
                 <summary><span class="orange-samsung-brand"><img src="{{ asset('assets/images/orange/payments/samsung-pay.svg') }}" width="38" height="38" alt="">Samsung Pay</span><span><b aria-hidden="true">+</b></span></summary>
                 @if ($product?->samsung_pay_enabled)
                     <ol>
@@ -167,15 +166,15 @@
     <section id="how" class="orange-container orange-section">
         <div class="orange-section-heading"><h2>Оформите карту<br>до поездки</h2><p>Зарегистрируйтесь, выпустите Orange и пополните баланс. Все действия доступны в личном кабинете</p></div>
         <ol class="orange-steps">
-            <li><span>01</span><h3>Создайте кабинет</h3><p>Зарегистрируйтесь в Можно и заполните данные владельца карты.@if ($product?->provider_kyc_required) Для выпуска потребуется проверка личности.@endif</p></li>
+            <li><span>01</span><h3>Создайте кабинет</h3><p>Зарегистрируйте аккаунт в системе.@if ($product?->provider_kyc_required) Для выпуска потребуется проверка личности.@endif</p></li>
             <li><span>02</span><h3>Оплатите выпуск</h3><p>Выберите Orange, сумму первого пополнения и способ оплаты. Стоимость выпуска и сумма зачисления показаны отдельно до оплаты.</p></li>
-            <li><span>03</span><h3>Дождитесь карты</h3><p>После подтверждения оплаты начнётся выпуск. Следите за статусом в личном кабинете. Готовая карта и её реквизиты появятся там же.</p></li>
+            <li><span>03</span><h3>Дождитесь карты</h3><p>После оплаты начнется автоматический выпуск вашей новой карты. Обычно он занимает не больше 5 минут, после чего вы получите уведомление о готовности карты к использованию. Карта и её реквизиты появятся в личном кабинете.</p></li>
             <li><span>04</span><h3>Начните платить</h3><p>Используйте реквизиты для покупок онлайн.@if ($phonePayments) Добавьте вашу карту в {{ $phonePayments }} для оплаты телефоном.@endif</p></li>
         </ol>
     </section>
 
     <section class="orange-container orange-section">
-        <div class="orange-control-panel"><div><h2>Пополняйте с карт<br>российских банков</h2><p>Пополняйте виртуальную карту с любой карты российского банка через СБП. Управляйте картой в личном кабинете: проверяйте баланс, смотрите историю покупок и пополняйте счёт</p><a class="orange-button orange-button-light" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a></div><div class="orange-control-preview"><div class="orange-preview-header"><img src="{{ asset('assets/images/logo_min.svg') }}" width="32" height="32" alt=""><span>Всё в одном кабинете</span><span aria-hidden="true">↗︎</span></div><div class="orange-preview-card"><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Карта Orange в личном кабинете" loading="lazy"></div><ul><li><span>Баланс карты</span><span aria-hidden="true">✓</span></li><li><span>История операций</span><span aria-hidden="true">✓</span></li><li><span>Реквизиты и управление</span><span aria-hidden="true">✓</span></li></ul><p>Пример отображения карты в личном кабинете</p></div></div>
+        <div class="orange-control-panel"><div><h2>Пополняйте с карт<br>российских банков</h2><p>Пополняйте виртуальную карту с любой карты российского банка через СБП. Управляйте картой в личном кабинете: проверяйте баланс, смотрите историю покупок и мгновенно пополняйте баланс</p><a class="orange-button orange-button-light" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a></div><div class="orange-control-preview"><div class="orange-preview-header"><img src="{{ asset('assets/images/logo_min.svg') }}" width="32" height="32" alt=""><span>Всё в одном кабинете</span><span aria-hidden="true">↗︎</span></div><div class="orange-preview-card"><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Карта Orange в личном кабинете" loading="lazy"></div><ul><li><span>Баланс карты</span><span aria-hidden="true">✓</span></li><li><span>История операций</span><span aria-hidden="true">✓</span></li><li><span>Реквизиты и управление</span><span aria-hidden="true">✓</span></li></ul></div></div>
     </section>
 
     <section id="terms" class="orange-container orange-section">
@@ -205,8 +204,17 @@
                 <a class="orange-text-link" href="{{ route('tariffs') }}">Полные тарифы и условия <span aria-hidden="true">↗︎</span></a>
             </div>
         </div>
-        @if ($product?->restricted_merchants)<details class="orange-terms-details"><summary>Ограничения по магазинам и сервисам</summary><div class="legal-doc-content">{!! $product->restricted_merchants !!}</div></details>@endif
-        @if ($product?->full_terms)<details class="orange-terms-details"><summary>Подробные условия использования Orange</summary><div class="legal-doc-content">{!! $product->full_terms !!}</div></details>@endif
+        @if ($product?->restricted_merchants || $product?->full_terms)
+            <details class="orange-terms-details">
+                <summary>Ограничения использования</summary>
+                @if ($product->restricted_merchants)
+                    <div class="legal-doc-content">{!! $product->restricted_merchants !!}</div>
+                @endif
+                @if ($product->full_terms)
+                    <div class="legal-doc-content">{!! $product->full_terms !!}</div>
+                @endif
+            </details>
+        @endif
     </section>
 
     <section class="orange-container orange-section orange-ready">

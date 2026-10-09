@@ -29,7 +29,7 @@ class OrangeLandingTest extends TestCase
             ->assertDontSee('Описание именно Orange')->assertSee('Условия Orange из админки')->assertDontSee('Условия White')
             ->assertSee('data-site-header', false)->assertDontSee('class="orange-nav"', false)->assertSee('Бесплатное обслуживание')->assertSee('обслуживание в месяц')
             ->assertSee(view('partials.site-footer')->render(), false)
-            ->assertSee('Авиа и ЖД билеты')->assertSee('eSIM для путешествий')->assertSee('Уточнить в поддержке')
+            ->assertSee('Авиа и ЖД билеты')->assertSee('eSIM для путешествий')->assertDontSee('Хотите уточнить, подойдёт ли Orange для вашей покупки?')
             ->assertDontSee('Что делать, если оплата не прошла?')->assertSee('Уточните правила отеля')
             ->assertSee('1 234 ₽')->assertSee('2,50%')->assertSee('$0,15')
             ->assertSee('https://mne.mojno.cc/register')->assertSee('Apple Pay')->assertSee('Google Pay')->assertSee('Samsung Pay')
