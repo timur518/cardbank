@@ -42,7 +42,7 @@ Route::get('/tariffs', function () {
 
 Route::get('/cards/orange', function () {
     return view('cards.orange', [
-        'product' => CardProduct::query()->where('key', 'orange')->where('active', true)->first(),
+        'product' => CardProduct::query()->whereKey(6)->where('key', 'orange')->where('active', true)->first(),
         'analyticsCodes' => Setting::getMany(AnalyticsSettings::KEYS),
     ]);
 })->name('cards.orange');

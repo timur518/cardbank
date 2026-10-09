@@ -19,9 +19,15 @@ class OrangeLandingTest extends TestCase
             'currency' => 'USD', 'price_rub' => 1234, 'provider_topup_fee_percent' => 2.5,
             'successful_payment_fee_usd' => 0.15, 'apple_pay_enabled' => true,
             'google_pay_enabled' => true, 'active' => true, 'coming_soon' => false,
+            'description' => 'Описание именно Orange', 'full_terms' => '<p>Условия Orange из админки</p>',
         ]);
 
+        $product->forceFill(['id' => 6])->save();
+        CardProduct::create(['provider_id' => $provider->id, 'key' => 'white', 'name' => 'White', 'currency' => 'EUR', 'price_rub' => 98765, 'full_terms' => '<p>Условия White</p>']);
+
         $this->get('/cards/orange')->assertOk()
+            ->assertSee('Описание именно Orange')->assertSee('Условия Orange из админки')->assertDontSee('Условия White')
+            ->assertSee('data-site-header', false)->assertDontSee('class="orange-nav"', false)->assertDontSee('обслуживание 0 ₽')
             ->assertSee('1 234 ₽')->assertSee('2,50%')->assertSee('$0,15')
             ->assertSee('https://mne.mojno.cc/register')->assertSee('Apple Pay')->assertSee('Google Pay')
             ->assertDontSee('utm_');
@@ -35,7 +41,8 @@ class OrangeLandingTest extends TestCase
         $this->get('/cards/orange')->assertOk()->assertSee('Уточнить доступность')
             ->assertDontSee('https://mne.mojno.cc/register');
         $provider = CardProvider::create(['name' => 'Test', 'code' => 'test']);
-        CardProduct::create(['provider_id' => $provider->id, 'key' => 'orange', 'name' => 'Orange', 'currency' => 'USD', 'price_rub' => 98765, 'active' => false]);
+        $product = CardProduct::create(['provider_id' => $provider->id, 'key' => 'orange', 'name' => 'Orange', 'currency' => 'USD', 'price_rub' => 98765, 'active' => false]);
+        $product->forceFill(['id' => 6])->save();
         $this->get('/cards/orange')->assertOk()->assertSee('Уточнить доступность')->assertDontSee('98 765 ₽');
     }
 }
