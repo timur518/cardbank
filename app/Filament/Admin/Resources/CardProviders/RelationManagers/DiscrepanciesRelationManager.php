@@ -29,6 +29,7 @@ class DiscrepanciesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->recordTitleAttribute('type')
             ->emptyStateHeading('Расхождений нет')
             ->emptyStateDescription('Здесь появятся случаи, когда данные нашей системы не совпадают с данными провайдера.')

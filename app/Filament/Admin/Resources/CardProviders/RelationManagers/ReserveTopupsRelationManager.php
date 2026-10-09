@@ -37,6 +37,7 @@ class ReserveTopupsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('created_at', 'desc')
             ->recordTitleAttribute('amount')
             ->emptyStateHeading('Пополнений ещё не было')
             ->emptyStateDescription('Здесь будет история пополнения резерва этого провайдера.')

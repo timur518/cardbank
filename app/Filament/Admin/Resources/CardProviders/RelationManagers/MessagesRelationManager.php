@@ -29,6 +29,7 @@ class MessagesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('received_at', 'desc')
             ->recordTitleAttribute('event_type')
             ->emptyStateHeading('Сообщений пока нет')
             ->emptyStateDescription('Здесь будут появляться автоматические сообщения от провайдера о событиях: выпуск карты, зачисление денег и т.п.')
