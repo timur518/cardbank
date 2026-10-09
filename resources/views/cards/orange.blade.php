@@ -17,14 +17,14 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="ru_RU">
     <meta property="og:title" content="Orange. Весь мир — в ваших планах.">
-    <meta property="og:description" content="Карта для путешествий, оплаты телефоном и покупок за границей от Можно.">
+    <meta property="og:description" content="Карта для онлайн-бронирований и покупок в путешествиях от Можно.">
     <meta property="og:url" content="https://mojno.cc/cards/orange">
     <meta property="og:image" content="{{ asset('assets/images/orangecardbg.png') }}">
     <link rel="icon" href="{{ asset('assets/images/favicon.svg') }}" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=sofia-sans:400,500,600,700,800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('assets/css/orange.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/orange.css') }}?v={{ filemtime(public_path('assets/css/orange.css')) }}">
     {!! $analyticsCodes['analytics_counter_id'] ?? '' !!}
     {!! $analyticsCodes['analytics_pixel_ids'] ?? '' !!}
 </head>
@@ -36,7 +36,7 @@
         <div class="orange-hero-copy">
             <div class="orange-product-name">Orange <span>Карта для путешествий</span></div>
             <h1>Весь мир —<br>в ваших <em>планах.</em></h1>
-            <p>Ужин с видом на море. Отель в новом городе. Покупки по пути домой. Берите Orange с собой — и платите за границей привычным способом.</p>
+            <p>Бронируйте поездку онлайн. Оплачивайте отели, ужины и покупки за границей. Orange — виртуальная карта, которую можно оформить и пополнить из России ещё до вылета.</p>
             <div class="orange-actions"><a class="orange-button" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a><a class="orange-text-link" href="#terms">Посмотреть условия <span aria-hidden="true">↓</span></a></div>
             <div class="orange-hero-facts"><div><strong>{{ $rub($product?->price_rub) }}</strong><span>за выпуск карты</span></div><div><strong>{{ $percent($product?->provider_topup_fee_percent) }}</strong><span>комиссия пополнения</span></div><div><strong>Онлайн</strong><span>без визита в офис</span></div></div>
         </div>
@@ -60,11 +60,36 @@
     <section id="possibilities" class="orange-container orange-section">
         <div class="orange-section-heading"><h2>Меньше забот об оплате.<br>Больше впечатлений.</h2><p>Одна виртуальная карта для больших планов и маленьких радостей в поездке.</p></div>
         <div class="orange-scenes">
-            <article class="orange-scene orange-scene-large"><img src="{{ asset('assets/images/booking.png') }}" alt="Заселение в отель во время путешествия" loading="lazy" width="1491" height="1055"><div><span class="orange-scene-number">01 / В ПУТЕШЕСТВИИ</span><h3>Отель выбран.<br>Остаётся собрать чемодан.</h3><p>Для оплаты проживания и бронирований там, где принимают вашу карту.</p></div></article>
-            <article class="orange-scene"><img src="{{ asset('assets/images/cafe.png') }}" alt="Отдых в кафе" loading="lazy"><div><span class="orange-scene-number">02 / КАЖДЫЙ ДЕНЬ</span><h3>Кофе, ужин,<br>ещё один красивый день.</h3><p>Кафе, рестораны и повседневные покупки за границей.</p></div></article>
-            <article class="orange-scene"><img src="{{ asset('assets/images/ecomm.png') }}" alt="Покупки в зарубежных магазинах" loading="lazy"><div><span class="orange-scene-number">03 / ДЛЯ СЕБЯ</span><h3>Покупки, которые<br>будут напоминать о поездке.</h3><p>Используйте карту для покупок онлайн и доступных способов оплаты в магазинах.</p></div></article>
+            <article class="orange-scene orange-scene-large"><img src="{{ asset('assets/images/booking.png') }}" alt="Заселение в отель во время путешествия" loading="lazy" width="1491" height="1055"><div><h3>Отель выбран.<br>Остаётся собрать чемодан.</h3><p>Для оплаты проживания и бронирований там, где принимают вашу карту.</p></div></article>
+            <article class="orange-scene"><img src="{{ asset('assets/images/cafe.png') }}" alt="Отдых в кафе" loading="lazy"><div><h3>Кофе, ужин,<br>ещё один красивый день.</h3><p>Кафе, рестораны и повседневные покупки за границей.</p></div></article>
+            <article class="orange-scene"><img src="{{ asset('assets/images/ecomm.png') }}" alt="Покупки в зарубежных магазинах" loading="lazy"><div><h3>Покупки, которые<br>будут напоминать о поездке.</h3><p>Сувениры, местные магазины и покупки в аэропорту — там, где принимают карту и доступный вам способ оплаты.</p></div></article>
         </div>
         <p class="orange-disclaimer">Доступность оплаты зависит от страны, магазина и условий карты. Для бронирований с депозитом или требованием физической карты заранее уточните правила у отеля.</p>
+    </section>
+
+    <section class="orange-container orange-section orange-booking">
+        <div class="orange-section-heading"><h2>Путешествие начинается<br>с первой брони.</h2><p>Orange пригодится ещё дома — когда вы собираете маршрут и оплачиваете поездку онлайн.</p></div>
+        <div class="orange-booking-grid">
+            @foreach ([
+                ['air', 'Билеты туда и обратно', 'Авиабилеты и железнодорожные поездки на сайтах перевозчиков и сервисов бронирования.'],
+                ['hotel', 'Место, где хочется остаться', 'Отели и апартаменты с оплатой онлайн. Проверьте правила заселения и депозита до бронирования.'],
+                ['route', 'Всё для вашего маршрута', 'Трансферы, экскурсии, билеты в музеи и eSIM — удобнее подготовить заранее.'],
+            ] as [$icon, $title, $text])
+                <article>
+                    <div class="orange-booking-icon" aria-hidden="true">
+                        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            @if ($icon === 'air')<path d="m27 5-8 11 7 7-3 2-9-5-6 6-3-1 5-9-5-9 2-3 7 7 11-8Z"/>
+                            @elseif ($icon === 'hotel')<path d="M5 28V8h22v20M11 8V4h10v4M12 28v-7h8v7M9 13h3m8 0h3M9 17h3m8 0h3M3 28h26"/>
+                            @else<path d="M8 25c0-6 16-2 16-9 0-4-8-3-8-6M12 9a4 4 0 1 1 8 0c0 3-4 6-4 6s-4-3-4-6Z"/><circle cx="8" cy="26" r="2"/>
+                            @endif
+                        </svg>
+                    </div>
+                    <h3>{{ $title }}</h3><p>{{ $text }}</p>
+                </article>
+            @endforeach
+        </div>
+        <div class="orange-booking-help"><p><strong>Уже выбрали отель или сервис?</strong> Напишите в поддержку название, страну и что хотите оплатить. Поможем разобраться с условиями Orange до оформления.</p><a class="orange-text-link" href="https://t.me/mojno_support">Уточнить мою оплату <span aria-hidden="true">↗︎</span></a></div>
+        <p class="orange-disclaimer">Это сценарии использования, а не гарантия приёма карты каждым сервисом. Доступность зависит от продавца, страны и ограничений карточного продукта.</p>
     </section>
 
     <section class="orange-container orange-section">
@@ -125,6 +150,16 @@
         @if ($product?->full_terms)<details class="orange-terms-details"><summary>Подробные условия использования Orange</summary><div class="legal-doc-content">{!! $product->full_terms !!}</div></details>@endif
     </section>
 
+    <section class="orange-container orange-section orange-ready">
+        <div><h2>В аэропорту думайте<br>о поездке, а не о карте.</h2><p>Несколько проверок дома помогут спокойнее пользоваться Orange за границей.</p><a class="orange-text-link" href="https://t.me/mojno_support">Помочь с подготовкой <span aria-hidden="true">↗︎</span></a></div>
+        <ol>
+            <li><strong>Проверьте способ оплаты</strong><p>Для онлайн-покупок нужны реквизиты. Для магазинов — поддерживаемый кошелёк, совместимое устройство и бесконтактный терминал.</p></li>
+            <li><strong>Заложите расходы на поездку</strong><p>Посмотрите баланс, лимиты и комиссии. При оплате в валюте, отличной от валюты карты, учитывайте условия конвертации.</p></li>
+            <li><strong>Уточните правила отеля</strong><p>Узнайте, нужен ли депозит или физическая карта при заселении. Оплата брони онлайн и требования на стойке могут отличаться.</p></li>
+            <li><strong>Сохраните контакт поддержки</strong><p>Если возникнет вопрос по операции, история платежей доступна в кабинете, а с поддержкой можно связаться в Telegram.</p></li>
+        </ol>
+    </section>
+
     <section id="questions" class="orange-container orange-section orange-faq">
         <div><h2>Хорошие вопросы<br>перед поездкой.</h2><p>Не нашли ответ? Поддержка поможет разобраться с условиями Orange.</p><a class="orange-text-link" href="https://t.me/mojno_support">Написать в Telegram <span aria-hidden="true">↗︎</span></a></div>
         <div>
@@ -132,7 +167,9 @@
                 ['Это физическая или виртуальная карта?', 'Orange — виртуальная карта. Её реквизиты доступны в личном кабинете. Для оплаты в магазине используйте поддерживаемый мобильный кошелёк и бесконтактный терминал.'],
                 ['На чьё имя выпускается карта?', 'На ваше имя, указанное в анкете при регистрации. Заполняйте данные владельца корректно.'],
                 ['Как пополнить карту из России?', 'Доступные способы пополнения показаны в личном кабинете. Курс, комиссии и итоговая сумма показываются перед оплатой.'],
+                ['Подойдёт ли карта для билетов, отелей и eSIM?', 'Используйте реквизиты Orange для онлайн-оплаты у продавцов, принимающих её платёжную систему и формат. Перед важной покупкой проверьте ограничения в условиях карты. Если сомневаетесь, отправьте поддержке название сервиса и страну оплаты.'],
                 ['Можно ли оплачивать отели?', 'Карта подходит для оплаты там, где принимаются её платёжная система и формат. Отель может требовать физическую карту или депозит при заселении — заранее уточните эти условия напрямую у отеля.'],
+                ['Что делать, если оплата не прошла?', 'Проверьте баланс, историю операции и ограничения карты в личном кабинете. Не повторяйте оплату много раз подряд: комиссия за отказ указана в тарифах. Напишите поддержке название продавца, время и сумму операции. Не отправляйте полный номер карты, CVV или коды подтверждения.'],
                 ['Будет ли карта работать в России?', 'Нет. Используйте Orange для оплаты за границей. Доступность в конкретной стране и ограничения проверяйте в условиях карты.'],
                 ['Когда можно начать пользоваться?', 'После успешного выпуска и пополнения баланса. Для бесконтактной оплаты предварительно подключите карту к поддерживаемому кошельку по инструкции в личном кабинете.'],
             ] as [$question, $answer])
@@ -141,7 +178,7 @@
         </div>
     </section>
 
-    <section class="orange-container orange-section orange-final"><div><h2>Выберите, куда ехать.<br>С оплатой — <em>Можно.</em></h2><p>Оформите Orange онлайн и подготовьте карту к следующему путешествию.</p><a class="orange-button" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a></div><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Orange — карта для путешествий" loading="lazy"></section>
+    <section class="orange-container orange-section orange-final"><div><h2>Выберите, куда ехать.<br>С оплатой — <em>Можно.</em></h2><p>Билеты, отель, новые впечатления. Подготовьте Orange заранее — и берите с собой больше планов.</p><a class="orange-button" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a></div><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Orange — карта для путешествий" loading="lazy"></section>
 </main>
 @include('partials.site-footer')
 <div class="orange-mobile-cta"><div><strong>Orange</strong><span>{{ $rub($product?->price_rub) }} за выпуск</span></div><a class="orange-button" href="{{ $ctaUrl }}">{{ $ctaLabel }} ↗︎</a></div>

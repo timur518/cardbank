@@ -28,6 +28,9 @@ class OrangeLandingTest extends TestCase
         $this->get('/cards/orange')->assertOk()
             ->assertSee('Описание именно Orange')->assertSee('Условия Orange из админки')->assertDontSee('Условия White')
             ->assertSee('data-site-header', false)->assertDontSee('class="orange-nav"', false)->assertDontSee('обслуживание 0 ₽')
+            ->assertSee(view('partials.site-footer')->render(), false)
+            ->assertSee('Билеты туда и обратно')->assertSee('Уточнить мою оплату')
+            ->assertSee('Что делать, если оплата не прошла?')->assertSee('Уточните правила отеля')
             ->assertSee('1 234 ₽')->assertSee('2,50%')->assertSee('$0,15')
             ->assertSee('https://mne.mojno.cc/register')->assertSee('Apple Pay')->assertSee('Google Pay')
             ->assertDontSee('utm_');
