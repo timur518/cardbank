@@ -16,9 +16,11 @@ class IncomeForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(2)
             ->components([
                 Section::make('Поступление')
-                    ->columns(2)
+                    ->columnSpanFull()
+                    ->columns(4)
                     ->schema([
                         Select::make('type')
                             ->label('Тип поступления')
@@ -34,29 +36,46 @@ class IncomeForm
                             ->maxLength(10),
                         TextInput::make('amount_usd')
                             ->label('Сумма в $')
-                            ->helperText('Сколько реально получила компания после конвертации платёжной системой — используется для расчёта прибыли.')
                             ->numeric(),
+                    ]),
+
+                Section::make('Пользователь и карта')
+                    ->columns(2)
+                    ->schema([
                         Select::make('user_id')
                             ->label('Пользователь')
                             ->relationship('user', 'email')
                             ->searchable()
                             ->preload(),
                         CardSelect::make('card_id'),
+                    ]),
+
+                Section::make('Данные платежа')
+                    ->columns(2)
+                    ->schema([
                         Select::make('payment_method_id')
                             ->label('Способ оплаты')
                             ->relationship('paymentMethod', 'name')
                             ->searchable()
-                            ->preload(),
-                        TextInput::make('payment_transaction_id')
-                            ->label('ID транзакции в платёжной системе')
-                            ->maxLength(255),
+                            ->preload()
+                            ->columnSpanFull(),
                         Select::make('payment_status')
                             ->label('Статус платежа')
                             ->options(IncomePaymentStatus::class)
                             ->default(IncomePaymentStatus::Pending)
                             ->required(),
+                        TextInput::make('payment_transaction_id')
+                            ->label('ID транзакции в платёжной системе')
+                            ->maxLength(255),
+                    ]),
+
+                Section::make('Комментарий')
+                    ->columnSpanFull()
+                    ->schema([
                         Textarea::make('comment')
                             ->label('Комментарий')
+                            ->hiddenLabel()
+                            ->rows(3)
                             ->columnSpanFull(),
                     ]),
             ]);
