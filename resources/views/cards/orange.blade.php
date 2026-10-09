@@ -1,7 +1,7 @@
 @php
     $available = $product && ! $product->coming_soon;
     $ctaUrl = $available ? 'https://mne.mojno.cc/register' : 'https://t.me/mojno_support';
-    $ctaLabel = $available ? 'Оформить Orange' : 'Уточнить доступность';
+    $ctaLabel = $available ? 'Оформить карту' : 'Уточнить доступность';
     $paymentNames = array_values(array_filter([
         $product?->apple_pay_enabled ? 'Apple Pay' : null,
         $product?->google_pay_enabled ? 'Google Pay' : null,
@@ -48,7 +48,7 @@
             <div class="orange-product-name">Orange <span>Карта иностранного банка для путешествий</span></div>
             <h1>Карта для ваших<br><em>путешествий</em></h1>
             <p>Оплачивайте билеты и отели онлайн, кафе и покупки — в поездке. Оформите виртуальную карту Orange онлайн и пополняйте её с любой карты российского банка</p>
-            <div class="orange-actions"><a class="orange-button" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a><a class="orange-text-link" href="#terms">Посмотреть условия <span aria-hidden="true">↓</span></a></div>
+            <div class="orange-actions"><a class="orange-button" href="{{ $ctaUrl }}">@include('cards.partials.apply-button-label') <span aria-hidden="true">↗︎</span></a><a class="orange-text-link" href="#terms">Посмотреть условия <span aria-hidden="true">↓</span></a></div>
             <div class="orange-hero-facts"><div><strong>{{ $rub($product?->price_rub) }}</strong><span>за выпуск карты</span></div><div><strong>0 ₽</strong><span>обслуживание в месяц</span></div><div><strong class="orange-sbp"><img src="{{ asset('assets/images/orange/payments/sbp.svg') }}" width="30" height="30" alt=""><span>СБП</span></strong><span>пополнение рублями</span></div></div>
         </div>
         <div class="orange-hero-visual">
@@ -174,12 +174,12 @@
     </section>
 
     <section class="orange-container orange-section">
-        <div class="orange-control-panel"><div><h2>Пополняйте с карт<br>российских банков</h2><p>Пополняйте виртуальную карту с любой карты российского банка через СБП. Управляйте картой в личном кабинете: проверяйте баланс, смотрите историю покупок и мгновенно пополняйте баланс</p><a class="orange-button orange-button-light" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a></div><div class="orange-control-preview"><div class="orange-preview-header"><img src="{{ asset('assets/images/logo_min.svg') }}" width="32" height="32" alt=""><span>Всё в одном кабинете</span><span aria-hidden="true">↗︎</span></div><div class="orange-preview-card"><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Карта Orange в личном кабинете" loading="lazy"></div><ul><li><span>Баланс карты</span><span aria-hidden="true">✓</span></li><li><span>История операций</span><span aria-hidden="true">✓</span></li><li><span>Реквизиты и управление</span><span aria-hidden="true">✓</span></li></ul></div></div>
+        <div class="orange-control-panel"><div><h2>Пополняйте с карт<br>российских банков</h2><p>Пополняйте виртуальную карту с любой карты российского банка через СБП. Управляйте картой в личном кабинете: проверяйте баланс, смотрите историю покупок и мгновенно пополняйте баланс</p><a class="orange-button orange-button-light" href="{{ $ctaUrl }}">@include('cards.partials.apply-button-label') <span aria-hidden="true">↗︎</span></a></div><div class="orange-control-preview"><div class="orange-preview-header"><img src="{{ asset('assets/images/logo_min.svg') }}" width="32" height="32" alt=""><span>Всё в одном кабинете</span><span aria-hidden="true">↗︎</span></div><div class="orange-preview-card"><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Карта Orange в личном кабинете" loading="lazy"></div><ul><li><span>Баланс карты</span><span aria-hidden="true">✓</span></li><li><span>История операций</span><span aria-hidden="true">✓</span></li><li><span>Реквизиты и управление</span><span aria-hidden="true">✓</span></li></ul></div></div>
     </section>
 
     <section id="terms" class="orange-container orange-section">
         <div class="orange-section-heading"><h2>Стоимость и условия<br>карты Orange</h2><p>Посмотрите стоимость выпуска, комиссии и лимиты перед оформлением</p></div>
-        <div class="orange-terms-layout"><div class="orange-price-card"><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Orange" loading="lazy"><h3>Orange</h3><p>Для путешествий и покупок за границей</p><strong>{{ $rub($product?->price_rub) }}</strong><span>Бесплатное обслуживание</span><a class="orange-button" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a></div>
+        <div class="orange-terms-layout"><div class="orange-price-card"><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Orange" loading="lazy"><h3>Orange</h3><p>Для путешествий и покупок за границей</p><strong>{{ $rub($product?->price_rub) }}</strong><span>Бесплатное обслуживание</span><a class="orange-button" href="{{ $ctaUrl }}">@include('cards.partials.apply-button-label') <span aria-hidden="true">↗︎</span></a></div>
             <div class="orange-terms">
             @if ($product)
                 <dl>
@@ -246,9 +246,9 @@
         </div>
     </section>
 
-    <section class="orange-container orange-section orange-final"><div><h2>Оформите Orange<br>для следующей <em>поездки</em></h2><p>Выпустите карту онлайн, пополните баланс и начните с билетов и бронирования отеля</p><a class="orange-button" href="{{ $ctaUrl }}">{{ $ctaLabel }} <span aria-hidden="true">↗︎</span></a></div><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Orange — карта для путешествий" loading="lazy"></section>
+    <section class="orange-container orange-section orange-final"><div><h2>Оформите Orange<br>для следующей <em>поездки</em></h2><p>Выпустите карту онлайн, пополните баланс и начните с билетов и бронирования отеля</p><a class="orange-button" href="{{ $ctaUrl }}">@include('cards.partials.apply-button-label') <span aria-hidden="true">↗︎</span></a></div><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Orange — карта для путешествий" loading="lazy"></section>
 </main>
 @include('partials.site-footer')
-<div class="orange-mobile-cta"><div><strong>Orange</strong><span>{{ $rub($product?->price_rub) }} за выпуск</span></div><a class="orange-button" href="{{ $ctaUrl }}">{{ $ctaLabel }} ↗︎</a></div>
+<div class="orange-mobile-cta"><div><strong>Orange</strong><span>{{ $rub($product?->price_rub) }} за выпуск</span></div><a class="orange-button" href="{{ $ctaUrl }}">@include('cards.partials.apply-button-label', ['mobile' => true])</a></div>
 </body>
 </html>
