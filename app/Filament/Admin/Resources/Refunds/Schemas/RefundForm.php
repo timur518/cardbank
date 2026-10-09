@@ -2,9 +2,10 @@
 
 namespace App\Filament\Admin\Resources\Refunds\Schemas;
 
+use App\Filament\Admin\Forms\Components\CardSelect;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -23,11 +24,7 @@ class RefundForm
                             ->searchable()
                             ->preload()
                             ->required(),
-                        Select::make('card_id')
-                            ->label('Карта')
-                            ->relationship('card', 'id')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->masked_number)
-                            ->searchable()
+                        CardSelect::make('card_id')
                             ->required(),
                         TextInput::make('amount')
                             ->label('Сумма возврата')

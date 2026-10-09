@@ -4,9 +4,10 @@ namespace App\Filament\Admin\Resources\Incomes\Schemas;
 
 use App\Enums\IncomePaymentStatus;
 use App\Enums\IncomeType;
+use App\Filament\Admin\Forms\Components\CardSelect;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -40,11 +41,7 @@ class IncomeForm
                             ->relationship('user', 'email')
                             ->searchable()
                             ->preload(),
-                        Select::make('card_id')
-                            ->label('Карта')
-                            ->relationship('card', 'id')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->masked_number)
-                            ->searchable(),
+                        CardSelect::make('card_id'),
                         Select::make('payment_method_id')
                             ->label('Способ оплаты')
                             ->relationship('paymentMethod', 'name')

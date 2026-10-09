@@ -3,10 +3,11 @@
 namespace App\Filament\Admin\Resources\Expenses\Schemas;
 
 use App\Enums\ExpenseCategory;
+use App\Filament\Admin\Forms\Components\CardSelect;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -39,11 +40,7 @@ class ExpenseForm
                             ->helperText('Долларовый эквивалент расхода на момент операции — используется для расчёта прибыли.')
                             ->prefix('$')
                             ->numeric(),
-                        Select::make('card_id')
-                            ->label('Карта')
-                            ->relationship('card', 'id')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->masked_number)
-                            ->searchable(),
+                        CardSelect::make('card_id'),
                         Select::make('provider_id')
                             ->label('Провайдер')
                             ->relationship('provider', 'name')
