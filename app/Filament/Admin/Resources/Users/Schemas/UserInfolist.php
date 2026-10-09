@@ -75,7 +75,7 @@ class UserInfolist
                 // Редактируемый вариант этого же блока — на странице редактирования (см. UserForm).
                 Section::make('Настройки платежей')
                     ->columnSpanFull()
-                    ->columns(2)
+                    ->columns(3)
                     ->schema([
                         IconEntry::make('bitbanker_offer_accepted')
                             ->label('Оферта BitBanker принята')
@@ -87,7 +87,6 @@ class UserInfolist
                             ->placeholder('—'),
                         RepeatableEntry::make('allowedPaymentMethods')
                             ->label('Разрешённые методы оплаты')
-                            ->columnSpanFull()
                             ->schema([
                                 TextEntry::make('name')->label('')->inlineLabel(false),
                             ])
