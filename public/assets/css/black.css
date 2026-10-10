@@ -137,6 +137,21 @@
 .black-topup-brand { display: flex; align-items: center; gap: 12px; margin-top: 24px; color: #ffffffb3; font-size: 14px; }
 #service-question { scroll-margin-top: 115px; }
 #service-question:target { background: #ece8e4; border-radius: 12px; padding-inline: 20px; }
+.black-logo-panel { padding: 48px; border-radius: 30px; background: var(--ink); color: #fff; }
+.black-logo-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; margin-bottom: 36px; }
+.black-logo-heading > p { max-width: 330px; color: #ffffffb3; font-size: 18px; line-height: 1.5; }
+.black-logo-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; list-style: none; margin: 0; padding: 0; }
+.black-logo-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 17px; min-height: 130px; padding: 22px 10px; border-radius: 16px; background: var(--bg); color: var(--ink); }
+.black-logo-tile svg { display: block; width: 40px; height: 40px; flex-shrink: 0; color: var(--black-logo-color); }
+.black-logo-tile span { font-size: 14px; font-weight: 600; line-height: 1.3; text-align: center; overflow-wrap: anywhere; }
+.black-logo-more { grid-column: span 2; border: 1px solid #ffffff38; border-radius: 16px; }
+.black-logo-more a { display: flex; flex-direction: column; justify-content: center; gap: 12px; height: 100%; padding: 24px; border-radius: inherit; }
+.black-logo-more a:hover { background: #ffffff0a; }
+.black-logo-more a > span { font-size: 14px; color: #ffffffb3; }
+.black-logo-more strong { display: flex; align-items: center; justify-content: space-between; gap: 15px; font-size: 17px; font-weight: 500; line-height: 1.3; }
+.black-logo-more .black-arrow { color: var(--orange); }
+.black-logo-caption { display: flex; align-items: center; gap: 10px; margin-top: 26px; font-size: 13px; line-height: 1.5; color: #ffffffb3; }
+.black-logo-caption svg { flex-shrink: 0; }
 @media (max-width: 1100px) {
     .black-hero h1 { font-size: 59px; letter-spacing: -2.5px; }
     .black-hero-visual { height: 560px; }
@@ -146,6 +161,8 @@
     .black-account-copy { padding: 35px; }
     .black-payment-steps > li { padding: 25px; }
     .black-payment-steps h3 { font-size: 23px; }
+    .black-logo-panel { padding: 36px; }
+    .black-logo-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 @media (max-width: 800px) {
     .black-hero h1 { font-size: 72px; }
@@ -161,6 +178,10 @@
     .black-payment-steps { grid-template-columns: 1fr; }
     .black-payment-steps h3 { font-size: 26px; }
     .black-step-example { max-width: 400px; }
+    .black-logo-heading { display: block; }
+    .black-logo-heading > p { margin-top: 20px !important; max-width: 480px; font-size: 17px; }
+    .black-logo-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .black-logo-more { grid-column: span 2; }
 }
 @media (max-width: 540px) {
     .black-hero h1 { font-size: clamp(39px, 10.6vw, 57px); letter-spacing: -1.8px; }
@@ -186,4 +207,19 @@
     .black-step-number { font-size: 34px; margin-bottom: 24px; }
     .black-payment-steps p { font-size: 15px; }
     .black-service-link { font-size: 14px; }
+    .black-logo-panel { padding: 30px 24px; border-radius: 24px; }
+    .black-logo-heading { margin-bottom: 26px; }
+    .black-logo-heading > p { font-size: 16px; }
+    .black-logo-grid { gap: 10px; }
+    .black-logo-tile { min-height: 110px; padding: 18px 8px; gap: 14px; border-radius: 12px; }
+    .black-logo-tile svg { width: 32px; height: 32px; }
+    .black-logo-tile span { font-size: 12px; }
+    .black-logo-more { border-radius: 12px; }
+    .black-logo-more a { padding: 18px; }
+    .black-logo-more a > span { font-size: 12px; }
+    .black-logo-more strong { font-size: 14px; }
+    .black-logo-caption { align-items: flex-start; font-size: 12px; }
+}
+@media (max-width: 360px) {
+    .black-logo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

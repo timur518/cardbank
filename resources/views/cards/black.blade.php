@@ -150,6 +150,25 @@
         </div>
     </section>
 
+    <section id="payable-services" class="orange-container orange-section black-logo-panel" aria-labelledby="black-logo-heading">
+        <div class="black-logo-heading">
+            <h2 id="black-logo-heading">Сервисы для работы<br>и отдыха</h2>
+            <p>Оплачивайте подписки и покупки на зарубежных сайтах прямо из своего аккаунта</p>
+        </div>
+        <ul class="black-logo-grid">
+            @foreach (\App\Support\PaymentServiceLogos::all() as [$color, $name, $icon])
+                <li class="black-logo-tile" style="--black-logo-color: {{ in_array($color, ['#C6CDD0', '#C9C9C9', '#C7C7C7']) ? 'var(--ink)' : $color }}">
+                    <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor" aria-hidden="true">{!! $icon !!}</svg>
+                    <span>{{ $name }}</span>
+                </li>
+            @endforeach
+            <li class="black-logo-more">
+                <a href="#service-question"><span>Вашего сервиса нет в списке?</span><strong>Узнайте, как проверить оплату @include('cards.partials.arrow-icon')</strong></a>
+            </li>
+        </ul>
+        <div class="black-logo-caption"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/></svg><span>Оплата по реквизитам карты Black на сайтах и в приложениях</span></div>
+    </section>
+
     <section id="terms" class="orange-container orange-section">
         <div class="orange-section-heading"><h2>Стоимость и условия<br>карты Black</h2><p>Стоимость выпуска, комиссии и лимиты карты перед вами</p></div>
         <div class="orange-terms-layout">
