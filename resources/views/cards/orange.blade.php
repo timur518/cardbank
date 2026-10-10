@@ -52,7 +52,7 @@
             <div class="orange-hero-facts"><div><strong>{{ $rub($product?->price_rub) }}</strong><span>за выпуск карты</span></div><div><strong>0 ₽</strong><span>обслуживание в месяц</span></div><div><strong class="orange-sbp"><img src="{{ asset('assets/images/orange/payments/sbp.svg') }}" width="30" height="30" alt=""><span>СБП</span></strong><span>пополнение рублями</span></div></div>
         </div>
         <div class="orange-hero-visual">
-            <img class="orange-hero-photo" src="{{ asset('assets/images/booking.png') }}" width="1491" height="1055" alt="Путешественники приезжают в отель" fetchpriority="high">
+            <img class="orange-hero-photo" src="https://mojno.cc/assets/images/travel.jpg" width="1491" height="1055" alt="Путешествие за границу" fetchpriority="high">
             <div class="orange-photo-caption">Ваша карта<br>для покупок за границей</div>
             <img class="orange-hero-card" src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt="Виртуальная карта Orange от Можно">
             <div class="orange-photo-stamp"><span aria-hidden="true">↗︎</span> Можно путешествовать</div>
@@ -99,7 +99,7 @@
 
     <section class="orange-container orange-section">
         <div class="orange-wallet-panel">
-            <div class="orange-wallet-art" aria-hidden="true"><div class="orange-phone"><div class="orange-phone-top"></div><span>{{ $phonePayments ? 'Оплата телефоном' : 'Orange' }}</span><img src="{{ asset('assets/images/orangecard.png') }}" width="510" height="300" alt=""><div class="orange-contactless">)))</div><p>{{ $phonePayments ? 'Поднесите к терминалу' : 'Ваша карта в личном кабинете' }}</p></div><div class="orange-wallet-circle"></div></div>
+            <div class="orange-wallet-art" aria-hidden="true"><img class="orange-wallet-image" src="/assets/images/applepayiphone.png" width="800" height="1600" alt="" loading="lazy"><div class="orange-wallet-circle"></div></div>
             <div class="orange-wallet-copy">
                 @if ($phonePayments)
                     <h2>Платите телефоном<br>за границей</h2><p>Добавьте вашу карту в {{ $phonePayments }}. В магазинах, кафе и ресторанах поднесите телефон или часы к терминалу для оплаты</p>
