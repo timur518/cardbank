@@ -1,0 +1,189 @@
+/* Shared layout, typography and neutral surfaces come from orange.css. */
+.black-arrow { display: inline-block; width: 22px; height: 22px; flex-shrink: 0; vertical-align: middle; }
+.black-preview-heading .black-arrow { color: var(--orange); }
+.black-step-example .black-arrow, .black-page .orange-control-preview .black-arrow { color: var(--orange); width: 17px; height: 17px; }
+.black-page .orange-button-mobile-arrow .black-arrow { width: 16px; height: 16px; }
+.black-page .orange-preview-header > .black-arrow { margin-left: auto; }
+.black-hero h1 {
+    font-size: clamp(52px, 5.3vw, 76px);
+    letter-spacing: -3px;
+}
+.black-hero-visual {
+    position: relative;
+    height: 590px;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 30px;
+    background: var(--ink);
+    isolation: isolate;
+}
+.black-hero-visual::before {
+    content: '';
+    position: absolute;
+    width: 580px;
+    height: 580px;
+    top: 95px;
+    left: -110px;
+    border-radius: 50%;
+    border: 1px solid #ffffff1c;
+    box-shadow: 0 0 0 55px #ffffff04, 0 0 0 110px #ffffff03;
+    z-index: -1;
+}
+.black-visual-title {
+    position: absolute;
+    top: 32px;
+    left: 32px;
+    color: #fff;
+    font-size: 29px;
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -.6px;
+}
+.black-floating-logos {
+    position: absolute;
+    right: 30px;
+    top: 38px;
+    display: flex;
+    gap: 8px;
+}
+.black-floating-logos img {
+    width: 48px;
+    height: 48px;
+    padding: 10px;
+    object-fit: contain;
+    background: #fff;
+    border-radius: 14px;
+}
+.black-hero-card {
+    position: absolute;
+    width: 68%;
+    height: auto;
+    left: 6%;
+    top: 29%;
+    transform: rotate(-12deg);
+    filter: drop-shadow(0 25px 24px #0005);
+    z-index: 2;
+}
+.black-payment-preview {
+    position: absolute;
+    width: 60%;
+    right: 28px;
+    bottom: 28px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 23px;
+    box-shadow: 0 20px 35px #0002;
+    transform: rotate(4deg);
+    z-index: 3;
+}
+.black-preview-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 19px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+.black-preview-heading > span:last-child { color: var(--orange); }
+.black-preview-field, .black-preview-fields > div {
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 11px 12px;
+    min-width: 0;
+}
+.black-preview-field span, .black-preview-fields span {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    margin-bottom: 6px;
+}
+.black-preview-field strong, .black-preview-fields strong {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.black-preview-fields { display: grid; grid-template-columns: 1.2fr 1fr; gap: 10px; margin-top: 10px; }
+.black-preview-caption { margin-top: 16px; color: var(--muted); font-size: 12px; text-align: center; }
+.black-services article { display: flex; flex-direction: column; padding: 34px; }
+.black-services .orange-service-logos { margin-top: auto; padding-top: 28px; }
+.black-service-link { margin-top: 26px; }
+.black-account-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+    background: #ece8e4;
+    border-radius: 30px;
+}
+.black-account-photo { min-height: 610px; }
+.black-account-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 57% center; }
+.black-account-copy { padding: 48px; }
+.black-account-copy > p { font-size: 18px; line-height: 1.6; color: var(--muted); margin-top: 22px !important; }
+.black-account-copy ul { padding: 0; margin: 28px 0 0; list-style: none; }
+.black-account-copy li { border-top: 1px solid var(--border); padding: 19px 0; }
+.black-account-copy li:last-child { padding-bottom: 0; }
+.black-account-copy strong { display: block; font-size: 20px; line-height: 1.3; font-weight: 600; }
+.black-account-copy li span { display: block; margin-top: 8px; font-size: 15px; line-height: 1.6; color: var(--muted); }
+.black-payment-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.black-payment-steps > li { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--border); border-radius: 24px; padding: 30px; min-width: 0; }
+.black-step-number { display: block; font-size: 40px; color: #aaa6a0; line-height: 1; margin-bottom: 30px; }
+.black-payment-steps h3 { font-size: 25px; line-height: 1.15; letter-spacing: -.5px; font-weight: 600; }
+.black-payment-steps p { font-size: 16px; line-height: 1.6; color: var(--muted); margin: 16px 0 28px !important; }
+.black-step-example { margin-top: auto; background: var(--bg); padding: 17px; border-radius: 12px; }
+.black-step-example > span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 8px; }
+.black-step-example > strong { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 15px; font-weight: 500; }
+.black-step-example strong span { color: var(--orange); }
+.black-issue-action { margin-top: 34px; }
+.black-topup-brand { display: flex; align-items: center; gap: 12px; margin-top: 24px; color: #ffffffb3; font-size: 14px; }
+#service-question { scroll-margin-top: 115px; }
+#service-question:target { background: #ece8e4; border-radius: 12px; padding-inline: 20px; }
+@media (max-width: 1100px) {
+    .black-hero h1 { font-size: 59px; letter-spacing: -2.5px; }
+    .black-hero-visual { height: 560px; }
+    .black-floating-logos { top: 125px; left: 32px; right: auto; }
+    .black-hero-card { top: 37%; }
+    .black-payment-preview { width: 72%; padding: 18px; bottom: 23px; }
+    .black-account-copy { padding: 35px; }
+    .black-payment-steps > li { padding: 25px; }
+    .black-payment-steps h3 { font-size: 23px; }
+}
+@media (max-width: 800px) {
+    .black-hero h1 { font-size: 72px; }
+    .black-hero-visual { height: 530px; }
+    .black-floating-logos { top: 38px; right: 30px; left: auto; }
+    .black-hero-card { width: 60%; top: 29%; }
+    .black-payment-preview { width: 48%; padding: 23px; }
+    .black-account-panel { grid-template-columns: 1fr; }
+    .black-account-photo { min-height: 0; height: 390px; }
+    .black-account-copy { padding: 40px; }
+    .black-account-copy ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 25px; }
+    .black-account-copy strong { font-size: 18px; }
+    .black-payment-steps { grid-template-columns: 1fr; }
+    .black-payment-steps h3 { font-size: 26px; }
+    .black-step-example { max-width: 400px; }
+}
+@media (max-width: 540px) {
+    .black-hero h1 { font-size: clamp(39px, 10.6vw, 57px); letter-spacing: -1.8px; }
+    .black-hero-visual { height: 470px; border-radius: 24px; }
+    .black-visual-title { top: 26px; left: 25px; font-size: 26px; }
+    .black-floating-logos { top: 109px; left: 25px; right: auto; }
+    .black-floating-logos img { width: 40px; height: 40px; border-radius: 11px; padding: 8px; }
+    .black-hero-card { width: 72%; top: 37%; left: 7%; }
+    .black-payment-preview { width: 67%; right: 19px; bottom: 20px; padding: 17px; border-radius: 16px; }
+    .black-preview-heading { font-size: 16px; margin-bottom: 14px; }
+    .black-preview-field, .black-preview-fields > div { padding: 9px; }
+    .black-preview-field strong, .black-preview-fields strong { font-size: 12px; }
+    .black-preview-field span, .black-preview-fields span { font-size: 10px; }
+    .black-preview-caption { font-size: 10px; }
+    .black-services article { padding: 28px; }
+    .black-account-panel { border-radius: 24px; }
+    .black-account-photo { height: 290px; }
+    .black-account-copy { padding: 30px 25px; }
+    .black-account-copy > p { font-size: 16px; }
+    .black-account-copy ul { display: block; }
+    .black-account-copy strong { font-size: 20px; }
+    .black-payment-steps > li { padding: 28px; }
+    .black-step-number { font-size: 34px; margin-bottom: 24px; }
+    .black-payment-steps p { font-size: 15px; }
+    .black-service-link { font-size: 14px; }
+}

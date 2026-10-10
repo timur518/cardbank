@@ -47,6 +47,13 @@ Route::get('/cards/orange', function () {
     ]);
 })->name('cards.orange');
 
+Route::get('/cards/black', function () {
+    return view('cards.black', [
+        'product' => CardProduct::query()->where('key', 'black')->where('active', true)->first(),
+        'analyticsCodes' => Setting::getMany(AnalyticsSettings::KEYS),
+    ]);
+})->name('cards.black');
+
 // Страницы юридических документов — текст каждой берётся из админки (LegalDocument),
 // показывается последняя действующая версия соответствующего типа документа.
 // Слаг URL => [тип документа, заголовок страницы, имя роута].
